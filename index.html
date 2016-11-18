@@ -1,39 +1,60 @@
 <!doctype html>
 <html>
   <head>
-    <title>Socket.IO chat</title>
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
-    </style>
+    <title>Socket.IO - player</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="style/myStyle.css">
   </head>
   <body>
-    <ul id="messages"></ul>
-    <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
 
     <!-- Setup a socket -->
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script src="libs/three.min.js"></script>
+
+    <div id="container"></div>
+
     <script>
+
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+      var renderer = new THREE.WebGLRenderer();
+      renderer.setSize( window.innerWidth, window.innerHeight );
+
+
+      var geometry = new THREE.BoxGeometry( 1, 1, 1 );
+      var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+      var cube = new THREE.Mesh( geometry, material );
+      scene.add( cube );
+
+      camera.position.z = 5;
+
+      function render() {
+      	requestAnimationFrame( render );
+      	renderer.render( scene, camera );
+        cube.rotation.x += 0.1;
+        cube.rotation.y += 0.1;
+      }
+      render();
+
       var socket = io();
-      $('form').submit(function(){
-        socket.emit('chat message', $('#m').val());
-        $('#m').val('');
-        return false;
+
+      socket.on('modechange', function(msg)
+      {
+          console.log(msg);
+          if(msg == 0)
+          {
+            $(renderer.domElement).remove()
+          }
+          else
+          {
+            $('#container').append( renderer.domElement );
+          }
+
       });
 
-      socket.on('chat message', function(msg){
-          $('#messages').append($('<li>').text(msg));
-      });
     </script>
 
   </body>
