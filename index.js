@@ -10,6 +10,7 @@ var io = require('socket.io')(http);
 app.use("/scripts",express.static(__dirname + "/scripts"));
 app.use("/style",express.static(__dirname + "/style"));
 app.use("/libs",express.static(__dirname + "/libs"));
+app.use("/samples",express.static(__dirname + "/samples"));
 
 //two types of user
  app.get('/admin', function(req, res){
