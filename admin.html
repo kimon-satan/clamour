@@ -17,17 +17,15 @@
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
       var socket = io();
-      $('form').submit(function(){
-
-        var msg = $('#m').val();
-        var items = msg.split(" ");
-
-        console.log(items);
-
-        socket.emit('command', items);
-        $('#m').val('');
-        return false;
-      });
+      $('form').submit(
+        function()
+        {
+          var msg = $('#m').val();
+          socket.emit('command', msg);
+          $('#m').val('');
+          return false;
+        }
+    );
 
     </script>
 

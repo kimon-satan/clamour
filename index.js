@@ -7,6 +7,7 @@ var io = require('socket.io')(http);
 
 //We define a route handler / that gets called when we hit our website home.
 
+app.use("/scripts",express.static(__dirname + "/scripts"));
 app.use("/style",express.static(__dirname + "/style"));
 app.use("/libs",express.static(__dirname + "/libs"));
 
@@ -31,12 +32,24 @@ io.on('connection', function(socket)
   socket.on('command', function(msg)
   {
 
-    if(msg[0] == "modechange" && msg.length > 1)
+    var items = msg.split(" ");
+
+    if(items[0] == "_mode" && msg.length > 1)
     {
-      socket.broadcast.emit('modechange', msg[1]);
+      socket.broadcast.emit('mode_change', items[1]);
+    }
+    else
+    {
+      socket.broadcast.emit('chat_update', msg);
     }
 
     console.log('command: ' + msg);
+
+  });
+
+  socket.on('hello', function(msg)
+  {
+    console.log(msg);
   });
 
   socket.on('disconnect', function()
