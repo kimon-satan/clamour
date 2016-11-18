@@ -21,13 +21,11 @@ app.use("/libs",express.static(__dirname + "/libs"));
  });
 
 
-//io is everyone
-//socket is this user
+var admin = io.of('/admin');
 
-io.on('connection', function(socket)
-{
+admin.on('connection', function(socket){
 
-  console.log('a user connected');
+  console.log('an admin connected');
 
   socket.on('command', function(msg)
   {
@@ -36,28 +34,49 @@ io.on('connection', function(socket)
 
     if(items[0] == "_mode" && msg.length > 1)
     {
-      socket.broadcast.emit('mode_change', items[1]);
+      players.emit('mode_change', items[1]);
     }
     else
     {
-      socket.broadcast.emit('chat_update', msg);
+      players.emit('chat_update', msg);
     }
 
-    console.log('command: ' + msg);
+    console.log('admin command: ' + msg);
 
-  });
-
-  socket.on('hello', function(msg)
-  {
-    console.log(msg);
   });
 
   socket.on('disconnect', function()
   {
-    console.log('user disconnected');
+    console.log('an admin disconnected');
   });
 
 });
+
+
+
+
+//io is everyone
+var players = io.of('/player');
+
+players.on('connection', function(socket)
+{
+
+  console.log('a player connected');
+
+  socket.on('hello', function(msg)
+  {
+    admin.emit('click', msg);
+  });
+
+  socket.on('disconnect', function()
+  {
+    console.log('a player disconnected');
+  });
+
+
+
+});
+
 
 //We make the http server listen on port 3000.
 http.listen(3000, function(){

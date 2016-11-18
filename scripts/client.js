@@ -1,5 +1,5 @@
 
-var socket = io();
+var socket = io('/player');
 var currMode = 0;
 
 var scene = new THREE.Scene();
@@ -36,10 +36,12 @@ function tap(e){
 
 }
 
-function render() {
+function render()
+{
   requestAnimationFrame( render );
   renderer.render( scene, camera );
 }
+
 render();
 
 
