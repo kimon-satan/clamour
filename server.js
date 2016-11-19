@@ -41,18 +41,19 @@ users.remove({}); //clear all the users
 
 //We define a route handler / that gets called when we hit our website home.
 
-app.use("/scripts",express.static(__dirname + "/scripts"));
+app.use("/admin",express.static(__dirname + "/admin"));
 app.use("/style",express.static(__dirname + "/style"));
 app.use("/libs",express.static(__dirname + "/libs"));
+app.use("/player",express.static(__dirname + "/player"));
 app.use("/samples",express.static(__dirname + "/samples"));
 
 //two types of user
  app.get('/admin', function(req, res){
-   res.sendFile(__dirname + '/admin.html');
+   res.sendFile(__dirname + '/admin/admin.html');
  });
 //
  app.get('/', function(req, res){
-   res.sendFile(__dirname + '/index.html');
+   res.sendFile(__dirname + '/player/player.html');
  });
 
 
