@@ -5,6 +5,22 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+var mongo = require('mongodb').MongoClient
+var url = 'mongodb://localhost:27017/mongoTesting';
+
+mongo.connect( url, function (err, db) {
+
+  if (err) throw err;
+
+  var users = db.collection('usercollection');
+  users.find().toArray(function (err, result) {
+    if (err) throw err
+    console.log(result);
+  })
+  db.close();
+
+})
+
 //We define a route handler / that gets called when we hit our website home.
 
 app.use("/scripts",express.static(__dirname + "/scripts"));
