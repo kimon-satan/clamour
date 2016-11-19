@@ -1,3 +1,15 @@
+/*
+TODO
+
+list the current users & their state
+//could have a refresh function
+... actually just make wait mode send a refreshed record new connections ?
+... how to avoid doubling up of signals ?
+//mobile test
+//probably can move on to integrated verison now
+
+*/
+
 //Express initializes app to be a function handler that you can supply to an HTTP server
 
 var express = require('express');
@@ -5,21 +17,27 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
-var mongo = require('mongodb').MongoClient
-var url = 'mongodb://localhost:27017/mongoTesting';
+//simple db using monk & mongodb
+const url = 'localhost:27017/mongoTesting';
+const monk = require('monk');
+const db = monk(url);
 
-mongo.connect( url, function (err, db) {
-
-  if (err) throw err;
-
-  var users = db.collection('usercollection');
-  users.find().toArray(function (err, result) {
-    if (err) throw err
-    console.log(result);
-  })
-  db.close();
-
+db.then(() => {
+  console.log('Connected correctly to server')
 })
+
+const users = db.get('usercollection');
+
+
+//list the users
+users.find({}).then((docs) => {
+
+  console.log(docs);
+
+});
+
+users.remove({}); //clear all the users
+
 
 //We define a route handler / that gets called when we hit our website home.
 
@@ -62,6 +80,11 @@ admin.on('connection', function(socket){
 
   });
 
+  socket.on('listusers', function(msg)
+  {
+    //admin.emit //a search object which shows all the current users
+  });
+
   socket.on('disconnect', function()
   {
     console.log('an admin disconnected');
@@ -78,11 +101,60 @@ var players = io.of('/player');
 players.on('connection', function(socket)
 {
 
-  console.log('a player connected');
+  console.log('a player connected ' , socket.id);
 
   socket.on('hello', function(msg)
   {
+
+    if(msg == "new")
+    {
+      console.log('hello new user');
+      users.insert({currMode: 0, clicks: 0},{}, function(err,res)
+      {
+        if(err) throw err;
+        socket.emit('welcome', res);
+      });
+
+    }
+    else
+    {
+
+      users.findOne(msg,{}, function(err,res)
+      {
+        if(err) throw err;
+        if(!res)
+        {
+          console.log('hello new user');
+          //insert a new user instead
+          users.insert({currMode: 0, clicks: 0},{}, function(err,res)
+          {
+            if(err) throw err;
+            socket.emit('welcome', res);
+          });
+        }
+        else
+        {
+          console.log('welcome back ' + msg);
+          socket.emit('welcome', res);
+        }
+
+      });
+    }
+
+  });
+
+  // generate a new player -somehow get the current mode ?
+
+  socket.on('click', function(msg)
+  {
     admin.emit('click', msg);
+    users.findOneAndUpdate({_id: monk.id(msg._id)},{$set:{clicks: msg.clicks}});
+  });
+
+  socket.on('changemode', function(msg)
+  {
+    console.log("changemode ", msg);
+    users.findOneAndUpdate({_id: monk.id(msg._id)},{$set:{currMode: msg.currMode}});
   });
 
   socket.on('disconnect', function()

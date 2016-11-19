@@ -1,8 +1,8 @@
 
 var socket = io('/player');
-var currMode = getCook('currMode');
-
-
+var currMode = 0;
+var clicks = 0;
+var userid = getCook('userid');
 
 var scene = new THREE.Scene();
 var camera = new THREE.OrthographicCamera(
@@ -39,14 +39,17 @@ var sound;
 
 function tapon(e){
 
+  clicks++;
+
   if(isTouch)
   {
-    socket.emit('hello', {x: e.layerX, y: e.layerY });
+    socket.emit('click', {_id: userid, x: e.layerX, y: e.layerY, clicks: clicks });
   }
   else
   {
-    socket.emit('hello', {x: e.clientX, y: e.clientY });
+    socket.emit('click', {_id: userid, x: e.clientX, y: e.clientY, clicks: clicks });
   }
+
   //a random color
   plane.material.color.r = Math.random();
   plane.material.color.g = Math.random();
@@ -74,11 +77,17 @@ $(document).ready(function(){
 
   if(document.cookie != undefined)
   {
-    //TODO interpret the cookie to set the mode in advance
-    if(currMode == 1)changeMode(1);
-
+    userid = getCook('userid');
   }
 
+  if(userid.length > 0)
+  {
+    socket.emit('hello', userid); //request a database update
+  }
+  else
+  {
+    socket.emit('hello', 'new'); //create a new record
+  }
 
 });
 
@@ -95,18 +104,19 @@ render();
 ////////////////////////////SOCKET STUFF//////////////////////////
 
 
+socket.on('welcome', function (msg) {
+
+  console.log(msg);
+  document.cookie = "userid=" + msg._id;
+  changeMode(msg.currMode);
+  clicks = msg.clicks;
+
+});
+
 socket.on('mode_change', function(msg)
 {
-
-    if(msg == 0 && currMode == 1)
-    {
-      changeMode(0);
-    }
-    else if(msg == 1 && currMode == 0)
-    {
-      changeMode(1);
-    }
-
+  console.log(msg);
+  changeMode(msg);
 });
 
 socket.on('chat_update', function(msg)
@@ -120,20 +130,20 @@ socket.on('chat_update', function(msg)
 
 function changeMode(mode)
 {
-  if(mode == 0)
+  if(mode == 0 && currMode == 1)
   {
     $(canvas).remove()
     currMode = 0;
 
   }
-  else if(mode == 1)
+  else if(mode == 1 && currMode == 0)
   {
     $('#container').empty();
     $('#container').append( canvas );
 
     currMode = 1;
   }
-  document.cookie = "currMode=" + currMode;
+  socket.emit('changemode', {_id: userid, currMode: currMode}); //tell the server that we have changed mode
 }
 
 function getCook(cookiename)
