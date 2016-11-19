@@ -1,6 +1,6 @@
 
 var socket = io('/player');
-var currMode = 0;
+var currMode = getCook('currMode');
 
 
 
@@ -75,7 +75,7 @@ $(document).ready(function(){
   if(document.cookie != undefined)
   {
     //TODO interpret the cookie to set the mode in advance
-    console.log(document.cookie );
+    if(currMode == 1)changeMode(1);
 
   }
 
@@ -100,19 +100,12 @@ socket.on('mode_change', function(msg)
 
     if(msg == 0 && currMode == 1)
     {
-      $(canvas).remove()
-      currMode = 0;
-
+      changeMode(0);
     }
     else if(msg == 1 && currMode == 0)
     {
-      $('#container').empty();
-      $('#container').append( canvas );
-
-      currMode = 1;
+      changeMode(1);
     }
-
-    document.cookie = "currMode=" + currMode;
 
 });
 
@@ -121,3 +114,32 @@ socket.on('chat_update', function(msg)
   $('#container').empty();
   $('#container').append( '<h1>' + msg +'</h1>' );
 });
+
+
+/////////////////////////////////HELPERS///////////////////////////
+
+function changeMode(mode)
+{
+  if(mode == 0)
+  {
+    $(canvas).remove()
+    currMode = 0;
+
+  }
+  else if(mode == 1)
+  {
+    $('#container').empty();
+    $('#container').append( canvas );
+
+    currMode = 1;
+  }
+  document.cookie = "currMode=" + currMode;
+}
+
+function getCook(cookiename)
+{
+  // Get name followed by anything except a semicolon
+  var cookiestring=RegExp(""+cookiename+"[^;]+").exec(document.cookie);
+  // Return everything after the equal sign, or an empty string if the cookie name not found
+  return unescape(!!cookiestring ? cookiestring.toString().replace(/^[^=]+./,"") : "");
+}
