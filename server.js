@@ -17,6 +17,8 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+require('./libs/utils.js'); //include the global utils functions
+
 //simple db using monk & mongodb
 const url = 'localhost:27017/ConditionalLove';
 const monk = require('monk');
@@ -27,18 +29,42 @@ db.then(() => {
 })
 
 const UserData = db.get('UserData');
-const UserData = db.get('UserGroups');
+const UserGroups = db.get('UserGroups');
 const Presets = db.get('Presets');
 const Threads = db.get('Threads');
 
-//list the users
-users.find({}).then((docs) => {
+//check the various collections exist if not create them
 
-  console.log(docs);
+Presets.findOne({type: "play", name: "df"}).then((doc)=> {
+
+  if(doc == null)
+  {
+
+      console.log("creating play defaults");
+      //create one
+      var p = {
+          state: 0,
+          isSplat: false,
+          maxState: 5,
+          envTime: 8
+      }
+
+     Presets.insert({type: "play", name: "df", options: p});
+  }
 
 });
 
-users.remove({}); //clear all the users
+
+
+
+//list the users
+// users.find({}).then((docs) => {
+//
+//   console.log(docs);
+//
+// });
+//
+// users.remove({}); //clear all the users
 
 
 //We define a route handler / that gets called when we hit our website home.
@@ -174,3 +200,230 @@ app.use("/samples",express.static(__dirname + "/samples"));
 http.listen(3000, function(){
   console.log('listening on *:3000');
 });
+
+
+//////////////////////HELPER FUNCTIONS/////////////////////////
+
+/*cli
+
+.cli_mode
+.cli_idx // for callbacks
+
+*/
+
+function permThread(cmd, args, send,  cli){
+
+  //send is the function call to emit
+
+  //disambiguate from temp thread
+
+  var selector = parseFilters(args);
+
+  console.log(selector);
+
+  //var options = parseSuOptions(args, cmd, cli); // we don't need this for the moment
+
+  if(selector){
+
+    selector.thread = generateTempId(5); //needs to be passed back to cli
+    selector.mode = cli.cli_mode;
+
+    //add the thread to the new players
+    //this implies that players can check the database
+
+  //   Meteor.call("addThreadToPlayers", Meteor.user()._id, selector,
+  //     function(e, r){
+  // //only make the call once the thread has been added,
+  //       if(!e){
+  //
+  //         send(options, cli.thread);
+  //         cli.println(r);
+  //
+  //       }else{
+  //         cli.println(e.reason);
+  //       }
+  //       cli.newCursor();
+  //     }
+  //   );
+  }else{
+
+    var thread = generateTempId(5);
+    send(options, thread);
+
+    //TO DO add an extra option for reset here ... perhaps just the same as instant ??
+    //cli.newCursor(); //needs a socket emit here
+  }
+}
+
+
+function parseFilters(args){
+
+  //parses a set of selction filters into a mongo selector
+
+  var selector = {};
+
+  for(var i = 0; i < args.length; ){
+    if(args[i] == "-f" || args[i] == "-n"){
+
+      if(typeof(selector.filters) == "undefined")selector.filters = [];
+
+      (function(){
+        var filter = {};
+        filter.not = args[i] == "-n";
+        args.splice(i,1);
+
+        switch(args[i]){
+
+          case "thread":
+            filter.mode = "thread";
+            filter.thread = cli.thread;
+          break;
+
+          case "play":
+            filter.mode = "play";
+          break;
+
+          case "chat":
+            filter.mode = "chat";
+          break;
+
+          case "state":
+            filter.mode = "state";
+            args.splice(i, 1);
+            filter.state = args[i];
+          break;
+
+          default:
+            if(!isNaN(args[i]))
+            {
+              selector.numPlayers = parseInt(args[i]);
+            }else {
+              UserGroups.findOne({name: args[i]}).then((doc) => {
+                if(doc != null)
+                {
+                  filter.mode = "group";
+                  filter.group = args[i];
+                }
+              })
+            }
+
+        }
+
+        args.splice(i, 1);
+        selector.filters.push(filter);
+
+      })();
+
+    }else if(args[i] == "-g"){
+
+      args.splice(i,1);
+      selector.group = args[i];
+      args.splice(i,1);
+
+    }else {
+      UserGroups.findOne({name: args[i]}).then((doc) => {
+        if(doc != null)
+        {
+          if(typeof(selector.filters) == "undefined")selector.filters = [];
+          var filter = {mode: "group", group: args[i]};
+          selector.filters.push(filter);
+          args.splice(i, 1);
+        }
+        else {
+          i++;
+        }
+      })
+    }
+  }
+
+  if(typeof(selector.filters) == "undefined")selector = false; //there are no selectors
+
+  return selector;
+}
+
+
+//we don't need this for the moment
+
+// function parseSuOptions(args, type, cli){
+//
+//
+//   //parses options into an object
+//
+//   var options = {};
+//
+//   if(args.length == 0){
+//     return options;
+//   }
+//
+//   var i = args.indexOf("-p");
+//
+//   while(i > -1){
+//       args.splice(i,1);
+//       var preset = Presets.findOne({type: type, name: args[i]}).options;
+//       if(preset){
+//         for(var x in preset){
+//           options[x] = preset[x];
+//         }
+//       }
+//       args.splice(i,1);
+//       i = args.indexOf("-p");
+//   }
+//
+//
+//   i = args.indexOf("-time");
+//
+//   if(i > -1){
+//     args.splice(i,1);
+//     options["time"] = parseInt(args[i]);
+//     args.splice(i,1);
+//   }
+//
+//
+//
+//   var params = Object.keys(gCurrentOptions[type]);
+//
+//   for(var x = 0; x < params.length; x++){
+//       i = args.indexOf("-" + params[x]);
+//       if(i > -1){
+//         args.splice(i,1);
+//         if(args[i].substring(0,1) == "["){
+//           //repackage as an array
+//           args[i] = args[i].substring(1, args[i].length -1);
+//           options[params[x]] = args[i].split(",");
+//
+//         }else if(args[i].substring(0,1) == "("){
+//           //repackage as an object
+//           args[i] = args[i].substring(1, args[i].length -1);
+//           var ar = args[i].split(",");
+//           options[params[x]] = {min: parseFloat(ar[0]), max: parseFloat(ar[1])};
+//
+//
+//         }else{
+//           options[params[x]] = isNumber(args[i]) ? parseFloat(args[i]) : args[i];
+//           if(options[params[x]] == "T")options[params[x]] = true; //handle booleans
+//           if(options[params[x]] == "F")options[params[x]] = false;
+//         }
+//
+//         args.splice(i,1);
+//       }
+//   }
+//
+//   i = args.indexOf("-s");
+//
+//   if(i > -1){
+//     args.splice(i,1);
+//     Meteor.call("createPreset", Meteor.user()._id, {type: type, name: args[i], options: options},function(e,r){cli.cmdReturn(e,r)});
+//     args.splice(i,1);
+//
+//   }else{
+//     //cli.newCursor();
+//   }
+//
+//   for(var i in options){
+//     gCurrentOptions[type][i] = options[i]; //copy the changes to current options
+//   }
+//
+//   return options;
+//
+//
+// }

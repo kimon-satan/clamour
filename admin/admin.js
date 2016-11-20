@@ -392,6 +392,9 @@ CLMR_CMDS["_chat"] = function(args,  cli){
 
     cli.cli_mode = "chat";
 
+    var msgobj = {args: args, cli_id: cli.idx, mode: cli.cli_mode,  }
+
+    socket.emit('chat', msgobj)
      permThread(cli.cli_mode, args,
      function(options, th){
        //msgStream.emit('message', {type: 'screenChange', 'value' : {mode: cli.cli_mode}, thread: th});
@@ -853,45 +856,11 @@ function addStep(args, callback, cli, istemp){
 
 }
 
+//MOVE TO SERVER for easy DB access
+//CLI will be tricky ...
+//could make a series of CLI socket receivers
 
 
-function permThread(cmd, args, send,  cli){
-
-  //disambiguate from temp thread
-
-  var selector = parseFilters(args);
-
-  console.log(selector);
-
-  if(selector)cli.thread = generateTempId(5);
-  var options = parseSuOptions(args, cmd, cli);
-
-  if(selector){
-    selector.thread = cli.thread;
-    selector.mode = cli.cli_mode;
-
-    Meteor.call("addThreadToPlayers", Meteor.user()._id, selector,
-      function(e, r){
-  //only make the call once the thread has been added,
-        if(!e){
-
-          send(options, cli.thread);
-          cli.println(r);
-
-        }else{
-          cli.println(e.reason);
-        }
-        cli.newCursor();
-      }
-    );
-  }else{
-
-    send(options, cli.thread);
-
-    //TO DO add an extra option for reset here ... perhaps just the same as instant ??
-    cli.newCursor();
-  }
-}
 
 
 function tempThread(cmd, args, send,  cli){
@@ -938,165 +907,7 @@ function tempThread(cmd, args, send,  cli){
 
 
 
-function parseSuOptions(args, type, cli){
-
-
-  //parses options into an object
-
-  var options = {};
-
-  if(args.length == 0){
-    return options;
-  }
-
-  var i = args.indexOf("-p");
-
-  while(i > -1){
-      args.splice(i,1);
-      var preset = Presets.findOne({type: type, name: args[i]}).options;
-      if(preset){
-        for(var x in preset){
-          options[x] = preset[x];
-        }
-      }
-      args.splice(i,1);
-      i = args.indexOf("-p");
-  }
-
-
-  i = args.indexOf("-time");
-
-  if(i > -1){
-    args.splice(i,1);
-    options["time"] = parseInt(args[i]);
-    args.splice(i,1);
-  }
 
 
 
-  var params = Object.keys(gCurrentOptions[type]);
-
-  for(var x = 0; x < params.length; x++){
-      i = args.indexOf("-" + params[x]);
-      if(i > -1){
-        args.splice(i,1);
-        if(args[i].substring(0,1) == "["){
-          //repackage as an array
-          args[i] = args[i].substring(1, args[i].length -1);
-          options[params[x]] = args[i].split(",");
-
-        }else if(args[i].substring(0,1) == "("){
-          //repackage as an object
-          args[i] = args[i].substring(1, args[i].length -1);
-          var ar = args[i].split(",");
-          options[params[x]] = {min: parseFloat(ar[0]), max: parseFloat(ar[1])};
-
-
-        }else{
-          options[params[x]] = isNumber(args[i]) ? parseFloat(args[i]) : args[i];
-          if(options[params[x]] == "T")options[params[x]] = true; //handle booleans
-          if(options[params[x]] == "F")options[params[x]] = false;
-        }
-
-        args.splice(i,1);
-      }
-  }
-
-  i = args.indexOf("-s");
-
-  if(i > -1){
-    args.splice(i,1);
-    Meteor.call("createPreset", Meteor.user()._id, {type: type, name: args[i], options: options},function(e,r){cli.cmdReturn(e,r)});
-    args.splice(i,1);
-
-  }else{
-    //cli.newCursor();
-  }
-
-  for(var i in options){
-    gCurrentOptions[type][i] = options[i]; //copy the changes to current options
-  }
-
-  return options;
-
-
-}
-
-
-
-
-function parseFilters(args){
-
-  //parses a set of selction filters into a mongo selector
-
-  var selector = {};
-
-  for(var i = 0; i < args.length; ){
-    if(args[i] == "-f" || args[i] == "-n"){
-
-      if(typeof(selector.filters) == "undefined")selector.filters = [];
-
-      (function(){
-        var filter = {};
-        filter.not = args[i] == "-n";
-        args.splice(i,1);
-
-        switch(args[i]){
-
-          case "thread":
-            filter.mode = "thread";
-            filter.thread = cli.thread;
-          break;
-
-          case "play":
-            filter.mode = "play";
-          break;
-
-          case "chat":
-            filter.mode = "chat";
-          break;
-
-          case "state":
-            filter.mode = "state";
-            args.splice(i, 1);
-            filter.state = args[i];
-          break;
-
-          default:
-            if(!isNaN(args[i]))
-            {
-              selector.numPlayers = parseInt(args[i]);
-            }else if(UserGroups.findOne({name: args[i]})){
-              filter.mode = "group";
-              filter.group = args[i];
-            }
-
-        }
-
-        args.splice(i, 1);
-        selector.filters.push(filter);
-
-      })();
-
-    }else if(args[i] == "-g"){
-
-      args.splice(i,1);
-      selector.group = args[i];
-      args.splice(i,1);
-
-    }else if(UserGroups.findOne({name: args[i]})){
-
-      if(typeof(selector.filters) == "undefined")selector.filters = [];
-      var filter = {mode: "group", group: args[i]};
-      selector.filters.push(filter);
-      args.splice(i, 1);
-
-    }else{
-      i++;
-    }
-  }
-
-  if(typeof(selector.filters) == "undefined")selector = false; //there are no selectors
-
-  return selector;
-}
+//TODO Move to server
