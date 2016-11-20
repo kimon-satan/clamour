@@ -57,10 +57,11 @@ h1{
 
 .cmdText{
     background: #000;
-    height:  400px;
+    height:  340px;
+		width: 375px;
+		margin: 2px;
     color: white;
     font-family: monospace;
     font-size: 12px;
-    width: auto;
 
 }

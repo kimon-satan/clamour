@@ -18,7 +18,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 //simple db using monk & mongodb
-const url = 'localhost:27017/mongoTesting';
+const url = 'localhost:27017/ConditionalLove';
 const monk = require('monk');
 const db = monk(url);
 
@@ -26,8 +26,10 @@ db.then(() => {
   console.log('Connected correctly to server')
 })
 
-const users = db.get('usercollection');
-
+const UserData = db.get('UserData');
+const UserData = db.get('UserGroups');
+const Presets = db.get('Presets');
+const Threads = db.get('Threads');
 
 //list the users
 users.find({}).then((docs) => {
@@ -57,115 +59,115 @@ app.use("/samples",express.static(__dirname + "/samples"));
  });
 
 
-var admin = io.of('/admin');
-
-admin.on('connection', function(socket){
-
-  console.log('an admin connected');
-
-  socket.on('command', function(msg)
-  {
-
-    var items = msg.split(" ");
-
-    if(items[0] == "_mode" && msg.length > 1)
-    {
-      players.emit('mode_change', items[1]);
-    }
-    else
-    {
-      players.emit('chat_update', msg);
-    }
-
-    console.log('admin command: ' + msg);
-
-  });
-
-  socket.on('listusers', function(msg)
-  {
-    //admin.emit //a search object which shows all the current users
-  });
-
-  socket.on('disconnect', function()
-  {
-    console.log('an admin disconnected');
-  });
-
-});
+// var admin = io.of('/admin');
+//
+// admin.on('connection', function(socket){
+//
+//   console.log('an admin connected');
+//
+//   socket.on('command', function(msg)
+//   {
+//
+//     var items = msg.split(" ");
+//
+//     if(items[0] == "_mode" && msg.length > 1)
+//     {
+//       players.emit('mode_change', items[1]);
+//     }
+//     else
+//     {
+//       players.emit('chat_update', msg);
+//     }
+//
+//     console.log('admin command: ' + msg);
+//
+//   });
+//
+//   socket.on('listusers', function(msg)
+//   {
+//     //admin.emit //a search object which shows all the current users
+//   });
+//
+//   socket.on('disconnect', function()
+//   {
+//     console.log('an admin disconnected');
+//   });
+//
+// });
 
 
 
 
 //io is everyone
-var players = io.of('/player');
-
-players.on('connection', function(socket)
-{
-
-  console.log('a player connected ' , socket.id);
-
-  socket.on('hello', function(msg)
-  {
-
-    if(msg == "new")
-    {
-      console.log('hello new user');
-      users.insert({currMode: 0, clicks: 0},{}, function(err,res)
-      {
-        if(err) throw err;
-        socket.emit('welcome', res);
-      });
-
-    }
-    else
-    {
-
-      users.findOne(msg,{}, function(err,res)
-      {
-        if(err) throw err;
-        if(!res)
-        {
-          console.log('hello new user');
-          //insert a new user instead
-          users.insert({currMode: 0, clicks: 0},{}, function(err,res)
-          {
-            if(err) throw err;
-            socket.emit('welcome', res);
-          });
-        }
-        else
-        {
-          console.log('welcome back ' + msg);
-          socket.emit('welcome', res);
-        }
-
-      });
-    }
-
-  });
-
-  // generate a new player -somehow get the current mode ?
-
-  socket.on('click', function(msg)
-  {
-    admin.emit('click', msg);
-    users.findOneAndUpdate({_id: monk.id(msg._id)},{$set:{clicks: msg.clicks}});
-  });
-
-  socket.on('changemode', function(msg)
-  {
-    console.log("changemode ", msg);
-    users.findOneAndUpdate({_id: monk.id(msg._id)},{$set:{currMode: msg.currMode}});
-  });
-
-  socket.on('disconnect', function()
-  {
-    console.log('a player disconnected');
-  });
-
-
-
-});
+// var players = io.of('/player');
+//
+// players.on('connection', function(socket)
+// {
+//
+//   console.log('a player connected ' , socket.id);
+//
+//   socket.on('hello', function(msg)
+//   {
+//
+//     if(msg == "new")
+//     {
+//       console.log('hello new user');
+//       users.insert({currMode: 0, clicks: 0},{}, function(err,res)
+//       {
+//         if(err) throw err;
+//         socket.emit('welcome', res);
+//       });
+//
+//     }
+//     else
+//     {
+//
+//       users.findOne(msg,{}, function(err,res)
+//       {
+//         if(err) throw err;
+//         if(!res)
+//         {
+//           console.log('hello new user');
+//           //insert a new user instead
+//           users.insert({currMode: 0, clicks: 0},{}, function(err,res)
+//           {
+//             if(err) throw err;
+//             socket.emit('welcome', res);
+//           });
+//         }
+//         else
+//         {
+//           console.log('welcome back ' + msg);
+//           socket.emit('welcome', res);
+//         }
+//
+//       });
+//     }
+//
+//   });
+//
+//   // generate a new player -somehow get the current mode ?
+//
+//   socket.on('click', function(msg)
+//   {
+//     admin.emit('click', msg);
+//     users.findOneAndUpdate({_id: monk.id(msg._id)},{$set:{clicks: msg.clicks}});
+//   });
+//
+//   socket.on('changemode', function(msg)
+//   {
+//     console.log("changemode ", msg);
+//     users.findOneAndUpdate({_id: monk.id(msg._id)},{$set:{currMode: msg.currMode}});
+//   });
+//
+//   socket.on('disconnect', function()
+//   {
+//     console.log('a player disconnected');
+//   });
+//
+//
+//
+// });
 
 
 //We make the http server listen on port 3000.
