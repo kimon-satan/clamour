@@ -1,25 +1,6 @@
 
-var socket = io('/admin');
-var numMessages = 0;
 
-$('form').submit(
-  function()
-  {
-    var msg = $('#m').val();
-    socket.emit('command', msg);
-    $('#m').val('');
-    return false;
-  }
-);
 
-socket.on('click', function(msg){
-  numMessages += 1;
-  if(numMessages > 10){
-    $('#messages').empty();
-    numMessages = 0;
-  }
-  $('#messages').append('<li>'  + msg._id + ": " + msg.clicks +  " (" + msg.x + "," + msg.y + ' )</li>')
-});
 
 var CLMR_CMDS = {}
 
@@ -31,6 +12,26 @@ var gCurrentOptions = {};
 var gProcs = {};
 
 var idxs = [];
+
+var socket = io('/admin');
+
+socket.on('server_report', function(msg){
+
+  if(msg.msg != undefined)
+  {
+    gClis[msg.id].println(msg.msg);
+  }
+
+  if(msg.thread != undefined)
+  {
+    console.log("action")
+    gClis[msg.id].thread = msg.thread;
+  }
+
+  gClis[msg.id].newCursor();
+
+});
+
 
 $(document).ready(function(){
 
@@ -131,9 +132,9 @@ function CLI(idx, mode, thread){
 
     if(e.keyCode == 13){
       this.newCursor();
-      msgStream.emit('message', { type: 'chatNewLine', value:  "", thread: this.thread});
+      socket.emit('cmd', { cmd: 'chat_newline', value:  "", thread: this.thread});
     }else{
-      msgStream.emit('message', { type: 'chatUpdate', value:  cmd, thread: this.thread});
+      socket.emit('cmd', { cmd: 'chat_update', value:  cmd, thread: this.thread});
     }
 
   }
@@ -392,14 +393,9 @@ CLMR_CMDS["_chat"] = function(args,  cli){
 
     cli.cli_mode = "chat";
 
-    var msgobj = {args: args, cli_id: cli.idx, mode: cli.cli_mode,  }
+    var msgobj = {cmd: "chat", args: args, cli_id: cli.idx, mode: cli.cli_mode}
 
-    socket.emit('chat', msgobj)
-     permThread(cli.cli_mode, args,
-     function(options, th){
-       //msgStream.emit('message', {type: 'screenChange', 'value' : {mode: cli.cli_mode}, thread: th});
-       //msgStream.emit('message', {type: 'chatClear', 'value':  "", thread: th});
-   }, cli);
+    socket.emit('cmd', msgobj);
 
 }
 
@@ -761,7 +757,7 @@ CLMR_CMDS["_thread"] = function(args,  cli){
 CLMR_CMDS["_c"] = function(args,  cli){
 
     if(cli.cli_mode == "chat"){
-      msgStream.emit('message', {type: 'chatClear', 'value':  "", thread: cli.thread});
+      socket.emit('cmd', { cmd: 'chat_clear', value:  cmd, thread: cli.thread});
     }
 
     cli.newCursor();

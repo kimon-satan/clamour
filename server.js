@@ -57,16 +57,6 @@ Presets.findOne({type: "play", name: "df"}).then((doc)=> {
 
 
 
-//list the users
-// users.find({}).then((docs) => {
-//
-//   console.log(docs);
-//
-// });
-//
-// users.remove({}); //clear all the users
-
-
 //We define a route handler / that gets called when we hit our website home.
 
 app.use("/admin",express.static(__dirname + "/admin"));
@@ -85,115 +75,138 @@ app.use("/samples",express.static(__dirname + "/samples"));
  });
 
 
-// var admin = io.of('/admin');
-//
-// admin.on('connection', function(socket){
-//
-//   console.log('an admin connected');
-//
-//   socket.on('command', function(msg)
-//   {
-//
-//     var items = msg.split(" ");
-//
-//     if(items[0] == "_mode" && msg.length > 1)
-//     {
-//       players.emit('mode_change', items[1]);
-//     }
-//     else
-//     {
-//       players.emit('chat_update', msg);
-//     }
-//
-//     console.log('admin command: ' + msg);
-//
-//   });
-//
-//   socket.on('listusers', function(msg)
-//   {
-//     //admin.emit //a search object which shows all the current users
-//   });
-//
-//   socket.on('disconnect', function()
-//   {
-//     console.log('an admin disconnected');
-//   });
-//
-// });
+var admin = io.of('/admin');
+
+admin.on('connection', function(socket){
+
+  console.log('an admin connected');
+
+  socket.on('cmd', function(msg)
+  {
+
+    //console.log(msg);
+
+    if(msg.cmd == "chat")
+    {
+      permThread('chat', msg.args, {id: msg.cli_id, mode: msg.mode}, function(population){
+
+        population.forEach(function(e){
+          console.log(e);
+          players.to(e).emit('cmd', {cmd: 'change_mode', value: 'chat'});
+        });
+
+      });
+    }
+    else if(msg.cmd == "chat_update")
+    {
+      Threads.find({thread: msg.thread}, 'population').then((docs)=>{
+
+        if(docs == null)return;
+
+        docs[0].population.forEach(function(e){
+          players.to(e).emit('cmd', {cmd: 'chat_update', value: msg.value});
+        });
+
+      });
+    }
+    else if(msg.cmd == "chat_clear")
+    {
+      Threads.find({thread: msg.thread}, 'population').then((docs)=>{
+
+        if(docs == null)return;
+
+        docs[0].population.forEach(function(e){
+          players.to(e).emit('cmd', {cmd: 'chat_clear'});
+        });
+
+      });
+    }
+    else if(msg.cmd == "chat_newline")
+    {
+      Threads.find({thread: msg.thread}, 'population').then((docs)=>{
+
+        if(docs == null)return;
+
+        docs[0].population.forEach(function(e){
+          players.to(e).emit('cmd', {cmd: 'chat_newline'});
+        });
+
+      });
+    }
+
+    console.log('admin command: ' , msg);
+
+  });
+
+  socket.on('disconnect', function()
+  {
+    console.log('an admin disconnected');
+  });
+
+});
 
 
 
 
 //io is everyone
-// var players = io.of('/player');
-//
-// players.on('connection', function(socket)
-// {
-//
-//   console.log('a player connected ' , socket.id);
-//
-//   socket.on('hello', function(msg)
-//   {
-//
-//     if(msg == "new")
-//     {
-//       console.log('hello new user');
-//       users.insert({currMode: 0, clicks: 0},{}, function(err,res)
-//       {
-//         if(err) throw err;
-//         socket.emit('welcome', res);
-//       });
-//
-//     }
-//     else
-//     {
-//
-//       users.findOne(msg,{}, function(err,res)
-//       {
-//         if(err) throw err;
-//         if(!res)
-//         {
-//           console.log('hello new user');
-//           //insert a new user instead
-//           users.insert({currMode: 0, clicks: 0},{}, function(err,res)
-//           {
-//             if(err) throw err;
-//             socket.emit('welcome', res);
-//           });
-//         }
-//         else
-//         {
-//           console.log('welcome back ' + msg);
-//           socket.emit('welcome', res);
-//         }
-//
-//       });
-//     }
-//
-//   });
-//
-//   // generate a new player -somehow get the current mode ?
-//
-//   socket.on('click', function(msg)
-//   {
-//     admin.emit('click', msg);
-//     users.findOneAndUpdate({_id: monk.id(msg._id)},{$set:{clicks: msg.clicks}});
-//   });
-//
-//   socket.on('changemode', function(msg)
-//   {
-//     console.log("changemode ", msg);
-//     users.findOneAndUpdate({_id: monk.id(msg._id)},{$set:{currMode: msg.currMode}});
-//   });
-//
-//   socket.on('disconnect', function()
-//   {
-//     console.log('a player disconnected');
-//   });
-//
-//
-//
-// });
+var players = io.of('/player');
+
+players.on('connection', function(socket)
+{
+
+  console.log('a player connected ');
+
+  socket.on('hello', function(msg)
+  {
+
+    if(msg == "new")
+    {
+
+      UserData.insert({currMode: 0, clicks: 0},{}, function(err,res)
+      {
+        if(err) throw err;
+        console.log('hello new user: ' + res._id);
+        socket.join(res._id);
+        socket.emit('welcome', res);
+      });
+
+    }
+    else
+    {
+
+      UserData.findOne(msg,{}, function(err,res)
+      {
+        if(err) throw err;
+        if(!res)
+        {
+
+          //insert a new user instead
+          UserData.insert({currMode: 0, clicks: 0},{}, function(err,res)
+          {
+            if(err) throw err;
+            console.log('hello new user: ' + res._id);
+            socket.join(res._id);
+            socket.emit('welcome', res);
+          });
+        }
+        else
+        {
+          console.log('welcome back user: ' + msg);
+          socket.join(res._id);
+          socket.emit('welcome', res);
+        }
+
+      });
+    }
+
+  });
+
+  socket.on('disconnect', function()
+  {
+    console.log('a player disconnected');
+  });
+
+});
 
 
 //We make the http server listen on port 3000.
@@ -204,6 +217,8 @@ http.listen(3000, function(){
 
 //////////////////////HELPER FUNCTIONS/////////////////////////
 
+//players will need to check the threads database at least
+
 /*cli
 
 .cli_mode
@@ -211,7 +226,73 @@ http.listen(3000, function(){
 
 */
 
-function permThread(cmd, args, send,  cli){
+
+isNumber = function(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+function selectPlayers(args, cb){
+
+	console.log("selecting players ... ");
+
+	var searchObj = generateSearchObj(args);
+
+	UserData.find(searchObj, '_id').then((docs) => {
+  // only the name field will be selected
+
+    var uids = [];
+
+    docs.forEach(function(e)
+    {
+      uids.push(e._id);
+    });
+
+    if(typeof(args.numPlayers) != "undefined"){
+      shuffleArray(uids);
+      var numPlayers = Math.min(uids.length , args.numPlayers);
+      uids = uids.slice(0,numPlayers);
+    }
+
+    cb(uids);
+
+  });
+
+}
+
+function addThreadToPlayers(args, cb){
+
+		if(typeof(args) == "undefined")return false;
+
+		selectPlayers(args, function(uids){
+
+      var msg =  args.mode + " with " + uids.length + " players with activeThread: " + args.thread; //this message needs to change
+
+
+  		Threads.insert({thread: args.thread, population: uids},{}, function(){
+
+        if(typeof(args.group) != "undefined")
+        {
+          if(UserGroups.count({name: args.group}) > 0)
+          {
+            UserGroups.update({name: args.group}, {$set: {members: uids}});
+          }
+          else
+          {
+            UserGroups.insert({name: args.group, members: uids});
+          }
+
+            msg += "\n these players will now be called " + args.group;
+        }
+
+        cb(msg);
+
+      });
+
+    });
+
+};
+
+function permThread(cmd, args, cli, send){
 
   //send is the function call to emit
 
@@ -219,17 +300,24 @@ function permThread(cmd, args, send,  cli){
 
   var selector = parseFilters(args);
 
-  console.log(selector);
-
   //var options = parseSuOptions(args, cmd, cli); // we don't need this for the moment
 
   if(selector){
 
     selector.thread = generateTempId(5); //needs to be passed back to cli
-    selector.mode = cli.cli_mode;
+    selector.mode = cli.mode;
 
-    //add the thread to the new players
-    //this implies that players can check the database
+    addThreadToPlayers(selector, function(msg){
+
+      console.log(msg);
+      admin.emit('server_report', {msg: msg, id: cli.id, thread: selector.thread });
+
+      Threads.findOne({thread: selector.thread}, 'population').then((docs)=>{
+          send(docs.population);
+      });
+
+    });
+
 
   //   Meteor.call("addThreadToPlayers", Meteor.user()._id, selector,
   //     function(e, r){
@@ -245,13 +333,11 @@ function permThread(cmd, args, send,  cli){
   //       cli.newCursor();
   //     }
   //   );
+
   }else{
 
-    var thread = generateTempId(5);
-    send(options, thread);
+    admin.emit('server_report', {id: cli.id}); //empty response
 
-    //TO DO add an extra option for reset here ... perhaps just the same as instant ??
-    //cli.newCursor(); //needs a socket emit here
   }
 }
 
@@ -297,14 +383,12 @@ function parseFilters(args){
             if(!isNaN(args[i]))
             {
               selector.numPlayers = parseInt(args[i]);
-            }else {
-              UserGroups.findOne({name: args[i]}).then((doc) => {
-                if(doc != null)
-                {
-                  filter.mode = "group";
-                  filter.group = args[i];
-                }
-              })
+            }
+            else if(UserGroups.count({name: args[i]}) > 0)
+            {
+              filter.mode = "group";
+              filter.group = args[i];
+
             }
 
         }
@@ -320,19 +404,15 @@ function parseFilters(args){
       selector.group = args[i];
       args.splice(i,1);
 
-    }else {
-      UserGroups.findOne({name: args[i]}).then((doc) => {
-        if(doc != null)
-        {
+    }else if(UserGroups.count({name: args[i]}) > 0){
+
           if(typeof(selector.filters) == "undefined")selector.filters = [];
           var filter = {mode: "group", group: args[i]};
           selector.filters.push(filter);
           args.splice(i, 1);
-        }
-        else {
-          i++;
-        }
-      })
+
+    }else {
+        i++;
     }
   }
 

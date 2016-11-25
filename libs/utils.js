@@ -54,6 +54,62 @@ generateTempId  = function(n){
 
 }
 
+shuffleArray = function(o){ //v1.0
+    for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+    return o;
+}
+
+generateSearchObj = function(args){
+
+	var searchObj = {};
+
+	if(typeof(args.filters) == "undefined")args.filters = [];
+
+	for(var i = 0; i < args.filters.length; i++){
+
+	var filter = args.filters[i];
+
+	switch(filter.mode){
+
+		case "chat":
+			searchObj.view = filter.not ? {$ne: filter.mode} : filter.mode;
+		break;
+		case "thread":
+			searchObj.activeThreads = filter.not  ? {$nin: [filter.thread]} : {$in: [filter.thread]}
+		break;
+		case "state":
+			searchObj.state = filter.not ? {$ne: parseInt(filter.state)} : parseInt(filter.state);
+		break;
+		case "group":
+			if(typeof(searchObj.groups) == "undefined"){
+				searchObj.groups = filter.not ?  {$nin: [filter.group]} : {$in: [filter.group]}
+			}else{
+
+				if(filter.not){
+					if(typeof(searchObj.groups['$nin']) == "undefined"){
+						searchObj.groups['$nin'] = [filter.group];
+					}else{
+						searchObj.groups['$nin'].push(filter.group);
+					}
+
+				}else{
+
+					if(typeof(searchObj.groups.$in) == "undefined"){
+						searchObj.groups['$in'] = [filter.group];
+					}else{
+						searchObj.groups['$in'].push(filter.group);
+					}
+				}
+			}
+		break;
+		}
+
+	}
+
+	return searchObj;
+
+}
+
 /* -------------------------------------MAPPING -----------------------------------------*/
 
 linlin = function(input, i_min, i_max, o_min, o_max)

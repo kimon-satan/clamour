@@ -1,7 +1,6 @@
 
 var socket = io('/player');
-var currMode = 0;
-var clicks = 0;
+var currMode = "wait";
 var userid = getCook('userid');
 
 var scene = new THREE.Scene();
@@ -113,37 +112,59 @@ socket.on('welcome', function (msg) {
 
 });
 
-socket.on('mode_change', function(msg)
+socket.on('cmd', function(msg)
 {
-  console.log(msg);
-  changeMode(msg);
+        console.log(msg);
+  if(msg.cmd == "change_mode")
+  {
+      changeMode(msg.value);
+  }
+  else if (msg.cmd == "chat_update")
+  {
+    $('#container>p:last-child').remove();
+    $('#container').append( '<p>' + msg.value +'</p>' );
+  }
+  else if(msg.cmd == 'chat_newline')
+  {
+    $('#container').append( '<p> </p>' );
+  }
+  else if(msg.cmd == 'chat_clear')
+  {
+    $('#container').clear();
+  }
+
 });
 
-socket.on('chat_update', function(msg)
-{
-  $('#container').empty();
-  $('#container').append( '<h1>' + msg +'</h1>' );
-});
 
 
 /////////////////////////////////HELPERS///////////////////////////
 
 function changeMode(mode)
 {
-  if(mode == 0 && currMode == 1)
+
+  if(currMode == mode)return;
+
+  if(currMode == "play")
   {
     $(canvas).remove()
-    currMode = 0;
 
   }
-  else if(mode == 1 && currMode == 0)
+
+  if(mode == "play")
   {
     $('#container').empty();
     $('#container').append( canvas );
-
-    currMode = 1;
   }
-  socket.emit('changemode', {_id: userid, currMode: currMode}); //tell the server that we have changed mode
+
+  if(mode == "chat")
+  {
+    $('#container').empty();
+    $('#container').append( '<h1>' + "chat" +'</h1>' );
+  }
+
+  currMode = mode;
+
+  socket.emit('update_user', {_id: userid, currMode: currMode}); //tell the server that we have changed mode
 }
 
 function getCook(cookiename)
