@@ -495,29 +495,13 @@ CLMR_CMDS["_remove"] = function(args,  cli){
 
 }
 
-CLMR_CMDS["_lplayers"] = function(args, cli){
+CLMR_CMDS["_lplayers"] = function(args, cli)
+{
 
-  //add filters and info args later if desired
-  var selector = parseFilters(args);
-  if(!selector)selector = {};
-  var so = generateSearchObj(selector);
+  var msgobj = {cmd: "list_players", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
 
-  UserData.find(so).forEach(function(e){
-    var str = e._id.substring(0,5) + ",  view: " + e.view;
+  socket.emit('cmd', msgobj);
 
-    if(cli.cli_mode == "play")
-    {
-      str += ", state: " + e.state;
-      str += ", isSplat: " + e.isSplat;
-      str += ", maxState: " + e.maxState;
-      str += ", envTime: " + e.envTime;
-    }
-
-    cli.println(str);
-
-  });
-
-  cli.newCursor();
 }
 
 CLMR_CMDS["_iplayers"] =  function(args, cli){

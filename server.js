@@ -139,6 +139,14 @@ admin.on('connection', function(socket){
 
       });
     }
+    else if(msg.cmd == "list_players")
+    {
+      listPlayers( msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(r){
+
+          admin.emit('server_report', {id: msg.cli_id, thread: msg.thread, msg: r}); //same thread response
+
+      })
+    }
 
     console.log('admin command: ' , msg);
 
@@ -161,14 +169,24 @@ players.on('connection', function(socket)
 {
 
   console.log('a player connected ');
+  socket.emit("whoareyou", "?")
 
   socket.on('hello', function(msg)
   {
 
+    var usrobj = {
+        state: 0,
+        isSplat: false,
+        maxState: 5,
+        envTime: 8,
+        mode: "wait"
+    }
+
+
     if(msg == "new")
     {
 
-      UserData.insert({currMode: "wait"},{}, function(err,res)
+      UserData.insert(usrobj,{}, function(err,res)
       {
         if(err) throw err;
         console.log('hello new user: ' + res._id);
@@ -186,8 +204,9 @@ players.on('connection', function(socket)
         if(!res)
         {
 
+
           //insert a new user instead
-          UserData.insert({currMode: "wait"},{}, function(err,res)
+          UserData.insert(usrobj, {}, function(err,res)
           {
             if(err) throw err;
             console.log('hello new user: ' + res._id);
@@ -207,6 +226,11 @@ players.on('connection', function(socket)
 
   });
 
+  socket.on('update_user', function(msg)
+  {
+    UserData.update({_id: msg._id},{$set: msg});
+  });
+
   socket.on('disconnect', function()
   {
     console.log('a player disconnected');
@@ -223,6 +247,39 @@ http.listen(3000, function(){
 
 //////////////////////HELPER FUNCTIONS/////////////////////////
 
+
+function listPlayers(args, cli, cb)
+{
+  var selector = parseFilters(args);
+  if(!selector)selector = {};
+  var so = generateSearchObj(selector);
+  var results = "";
+
+  UserData.find(so).then((docs)=>
+  {
+
+    docs.forEach(function(e)
+    {
+      console.log(e);
+      var id = String(e._id);
+      var str = id.substring(0,3) + "..." + id.substring(id.length -3, id.length) + ",  mode: " + e.mode;
+
+      if(cli.mode == "play")
+      {
+        str += ", state: " + e.state;
+        str += ", isSplat: " + e.isSplat;
+        str += ", maxState: " + e.maxState;
+        str += ", envTime: " + e.envTime;
+      }
+
+      results += str + "\n";
+
+    });
+
+    cb(results);
+
+  });
+}
 
 
 function selectPlayers(args, cb){

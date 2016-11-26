@@ -72,21 +72,7 @@ $(document).ready(function(){
   sound.init();
   sound.loadSample("/samples/cat.wav");
 
-  var cookies = document.cookies;
-
-  if(document.cookie != undefined)
-  {
-    userid = getCook('userid');
-  }
-
-  if(userid.length > 0)
-  {
-    socket.emit('hello', userid); //request a database update
-  }
-  else
-  {
-    socket.emit('hello', 'new'); //create a new record
-  }
+  //whoami();
 
 });
 
@@ -99,16 +85,43 @@ function render()
 
 render();
 
+function whoami(){
+
+  console.log("whoami");
+
+  var cookies = document.cookies;
+
+  if(document.cookie != undefined)
+  {
+    userid = getCook('userid');
+  }
+
+  if(userid.length > 0 && userid != "undefined")
+  {
+    console.log("uid: " + userid)
+    socket.emit('hello', userid); //request a database update
+  }
+  else
+  {
+    socket.emit('hello', 'new'); //create a new record
+  }
+}
+
 
 ////////////////////////////SOCKET STUFF//////////////////////////
 
+socket.on("whoareyou", function(msg){
+  //location.reload(true);
+
+  whoami();
+});
 
 socket.on('welcome', function (msg) {
 
-  console.log(msg);
+  console.log("welcome: " , msg);
   document.cookie = "userid=" + msg._id;
-  changeMode(msg.currMode);
-  clicks = msg.clicks;
+  userid = msg._id;
+  changeMode(msg.mode);
 
 });
 
@@ -174,7 +187,7 @@ function changeMode(mode)
 
   currMode = mode;
 
-  socket.emit('update_user', {_id: userid, currMode: currMode}); //tell the server that we have changed mode
+  socket.emit('update_user', {_id: userid, mode: currMode}); //tell the server that we have changed mode
 }
 
 function getCook(cookiename)
