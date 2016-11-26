@@ -283,6 +283,10 @@ Envelope2 = function(attTime, decTime, sampleRate)
 
 //////////////////////////////////////////////////////////////////
 
+function isNumber(n)
+{
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
 
 
 

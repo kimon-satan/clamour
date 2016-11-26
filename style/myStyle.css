@@ -30,6 +30,10 @@ h1{
 
 }
 
+#chatContainer{
+	text-align: center;
+	margin: 5px;
+}
 
 .largeText{
 	font-size: 35px;

@@ -1,6 +1,6 @@
 
 var socket = io('/player');
-var currMode = "wait";
+var currMode = "";
 var userid = getCook('userid');
 
 var scene = new THREE.Scene();
@@ -121,16 +121,16 @@ socket.on('cmd', function(msg)
   }
   else if (msg.cmd == "chat_update")
   {
-    $('#container>p:last-child').remove();
-    $('#container').append( '<p>' + msg.value +'</p>' );
+    $('#chatContainer>div.largeText:last-child').remove();
+    $('#chatContainer').append( '<div class="largeText">' + msg.value +'</div>' );
   }
   else if(msg.cmd == 'chat_newline')
   {
-    $('#container').append( '<p> </p>' );
+    $('#chatContainer').append( '<div class="largeText"></div>' );
   }
   else if(msg.cmd == 'chat_clear')
   {
-    $('#container').clear();
+    $('#chatContainer').empty();
   }
 
 });
@@ -146,8 +146,7 @@ function changeMode(mode)
 
   if(currMode == "play")
   {
-    $(canvas).remove()
-
+    $(canvas).remove();
   }
 
   if(mode == "play")
@@ -159,7 +158,18 @@ function changeMode(mode)
   if(mode == "chat")
   {
     $('#container').empty();
-    $('#container').append( '<h1>' + "chat" +'</h1>' );
+    $('#container').append( '<div id="chatContainer"></div>' );
+  }
+
+  if(mode == "wait")
+  {
+    $('#container').empty();
+    $('#container').append( '<div id="chatContainer"><h1>Conditional Love</h1><h2>Please wait for the performance to begin ...</h2></div>' );
+  }
+
+  if(mode == "blank")
+  {
+    $('#container').empty();
   }
 
   currMode = mode;

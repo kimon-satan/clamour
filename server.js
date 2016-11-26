@@ -33,6 +33,12 @@ const UserGroups = db.get('UserGroups');
 const Presets = db.get('Presets');
 const Threads = db.get('Threads');
 
+
+//clear the Databases - temporary
+UserData.remove({});
+Threads.remove({});
+UserGroups.remove({});
+
 //check the various collections exist if not create them
 
 Presets.findOne({type: "play", name: "df"}).then((doc)=> {
@@ -86,13 +92,13 @@ admin.on('connection', function(socket){
 
     //console.log(msg);
 
-    if(msg.cmd == "chat")
+    if(msg.cmd == "change_mode")
     {
-      permThread('chat', msg.args, {id: msg.cli_id, mode: msg.mode}, function(population){
+      permThread(msg.mode , msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(population){
 
         population.forEach(function(e){
           console.log(e);
-          players.to(e).emit('cmd', {cmd: 'change_mode', value: 'chat'});
+          players.to(e).emit('cmd', {cmd: 'change_mode', value: msg.mode});
         });
 
       });
@@ -162,7 +168,7 @@ players.on('connection', function(socket)
     if(msg == "new")
     {
 
-      UserData.insert({currMode: 0, clicks: 0},{}, function(err,res)
+      UserData.insert({currMode: "wait"},{}, function(err,res)
       {
         if(err) throw err;
         console.log('hello new user: ' + res._id);
@@ -181,7 +187,7 @@ players.on('connection', function(socket)
         {
 
           //insert a new user instead
-          UserData.insert({currMode: 0, clicks: 0},{}, function(err,res)
+          UserData.insert({currMode: "wait"},{}, function(err,res)
           {
             if(err) throw err;
             console.log('hello new user: ' + res._id);
@@ -217,19 +223,7 @@ http.listen(3000, function(){
 
 //////////////////////HELPER FUNCTIONS/////////////////////////
 
-//players will need to check the threads database at least
 
-/*cli
-
-.cli_mode
-.cli_idx // for callbacks
-
-*/
-
-
-isNumber = function(n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
-}
 
 function selectPlayers(args, cb){
 
@@ -318,25 +312,13 @@ function permThread(cmd, args, cli, send){
 
     });
 
-
-  //   Meteor.call("addThreadToPlayers", Meteor.user()._id, selector,
-  //     function(e, r){
-  // //only make the call once the thread has been added,
-  //       if(!e){
-  //
-  //         send(options, cli.thread);
-  //         cli.println(r);
-  //
-  //       }else{
-  //         cli.println(e.reason);
-  //       }
-  //       cli.newCursor();
-  //     }
-  //   );
-
   }else{
 
-    admin.emit('server_report', {id: cli.id}); //empty response
+    admin.emit('server_report', {id: cli.id, thread: cli.thread}); //same thread response
+
+    Threads.findOne({thread: cli.thread}, 'population').then((docs)=>{
+        send(docs.population);
+    });
 
   }
 }

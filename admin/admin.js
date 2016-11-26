@@ -378,12 +378,11 @@ CLMR_CMDS["_exit"] = function(args, cli){
 
 CLMR_CMDS["_wait"] = function(args,  cli){
 
-    // cli.cli_mode = "wait";
-    //
-    // permThread(cli.cli_mode, args,
-    // function(options, th){
-    //   msgStream.emit('message', {type: 'screenChange', 'value' : {mode: cli.cli_mode}, thread: th});
-    // }, cli);
+  cli.cli_mode = "wait";
+
+  var msgobj = {cmd: "change_mode", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
+
+  socket.emit('cmd', msgobj);
 
 }
 
@@ -391,11 +390,11 @@ CLMR_CMDS["_wait"] = function(args,  cli){
 
 CLMR_CMDS["_chat"] = function(args,  cli){
 
-    cli.cli_mode = "chat";
+  cli.cli_mode = "chat";
 
-    var msgobj = {cmd: "chat", args: args, cli_id: cli.idx, mode: cli.cli_mode}
+  var msgobj = {cmd: "change_mode", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
 
-    socket.emit('cmd', msgobj);
+  socket.emit('cmd', msgobj);
 
 }
 
@@ -405,14 +404,14 @@ CLMR_CMDS["_blank"] = function(args, cli){
 
   cli.cli_mode = "blank";
 
-  var cb = function(options, th){
-            var pkg = {options: options, mode: cli.cli_mode};
-            msgStream.emit('message', {type: 'screenChange', 'value' : pkg, thread: th});
-          };
+  var msgobj = {cmd: "change_mode", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
 
-  if(!addStep(args, cb, cli)){
-    permThread(cli.cli_mode, args, cb, cli);
-  }
+  socket.emit('cmd', msgobj);
+
+  //work out how to do this later
+  // if(!addStep(args, cb, cli)){
+  //   permThread(cli.cli_mode, args, cb, cli);
+  // }
 
 }
 
@@ -422,14 +421,9 @@ CLMR_CMDS["_play"] = function(args,  cli){
 
   cli.cli_mode = "play";
 
-  var cb =   function(options, th){
-      var pkg = {options: options, mode: cli.cli_mode};
-      msgStream.emit('message', {type: 'screenChange', 'value' : pkg, thread: th});
-  }
+  var msgobj = {cmd: "change_mode", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
 
-  if(!addStep(args, cb, cli)){ // checks for stepped change first
-    permThread(cli.cli_mode, args, cb, cli); //otherwise instant change
-  }
+  socket.emit('cmd', msgobj);
 
 }
 
@@ -757,7 +751,7 @@ CLMR_CMDS["_thread"] = function(args,  cli){
 CLMR_CMDS["_c"] = function(args,  cli){
 
     if(cli.cli_mode == "chat"){
-      socket.emit('cmd', { cmd: 'chat_clear', value:  cmd, thread: cli.thread});
+      socket.emit('cmd', { cmd: 'chat_clear', value: "" , thread: cli.thread});
     }
 
     cli.newCursor();
