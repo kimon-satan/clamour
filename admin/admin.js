@@ -23,17 +23,19 @@ socket.on('server_report', function(msg){
     gClis[msg.id].thread = msg.thread;
   }
 
-  console.log(msg);
-
   if(msg.msg != undefined && msg.isproc == undefined)
   {
     gClis[msg.id].println(msg.msg);
-    gClis[msg.id].newCursor();
+    gClis[msg.id].newCursor(true);
   }
   else if (msg.msg != undefined && msg.isproc != undefined)
   {
     gClis[msg.id].clear();
     gClis[msg.id].replaceln(msg.msg);
+  }
+  else
+  {
+    gClis[msg.id].newCursor(true);
   }
 
 
@@ -338,18 +340,19 @@ CLMR_CMDS["_startMisty"]  = function(args, cli){
 },
 
 CLMR_CMDS["_killProcs"] = function(args, cli){
-  // for (var i in gProcs){
-  //   clearInterval(gProcs[i].loop);
-  // }
-  //
-  // gProcs = [];
-  //
-  // for(var i in gClis){
-  //   if(typeof(gClis[i].proc) != "undefined"){
-  //     gClis[i].proc = undefined;
-  //     gClis[i].newCursor();
-  //   }
-  // }
+
+  Object.keys(gProcs).forEach(function(e){
+    clearInterval(gProcs[e].loop);
+  })
+
+   gProcs = {};
+
+  Object.keys(gClis).forEach(function(e){
+    if(typeof(gClis[e].proc) != "undefined"){
+      gClis[e].proc = undefined;
+      gClis[e].newCursor();
+    }
+  });
 
   cli.newCursor();
 }
@@ -513,17 +516,17 @@ CLMR_CMDS["_remove"] = function(args,  cli){
 
 CLMR_CMDS["_lplayers"] = function(args, cli)
 {
-
-
-
   var msgobj = {cmd: "list_players", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
-
-  console.log(msgobj);
   socket.emit('cmd', msgobj);
 
 }
 
 CLMR_CMDS["_iplayers"] =  function(args, cli){
+
+  if(cli.proc != undefined){
+    cli.println("busy");
+    return;
+  }
 
   var proc = {};
   proc.id = generateTempId(8);
@@ -532,7 +535,7 @@ CLMR_CMDS["_iplayers"] =  function(args, cli){
     var msgobj = {cmd: "list_players", args: args, cli_id: cli.idx, mode: cli.cli_mode, isproc: true, thread: cli.thread}
     socket.emit('cmd', msgobj);
 
-  }, 500);
+  }, 2000);
 
   gProcs[proc.id] = proc;
   cli.proc = proc;
@@ -544,39 +547,27 @@ CLMR_CMDS["_iplayers"] =  function(args, cli){
 
 CLMR_CMDS["_lthreads"] = function(args, cli){
 
-  Threads.find({}).forEach(function(e){
-
-    var str = e.thread + " :: " + e.population;
-    if(e.thread == cli.thread)str += " *";
-    if(e.thread == cli.temp_thread)str += " -";
-    cli.println(str);
-
-  });
-
-  cli.newCursor();
+  var msgobj = {cmd: "list_threads", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
+  socket.emit('cmd', msgobj);
 
 }
 
 
 CLMR_CMDS["_ithreads"] = function(args, cli){
 
-  var proc = {};
+  if(cli.proc != undefined){
+    cli.println("busy");
+    return;
+  }
 
+  var proc = {};
   proc.id = generateTempId(8);
   proc.loop = setInterval(function(){
 
-    $('#cmdText_' + cli.idx).val("");
+    var msgobj = {cmd: "list_threads", args: args, cli_id: cli.idx, mode: cli.cli_mode, isproc: true, thread: cli.thread}
+    socket.emit('cmd', msgobj);
 
-    Threads.find({}).forEach(function(e){
-
-      var str = e.thread + " :: " + e.population;
-      if(e.thread == cli.thread)str += " *";
-      if(e.thread == cli.temp_thread)str += " -";
-      cli.println(str);
-
-    });
-
-  }, 500);
+  }, 2000);
 
   gProcs[proc.id] = proc;
   cli.proc = proc;
@@ -585,12 +576,12 @@ CLMR_CMDS["_ithreads"] = function(args, cli){
 
 CLMR_CMDS["_lgroups"] = function(args, cli){
 
-  UserGroups.find({}).forEach(function(e){
-
-    var str = e.name + " :: " + e.members.length;
-    cli.println(str);
-
-  });
+  // UserGroups.find({}).forEach(function(e){
+  //
+  //   var str = e.name + " :: " + e.members.length;
+  //   cli.println(str);
+  //
+  // });
 
   cli.newCursor();
 
@@ -610,21 +601,21 @@ CLMR_CMDS["_lcmds"] = function(args,  cli){
 
 CLMR_CMDS["_lpresets"] = function(args,  cli){
 
-  var i = args.indexOf("-t");
-  var t;
-
-  if(i > -1){
-    args.splice(i,1);
-    t = args[i];
-    args.splice(i,1);
-  }else{
-    t = cli.cli_mode;
-  }
-
-  Presets.find({type: t}).forEach(function(r){
-
-    cli.println(r.name);
-  });
+  // var i = args.indexOf("-t");
+  // var t;
+  //
+  // if(i > -1){
+  //   args.splice(i,1);
+  //   t = args[i];
+  //   args.splice(i,1);
+  // }else{
+  //   t = cli.cli_mode;
+  // }
+  //
+  // Presets.find({type: t}).forEach(function(r){
+  //
+  //   cli.println(r.name);
+  // });
 
   cli.newCursor();
 
@@ -632,51 +623,51 @@ CLMR_CMDS["_lpresets"] = function(args,  cli){
 
 CLMR_CMDS["_loptions"] = function(args,  cli){
 
-  var i = args.indexOf("-t");
-  var t;
-
-  if(i > -1){
-    args.splice(i,1);
-    t = args[i];
-    args.splice(i,1);
-  }else{
-    t = cli.cli_mode;
-  }
-
-  i = args.indexOf("-p");
-  var name;
-
-  if(i > -1){
-    args.splice(i,1);
-    name = args[i]
-    args.splice(i,1);
-  }
-
- console.log(name, t);
-
-  var preset = Presets.findOne({name: name, type: t});
-  console.log(preset);
-
-
-  if(preset){
-    for(item in preset.options){
-      var tp = typeof(preset.options[item]);
-      if(tp == "number" || tp == "string" || tp == "boolean"){
-        cli.println(item + ": " + preset.options[item]);
-      }else{
-        var str = item + ": ";
-        for(var o in preset.options[item]){
-          str += ", " + preset.options[item][o];
-        }
-        cli.println(str);
-      }
-
-    }
-  }else{
-    for(o in gCurrentOptions[t]){
-      cli.println(o + ": " + gCurrentOptions[t][o]);
-    }
-  }
+ //  var i = args.indexOf("-t");
+ //  var t;
+ //
+ //  if(i > -1){
+ //    args.splice(i,1);
+ //    t = args[i];
+ //    args.splice(i,1);
+ //  }else{
+ //    t = cli.cli_mode;
+ //  }
+ //
+ //  i = args.indexOf("-p");
+ //  var name;
+ //
+ //  if(i > -1){
+ //    args.splice(i,1);
+ //    name = args[i]
+ //    args.splice(i,1);
+ //  }
+ //
+ // console.log(name, t);
+ //
+ //  var preset = Presets.findOne({name: name, type: t});
+ //  console.log(preset);
+ //
+ //
+ //  if(preset){
+ //    for(item in preset.options){
+ //      var tp = typeof(preset.options[item]);
+ //      if(tp == "number" || tp == "string" || tp == "boolean"){
+ //        cli.println(item + ": " + preset.options[item]);
+ //      }else{
+ //        var str = item + ": ";
+ //        for(var o in preset.options[item]){
+ //          str += ", " + preset.options[item][o];
+ //        }
+ //        cli.println(str);
+ //      }
+ //
+ //    }
+ //  }else{
+ //    for(o in gCurrentOptions[t]){
+ //      cli.println(o + ": " + gCurrentOptions[t][o]);
+ //    }
+ //  }
 
   cli.newCursor();
 
@@ -689,17 +680,25 @@ CLMR_CMDS["_q"] = function(args,  cli){ //need to think about what these command
 
 CLMR_CMDS["_kill"] = function(args,  cli){
 
-  Meteor.call("killThread", Meteor.user()._id, cli.thread);
+  var msgobj = {cmd: "kill_thread", args: args, cli_id: cli.idx, thread: cli.thread}
+  socket.emit('cmd', msgobj);
   cli.thread = "";
-  cli.newCursor();
 
 }
 
 CLMR_CMDS["_killall"] = function(args,  cli){
 
   cli.thread = "";
-  Meteor.call("killThreads", Meteor.user()._id);
-  cli.newCursor();
+  var msgobj = {cmd: "kill_threads", cli_id: cli.idx}
+  socket.emit('cmd', msgobj);
+
+  Object.keys(gClis).forEach(function(e){
+    if(gClis[e].thread != "")
+    {
+      gClis[e].thread = "";
+      if(gClis[e].proc == undefined)gClis[e].newCursor(true);
+    }
+  })
 
 }
 

@@ -147,6 +147,33 @@ admin.on('connection', function(socket){
 
       })
     }
+    else if(msg.cmd == "list_threads")
+    {
+      listThreads( msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(r){
+
+          admin.emit('server_report', {id: msg.cli_id, thread: msg.thread, isproc: msg.isproc , msg: r}); //same thread response
+
+      })
+    }
+    else if(msg.cmd == "kill_thread")
+    {
+      Threads.remove({thread: msg.thread},{},function(e,r){
+          if(e == null)
+          {
+            admin.emit('server_report', {id: msg.cli_id , msg: "thread: " +  msg.thread + " removed" });
+          }
+          else
+          {
+            admin.emit('server_report', {id: msg.cli_id , msg: "thread: " +  msg.thread + " can't be found" });
+          }
+      });
+    }
+    else if(msg.cmd == "kill_threads")
+    {
+      Threads.remove({},{},function(){
+        admin.emit('server_report', {id: msg.cli_id , msg: "all threads removed" });
+      });
+    }
 
     console.log('admin command: ' , msg);
 
@@ -260,7 +287,6 @@ function listPlayers(args, cli, cb)
 
     docs.forEach(function(e)
     {
-      console.log(e);
       var id = String(e._id);
       var str = id.substring(0,3) + "..." + id.substring(id.length -3, id.length) + ",  mode: " + e.mode;
 
@@ -271,6 +297,30 @@ function listPlayers(args, cli, cb)
         str += ", maxState: " + e.maxState;
         str += ", envTime: " + e.envTime;
       }
+
+      results += str + "\n";
+
+    });
+
+    cb(results);
+
+  });
+}
+
+function listThreads(args, cli, cb)
+{
+
+  var results = "";
+
+  Threads.find({}).then((docs)=>
+  {
+
+    docs.forEach(function(e)
+    {
+
+      var str = e.thread + " :: " + e.population.length;
+      if(e.thread == cli.thread)str += " *";
+      if(e.thread == cli.temp_thread)str += " -";
 
       results += str + "\n";
 
