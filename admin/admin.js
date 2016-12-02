@@ -546,19 +546,10 @@ CLMR_CMDS["_ithreads"] = function(args, cli){
 
 CLMR_CMDS["_lgroups"] = function(args, cli){
 
-  // UserGroups.find({}).forEach(function(e){
-  //
-  //   var str = e.name + " :: " + e.members.length;
-  //   cli.println(str);
-  //
-  // });
-
-  cli.newCursor();
-
+  var msgobj = {cmd: "list_groups", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
+  socket.emit('cmd', msgobj);
 
 }
-
-
 
 CLMR_CMDS["_lcmds"] = function(args,  cli){
 
@@ -682,7 +673,7 @@ CLMR_CMDS["_thread"] = function(args,  cli){
 
   }else{
 
-    var msgobj = {cmd: "create_thread", cli_id: cli.idx, thread: cli.thread}
+    var msgobj = {cmd: "create_thread", args: args, cli_id: cli.idx, thread: cli.thread}
     socket.emit('cmd', msgobj);
   }
 
