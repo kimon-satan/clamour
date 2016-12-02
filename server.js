@@ -97,7 +97,6 @@ admin.on('connection', function(socket){
       permThread(msg.mode , msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(population){
 
         population.forEach(function(e){
-          console.log(e);
           players.to(e).emit('cmd', {cmd: 'change_mode', value: msg.mode});
         });
 
@@ -174,8 +173,103 @@ admin.on('connection', function(socket){
         admin.emit('server_report', {id: msg.cli_id , msg: "all threads removed" });
       });
     }
+    else if(msg.cmd == "get_threads")
+    {
+      Threads.find({}).then((docs)=>
+      {
+        if(docs.length < 1)
+        {
+          admin.emit('server_report', {id: msg.cli_id, msg: "there are no threads"});
+        }
+        else
+        {
+          var res = [];
+          for(var i = 0; i < docs.length; i++)
+          {
+            res.push(docs[i].thread);
+          }
+          admin.emit('server_report', {id: msg.cli_id, suslist: res, susmode: "thread", selected: msg.thread});
+        }
 
-    console.log('admin command: ' , msg);
+      });
+    }
+    else if(msg.cmd == "group")
+    {
+
+      if(!msg.args)
+      {
+        admin.emit('server_report', {id: msg.cli_id, msg: ""});
+        return;
+      }
+
+      var name;
+      if(msg.args[0].substring(0,1) != "-")
+      {
+        name = msg.args[0];
+        msg.args.splice(0,1);
+      }
+
+      if(msg.args[0] == "-d"){
+
+        var s_args = {};
+        s_args.orig = msg.args[1];
+        s_args.numGps = parseInt(msg.args[2]);
+        //Meteor.call("createSubGroups", Meteor.user()._id, s_args, function(e,r){cli.cmdReturn(e,r)});
+
+
+      }else if(msg.args[0] == "-r"){
+        if(typeof(msg.args[1]) == "undefined"){
+          //Meteor.call("removeGroups", Meteor.user()._id, function(e,r){cli.cmdReturn(e,r)});
+          //remove all groups
+        }else{
+          //Meteor.call("removeGroups", Meteor.user()._id, args[1], function(e,r){cli.cmdReturn(e,r)});
+          //remove a group
+        }
+      }else{
+
+        var selector = parseFilters(msg.args, {thread: msg.thread});
+
+        if(!selector && msg.thread){
+          selector = { filters: [ { not: false, mode: 'thread', thread: msg.thread } ] } //search for players on the current thread
+        }
+
+        if(typeof(name) != "undefined"){
+          selector.group = name;
+        }
+
+        if(selector && selector.group){
+
+          selectPlayers(selector, function(uids){
+
+            uids.forEach(function(e)
+            {
+              UserData.update({_id: e},{$push: {groups: selector.group}});
+            });
+
+            if(UserGroups.count({name: selector.group}) > 0)
+            {
+              UserGroups.update({name: selector.group}, {$set: {members: uids}});
+            }
+            else
+            {
+              UserGroups.insert({name: selector.group, members: uids});
+            }
+
+            var rsp = uids.length + " players will now be called " + selector.group;
+            admin.emit('server_report', {id: msg.cli_id, msg: rsp});
+
+          });
+
+
+        }else{
+          //cli.newCursor();
+          //no players
+        }
+      }
+    }
+
+
+    //console.log('admin command: ' , msg);
 
   });
 
@@ -206,7 +300,9 @@ players.on('connection', function(socket)
         isSplat: false,
         maxState: 5,
         envTime: 8,
-        mode: "wait"
+        mode: "wait",
+        threads: [],
+        groups: []
     }
 
 
@@ -277,9 +373,13 @@ http.listen(3000, function(){
 
 function listPlayers(args, cli, cb)
 {
-  var selector = parseFilters(args);
+
+  var selector = parseFilters(args, cli);
   if(!selector)selector = {};
   var so = generateSearchObj(selector);
+
+  //number filters don't work here
+
   var results = "";
 
   UserData.find(so).then((docs)=>
@@ -331,7 +431,6 @@ function listThreads(args, cli, cb)
   });
 }
 
-
 function selectPlayers(args, cb){
 
 	console.log("selecting players ... ");
@@ -366,7 +465,18 @@ function addThreadToPlayers(args, cb){
 
 		selectPlayers(args, function(uids){
 
-      var msg =  args.mode + " with " + uids.length + " players with activeThread: " + args.thread; //this message needs to change
+      var msg =  args.mode + " with " + uids.length + " players with thread: " + args.thread; //this message needs to change
+
+      uids.forEach(function(e){
+
+          UserData.update({_id: e},{$push: {threads: args.thread}});
+
+          if(typeof(args.group) != "undefined")
+          {
+            UserData.update({_id: e},{$push: {groups: args.group}});
+          }
+
+      })
 
 
   		Threads.insert({thread: args.thread, population: uids},{}, function(){
@@ -399,7 +509,7 @@ function permThread(cmd, args, cli, send){
 
   //disambiguate from temp thread
 
-  var selector = parseFilters(args);
+  var selector = parseFilters(args, cli);
 
   //var options = parseSuOptions(args, cmd, cli); // we don't need this for the moment
 
@@ -410,7 +520,6 @@ function permThread(cmd, args, cli, send){
 
     addThreadToPlayers(selector, function(msg){
 
-      console.log(msg);
       admin.emit('server_report', {msg: msg, id: cli.id, thread: selector.thread });
 
       Threads.findOne({thread: selector.thread}, 'population').then((docs)=>{
@@ -431,7 +540,7 @@ function permThread(cmd, args, cli, send){
 }
 
 
-function parseFilters(args){
+function parseFilters(args, cli){
 
   //parses a set of selction filters into a mongo selector
 
@@ -469,43 +578,45 @@ function parseFilters(args){
           break;
 
           default:
+
             if(!isNaN(args[i]))
             {
               selector.numPlayers = parseInt(args[i]);
             }
-            else if(UserGroups.count({name: args[i]}) > 0)
+            else
             {
-              filter.mode = "group";
+              filter.mode = "group"; //assume it's a group
               filter.group = args[i];
-
             }
-
         }
+
 
         args.splice(i, 1);
         selector.filters.push(filter);
 
       })();
 
-    }else if(args[i] == "-g"){
-
+    }
+    else if(args[i] == "-g")
+    {
       args.splice(i,1);
       selector.group = args[i];
       args.splice(i,1);
-
-    }else if(UserGroups.count({name: args[i]}) > 0){
-
-          if(typeof(selector.filters) == "undefined")selector.filters = [];
-          var filter = {mode: "group", group: args[i]};
-          selector.filters.push(filter);
-          args.splice(i, 1);
-
-    }else {
-        i++;
+    }
+    else
+    {
+      //assume it's a group and that it exists
+      if(typeof(selector.filters) == "undefined")selector.filters = [];
+      var filter = {mode: "group", group: args[i]};
+      selector.filters.push(filter);
+      args.splice(i, 1);
     }
   }
 
-  if(typeof(selector.filters) == "undefined")selector = false; //there are no selectors
+  if(typeof(selector.filters) == "undefined")
+  {
+      selector = false; //there are no selectors
+  }
 
   return selector;
 }

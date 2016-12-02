@@ -75,7 +75,7 @@ generateSearchObj = function(args){
 			searchObj.view = filter.not ? {$ne: filter.mode} : filter.mode;
 		break;
 		case "thread":
-			searchObj.activeThreads = filter.not  ? {$nin: [filter.thread]} : {$in: [filter.thread]}
+			searchObj.threads = filter.not  ? {$nin: [filter.thread]} : {$in: [filter.thread]}
 		break;
 		case "state":
 			searchObj.state = filter.not ? {$ne: parseInt(filter.state)} : parseInt(filter.state);

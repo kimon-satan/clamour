@@ -23,7 +23,14 @@ socket.on('server_report', function(msg){
     gClis[msg.id].thread = msg.thread;
   }
 
-  if(msg.msg != undefined && msg.isproc == undefined)
+  if(msg.suslist)
+  {
+    gClis[msg.id].sus_list = msg.suslist
+    gClis[msg.id].sus_mode = msg.susmode;
+    gClis[msg.id].sus_idx = gClis[msg.id].sus_list.indexOf(msg.selected);
+    gClis[msg.id].println(gClis[msg.id].sus_list[gClis[msg.id].sus_idx]);
+  }
+  else if(msg.msg != undefined && msg.isproc == undefined)
   {
     gClis[msg.id].println(msg.msg);
     gClis[msg.id].newCursor(true);
@@ -276,14 +283,7 @@ evaluateCommand = function(cmd,  cli){
 
 }
 
-CLMR_CMDS["_logoutPlayers"] = function(args, cli){
 
-  //ideally should do a confirmation here
-  // Meteor.call("resetPlayers", Meteor.user()._id);
-  // cli.thread = "";
-  // Meteor.call("killThreads", Meteor.user()._id);
-  cli.newCursor();
-}
 
 CLMR_CMDS["_pedalStart"] = function(args, cli){
   //Meteor.call("startPedal", Meteor.user()._id);
@@ -450,39 +450,9 @@ CLMR_CMDS["_play"] = function(args,  cli){
 
 CLMR_CMDS["_group"] = function(args,  cli){
 
-    var name;
-    if(args[0].substring(0,1) != "-"){
-      name = args[0];
-      args.splice(0,1);
-    }
-
-    if(args[0] == "-d"){
-
-      var s_args = {};
-      s_args.orig = args[1];
-      s_args.numGps = parseInt(args[2]);
-      Meteor.call("createSubGroups", Meteor.user()._id, s_args, function(e,r){cli.cmdReturn(e,r)});
-
-    }else if(args[0] == "-r"){
-      if(typeof(args[1]) == "undefined"){
-        Meteor.call("removeGroups", Meteor.user()._id, function(e,r){cli.cmdReturn(e,r)});
-      }else{
-        Meteor.call("removeGroups", Meteor.user()._id, args[1], function(e,r){cli.cmdReturn(e,r)});
-      }
-    }else{
-
-      var selector = parseFilters(args);
-      if(typeof(name) != "undefined"){
-        selector.group = name;
-      }
-
-      if(selector && selector.group){
-        Meteor.call("createGroup", Meteor.user()._id, selector, function(e,r){cli.cmdReturn(e,r)});
-      }else{
-        cli.newCursor();
-      }
-    }
-
+  console.log(args);
+  var msgobj = {cmd: "group", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
+  socket.emit('cmd', msgobj);
 
 }
 
@@ -704,27 +674,16 @@ CLMR_CMDS["_killall"] = function(args,  cli){
 
 CLMR_CMDS["_thread"] = function(args,  cli){
 
-  //maybe an option to add a player to this thread
 
   if(args.length == 0){
 
-    var r = Threads.find({},{sort: {thread: 1}}).fetch();
-    cli.sus_list = [];
-    for(var i in r){
-      cli.sus_list.push(r[i].thread);
-    }
-
-    if(cli.sus_list.length > 0){
-      cli.sus_mode = "thread";
-      cli.sus_idx = cli.sus_list.indexOf(cli.thread);
-      cli.println(cli.sus_list[cli.sus_idx]);
-    }else{
-      cli.println("there are no threads ...");
-      cli.newCursor();
-    }
+    var msgobj = {cmd: "get_threads", cli_id: cli.idx, thread: cli.thread}
+    socket.emit('cmd', msgobj);
 
   }else{
-    permThread("cmd", args, function(e,r){}, cli);
+
+    var msgobj = {cmd: "create_thread", cli_id: cli.idx, thread: cli.thread}
+    socket.emit('cmd', msgobj);
   }
 
 }
