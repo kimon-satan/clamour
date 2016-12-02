@@ -17,18 +17,26 @@ var socket = io('/admin');
 
 socket.on('server_report', function(msg){
 
-  if(msg.msg != undefined)
-  {
-    gClis[msg.id].println(msg.msg);
-  }
 
   if(msg.thread != undefined)
   {
-    console.log("action")
     gClis[msg.id].thread = msg.thread;
   }
 
-  gClis[msg.id].newCursor();
+  console.log(msg);
+
+  if(msg.msg != undefined && msg.isproc == undefined)
+  {
+    gClis[msg.id].println(msg.msg);
+    gClis[msg.id].newCursor();
+  }
+  else if (msg.msg != undefined && msg.isproc != undefined)
+  {
+    gClis[msg.id].clear();
+    gClis[msg.id].replaceln(msg.msg);
+  }
+
+
 
 });
 
@@ -58,13 +66,14 @@ function CLI(idx, mode, thread){
   this.thread = thread;
   this.temp_thread;
   this.cursor_prefix;
-  this.proc;
+  this.proc = undefined;
   this.domElement;
   this.id_str = "#cmdText_" + this.idx;
 
   //////////////////////////////////HELPERS//////////////////////////////////////
 
   this.newCursor = function(isNewLine){
+
 
     this.cursor_prefix = this.cli_mode;
     if(typeof(this.thread )!= "undefined" && this.thread.length > 0)this.cursor_prefix += "_" + this.thread;
@@ -104,6 +113,12 @@ function CLI(idx, mode, thread){
     t = t.substring(0,t.lastIndexOf("\n"));
     t = t + "\n" + str;
     this.domElement.val(t);
+  }
+
+  this.clear = function()
+  {
+    this.domElement.val("");
+    this.newCursor(false);
   }
 
 
@@ -224,6 +239,7 @@ function CLI(idx, mode, thread){
     }
 
   }.bind(this));
+
 
   this.destroy = function(){
     this.domElement.remove();
@@ -498,8 +514,11 @@ CLMR_CMDS["_remove"] = function(args,  cli){
 CLMR_CMDS["_lplayers"] = function(args, cli)
 {
 
+
+
   var msgobj = {cmd: "list_players", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
 
+  console.log(msgobj);
   socket.emit('cmd', msgobj);
 
 }
@@ -507,28 +526,11 @@ CLMR_CMDS["_lplayers"] = function(args, cli)
 CLMR_CMDS["_iplayers"] =  function(args, cli){
 
   var proc = {};
-  var selector = parseFilters(args);
   proc.id = generateTempId(8);
-  if(!selector)selector = {};
-  proc.so = generateSearchObj(selector);
   proc.loop = setInterval(function(){
 
-    $('#cmdText_' + cli.idx).val("");
-
-    UserData.find(proc.so).forEach(function(e){
-      var str = e._id.substring(0,5) + ",  view: " + e.view;
-
-      if(cli.cli_mode == "play")
-      {
-        str += ", state: " + e.state;
-        str += ", isSplat: " + e.isSplat;
-        str += ", maxState: " + e.maxState;
-        str += ", envTime: " + e.envTime;
-      }
-
-      cli.println(str);
-
-    });
+    var msgobj = {cmd: "list_players", args: args, cli_id: cli.idx, mode: cli.cli_mode, isproc: true, thread: cli.thread}
+    socket.emit('cmd', msgobj);
 
   }, 500);
 

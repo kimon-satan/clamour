@@ -36,7 +36,7 @@ randCol = function(){
 
 /*-----------------------------------------------------------------------*/
 
-generateTempId  = function(n){
+generateTempId = function (n){
 
   var chars = "abcdefghijklmnnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ!@£$%^&*()-=_+";
   var count = 0;

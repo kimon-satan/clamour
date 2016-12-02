@@ -143,7 +143,7 @@ admin.on('connection', function(socket){
     {
       listPlayers( msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(r){
 
-          admin.emit('server_report', {id: msg.cli_id, thread: msg.thread, msg: r}); //same thread response
+          admin.emit('server_report', {id: msg.cli_id, thread: msg.thread, isproc: msg.isproc , msg: r}); //same thread response
 
       })
     }
