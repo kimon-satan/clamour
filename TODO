@@ -1,0 +1,23 @@
+TODO
+
+- add full graphics and sound
+- make display client add functions
+- add supercollider osc
+- add the step function (if time)
+- check all works for performance
+- write extra monologue
+
+/////////////////////////////////////////////
+
+Post gig refactoring
+
+- Logicise command parsing and player selection functions
+- Do we need threads anymore ? Perhaps just relabel them tempGroups and get them to self delete
+- Standardise organisation of response nodes ... combine where possible
+
+
+/////////////////////////////////////////////
+
+Include all the extras for the end of the piece
+
+////////////////////////////////////////////////
