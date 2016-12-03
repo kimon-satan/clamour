@@ -122,16 +122,19 @@ socket.on('welcome', function (msg) {
   console.log("welcome: " , msg);
   document.cookie = "userid=" + msg._id;
   userid = msg._id;
+
+  parseMsgParams(msg);
   changeMode(msg.mode);
 
 });
 
 socket.on('cmd', function(msg)
 {
-        console.log(msg);
+
   if(msg.cmd == "change_mode")
   {
-      changeMode(msg.value);
+    parseMsgParams(msg.value);
+    changeMode(msg.value.mode);
   }
   else if (msg.cmd == "chat_update")
   {
@@ -148,13 +151,7 @@ socket.on('cmd', function(msg)
   }
   else if(msg.cmd == 'set_params')
   {
-    var resp = {_id: userid, mode: currMode};
-    Object.keys(msg.value).forEach(function(k){
-      params[k] = msg.value[k];
-      resp[k] = msg.value[k];
-    })
-
-    socket.emit('update_user', resp); //tell the server that we have changed
+    parseMsgParams(msg.value);
   }
 
 });
@@ -162,6 +159,23 @@ socket.on('cmd', function(msg)
 
 
 /////////////////////////////////HELPERS///////////////////////////
+
+function parseMsgParams(msg)
+{
+  var resp = {_id: userid};
+
+  Object.keys(msg).forEach(function(k){
+
+    if(msg[k] != undefined && k != "_id" && k != "mode" && k != "groups" && k != "threads")
+    {
+      params[k] = msg[k];
+      resp[k] = msg[k];
+    }
+
+  });
+
+  socket.emit('update_user', resp); //tell the server that we have changed
+}
 
 function changeMode(mode)
 {

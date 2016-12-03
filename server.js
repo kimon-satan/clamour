@@ -80,16 +80,23 @@ admin.on('connection', function(socket){
 
     if(msg.cmd == "change_mode")
     {
-      newThread(msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(population){
+      parseOptions(msg.args, function(options){
 
-        if(population != null)
-        {
-          population.forEach(function(e){
-            players.to(e).emit('cmd', {cmd: 'change_mode', value: msg.mode});
-          });
-        }
+        getThread(msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(uids){
 
-      });
+          options.mode = msg.mode;
+
+          if(uids != null)
+          {
+            uids.forEach(function(e){
+              players.to(e).emit('cmd', {cmd: 'change_mode', value: options});
+            });
+          }
+
+        });
+
+      })
+
     }
     else if(msg.cmd == "chat_update")
     {
@@ -188,7 +195,7 @@ admin.on('connection', function(socket){
     }
     else if(msg.cmd == "create_thread")
     {
-      newThread(msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(population){});
+      getThread(msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(population){});
     }
     else if(msg.cmd == "group")
     {
@@ -327,6 +334,7 @@ admin.on('connection', function(socket){
 
 //io is everyone
 var players = io.of('/player');
+
 players.on('connection', function(socket)
 {
 
@@ -574,7 +582,7 @@ function createGroup(name, args, cli, cb)
 
 }
 
-function newThread(args, cli, send)
+function getThread(args, cli, send)
 {
 
   var selector = parseFilters(args, cli);
@@ -677,6 +685,7 @@ function parseFilters(args, cli){
     }
     else
     {
+      //could add parsing text to ignore other arguments
       //assume it's a group and that it exists
       if(typeof(selector.filters) == "undefined")selector.filters = [];
       var filter = {mode: "group", group: args[i]};
@@ -752,8 +761,6 @@ function parseOptions(args, cb)
 
   loadPresets(args, options, function(res)
   {
-
-      console.log("options: " , res);
 
       //saving presets will go here
       cb(options);
