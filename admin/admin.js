@@ -694,145 +694,91 @@ CLMR_CMDS["_c"] = function(args,  cli){
 
 //CHANGE OPTIONS WITHIN A MODE !!!!!!!!!!!!
 
-CLMR_CMDS["_i"] = function(args,  cli){ //should be come update as it can deal with all types of changes
+CLMR_CMDS["_set"] = function(args,  cli)
+{ 
 
-  var cb = function(options, th){msgStream.emit('message', {type: cli.cli_mode + 'Change', 'value': options, thread: th});}
+  var msgobj = {cmd: "set_params", args: args, cli_id: cli.idx, thread: cli.thread, mode: cli.cli_mode}
+  socket.emit('cmd', msgobj);
 
-  if(!addStep(args, cb, cli, true))tempThread("_i", args, cb, cli);
-
-}
-
-
-
-
-function addStep(args, callback, cli, istemp){
-
-  //looks like this function is for executing a change in a stepped fashion
-
-  var i = args.indexOf("-step");
-
-  if(i < 0)return false;
-
-  var proc = {};
-
-  args.splice(i,1);
-  var totalTime = args[i];
-  args.splice(i, 1);
-
-  proc.id = generateTempId(5);
-  var selector = parseFilters(args);
-  if(!selector){
-    selector = {filters: [{thread: cli.thread}]};
-  }else{
-    if(!istemp){
-      cli.thread = generateTempId(8);
-      selector.thread = cli.thread;
-      selector.mode = cli.cli_mode;
-      Meteor.call("addThreadToPlayers", Meteor.user()._id, selector);
-    }
-  }
-
-
-
-  proc.players = selectPlayers(selector);
-  proc.options = parseSuOptions(args, cli.cli_mode, cli);
-  var interval = (totalTime/proc.players.length) * 1000;
-  proc.threads = [];
-
-  proc.loop = setInterval(function(){
-
-    if(proc.players.length == 0){
-      clearInterval(proc.loop);
-      //remove each of the threads
-      for(i in proc.threads){
-        Meteor.call("killThread", Meteor.user()._id, proc.threads[i]);
-      }
-      delete gProcs[proc.id];
-
-      cli.proc = undefined;
-      cli.newCursor();
-      return;
-
-    }
-
-    cli.println(proc.players[0]);
-    var t = generateTempId(8);
-    proc.threads.push(t);
-    var p_args = {uid: proc.players[0], thread: t};
-    proc.players.splice(0,1);
-
-    Meteor.call("addThreadToPlayer", Meteor.user()._id, p_args, function(e,r){
-      callback(proc.options , r);
-    });
-
-    var id_str = "#cmdText_" + cli.idx;
-    var psconsole = $(id_str);
-    psconsole.scrollTop(psconsole.prop('scrollHeight'));
-
-
-
-
-  }, interval);
-
-  gProcs[proc.id] = proc;
-  cli.proc = proc;
-
-  return true;
-
-}
-
-//MOVE TO SERVER for easy DB access
-//CLI will be tricky ...
-//could make a series of CLI socket receivers
-
-
-
-
-function tempThread(cmd, args, send,  cli){
-
-
-  //need to remember why this is different from permThread and when it is called
-
-  Meteor.call("killThread" ,Meteor.user()._id, cli.temp_thread, function(e,r){
-
-      cli.temp_thread = "";
-
-      var selector = parseFilters(args);
-      cli.temp_thread = generateTempId(5); //create a new thread as it's a new selection
-      var options = parseSuOptions(args, cli.cli_mode, cli);
-
-      if(selector){
-        selector.thread = cli.temp_thread;
-        selector.mode = "cmd";
-
-        Meteor.call("addThreadToPlayers", Meteor.user()._id, selector,
-          function(e, r){
-      //only make the call once the thread has been added
-            if(!e){
-
-              send(options, cli.temp_thread);
-              cli.println(r);
-
-            }else{
-              cli.println(e.reason);
-            }
-            cli.newCursor();
-          }
-        );
-      }else{
-        send(options, cli.thread); //send on the regular thread
-        cli.newCursor();
-      }
-
-  });
-
-
+    //if(!addStep(args, cb, cli, true))tempThread("_i", args, cb, cli);
 
 }
 
 
 
 
-
-
-//TODO Move to server
+// function addStep(args, callback, cli, istemp){
+//
+//   //looks like this function is for executing a change in a stepped fashion
+//
+//   var i = args.indexOf("-step");
+//
+//   if(i < 0)return false;
+//
+//   var proc = {};
+//
+//   args.splice(i,1);
+//   var totalTime = args[i];
+//   args.splice(i, 1);
+//
+//   proc.id = generateTempId(5);
+//   var selector = parseFilters(args);
+//   if(!selector){
+//     selector = {filters: [{thread: cli.thread}]};
+//   }else{
+//     if(!istemp){
+//       cli.thread = generateTempId(8);
+//       selector.thread = cli.thread;
+//       selector.mode = cli.cli_mode;
+//       Meteor.call("addThreadToPlayers", Meteor.user()._id, selector);
+//     }
+//   }
+//
+//
+//
+//   proc.players = selectPlayers(selector);
+//   proc.options = parseSuOptions(args, cli.cli_mode, cli);
+//   var interval = (totalTime/proc.players.length) * 1000;
+//   proc.threads = [];
+//
+//   proc.loop = setInterval(function(){
+//
+//     if(proc.players.length == 0){
+//       clearInterval(proc.loop);
+//       //remove each of the threads
+//       for(i in proc.threads){
+//         Meteor.call("killThread", Meteor.user()._id, proc.threads[i]);
+//       }
+//       delete gProcs[proc.id];
+//
+//       cli.proc = undefined;
+//       cli.newCursor();
+//       return;
+//
+//     }
+//
+//     cli.println(proc.players[0]);
+//     var t = generateTempId(8);
+//     proc.threads.push(t);
+//     var p_args = {uid: proc.players[0], thread: t};
+//     proc.players.splice(0,1);
+//
+//     Meteor.call("addThreadToPlayer", Meteor.user()._id, p_args, function(e,r){
+//       callback(proc.options , r);
+//     });
+//
+//     var id_str = "#cmdText_" + cli.idx;
+//     var psconsole = $(id_str);
+//     psconsole.scrollTop(psconsole.prop('scrollHeight'));
+//
+//
+//
+//
+//   }, interval);
+//
+//   gProcs[proc.id] = proc;
+//   cli.proc = proc;
+//
+//   return true;
+//
+// }

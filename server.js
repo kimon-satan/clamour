@@ -1,16 +1,3 @@
-/*
-TODO
-
-list the current users & their state
-//could have a refresh function
-... actually just make wait mode send a refreshed record new connections ?
-... how to avoid doubling up of signals ?
-//mobile test
-//probably can move on to integrated verison now
-
-*/
-
-//Express initializes app to be a function handler that you can supply to an HTTP server
 
 var express = require('express');
 var app = express();
@@ -31,31 +18,30 @@ db.then(() => {
 const UserData = db.get('UserData');
 const UserGroups = db.get('UserGroups');
 const Presets = db.get('Presets');
-const Threads = db.get('Threads');
+const Threads = db.get('Threads'); //This might become a variable ?
 
+
+const allOptions = {
+    state: 0,
+    isSplat: false,
+    maxState: 5,
+    envTime: 8
+}
 
 //clear the Databases - temporary
 UserData.remove({});
 Threads.remove({});
 UserGroups.remove({});
+Presets.remove({});
 
 //check the various collections exist if not create them
 
-Presets.findOne({type: "play", name: "df"}).then((doc)=> {
+Presets.findOne({type: "play", name: "default"}).then((doc)=> {
 
   if(doc == null)
   {
-
-      console.log("creating play defaults");
-      //create one
-      var p = {
-          state: 0,
-          isSplat: false,
-          maxState: 5,
-          envTime: 8
-      }
-
-     Presets.insert({type: "play", name: "df", options: p});
+     console.log("creating default parameters");
+     Presets.insert({name: "default", options: allOptions});
   }
 
 });
@@ -94,11 +80,14 @@ admin.on('connection', function(socket){
 
     if(msg.cmd == "change_mode")
     {
-      permThread(msg.mode , msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(population){
+      newThread(msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(population){
 
-        population.forEach(function(e){
-          players.to(e).emit('cmd', {cmd: 'change_mode', value: msg.mode});
-        });
+        if(population != null)
+        {
+          population.forEach(function(e){
+            players.to(e).emit('cmd', {cmd: 'change_mode', value: msg.mode});
+          });
+        }
 
       });
     }
@@ -199,7 +188,7 @@ admin.on('connection', function(socket){
     }
     else if(msg.cmd == "create_thread")
     {
-      permThread(msg.mode , msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(population){});
+      newThread(msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(population){});
     }
     else if(msg.cmd == "group")
     {
@@ -279,6 +268,46 @@ admin.on('connection', function(socket){
         admin.emit('server_report', {id: msg.cli_id, msg: results});
 
       });
+
+    }
+    else if(msg.cmd == "set_params")
+    {
+      parseOptions(msg.args, function(options)
+      {
+        var selector = parseFilters(msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread});
+
+        admin.emit('server_report', {id: msg.cli_id, msg: ""});
+
+        if(selector)
+        {
+
+          var searchObj = generateSearchObj(selector);
+          selectPlayers(searchObj, function(uids)
+          {
+            uids.forEach(function(e)
+            {
+              players.to(e).emit('cmd', {cmd: 'set_params', value: options});
+            });
+          })
+
+        }else{
+
+          if(msg.thread != undefined)
+          {
+            Threads.find({thread: msg.thread}, 'population').then((docs)=>{
+
+              if(docs == null)return;
+
+              docs[0].population.forEach(function(e){
+                players.to(e).emit('cmd', {cmd: 'set_params', value: options});
+              });
+
+            });
+          }
+        }
+      });
+
+
     }
 
 
@@ -298,7 +327,6 @@ admin.on('connection', function(socket){
 
 //io is everyone
 var players = io.of('/player');
-
 players.on('connection', function(socket)
 {
 
@@ -308,16 +336,17 @@ players.on('connection', function(socket)
   socket.on('hello', function(msg)
   {
 
+    //make all options
+
     var usrobj = {
-        state: 0,
-        isSplat: false,
-        maxState: 5,
-        envTime: 8,
         mode: "wait",
         threads: [],
         groups: []
     }
 
+    Object.keys(allOptions).forEach(function(e){
+      usrobj[e] = allOptions[e];
+    })
 
     if(msg == "new")
     {
@@ -472,11 +501,10 @@ function selectPlayers(args, cb){
 
 }
 
-function addThreadToPlayers(args, cb){
+function addThreadToPlayers(args, cb)
+{
 
 		if(typeof(args) == "undefined")return false;
-
-
 
 		selectPlayers(args, function(uids){
 
@@ -546,17 +574,13 @@ function createGroup(name, args, cli, cb)
 
 }
 
-function permThread(cmd, args, cli, send){
-
-  //send is the function call to emit
-
-  //disambiguate from temp thread
+function newThread(args, cli, send)
+{
 
   var selector = parseFilters(args, cli);
 
-  //var options = parseSuOptions(args, cmd, cli); // we don't need this for the moment
-
-  if(selector){
+  if(selector)
+  {
 
     selector.thread = generateTempId(5); //needs to be passed back to cli
     selector.mode = cli.mode;
@@ -672,86 +696,125 @@ function parseFilters(args, cli){
 
 //we don't need this for the moment
 
-// function parseSuOptions(args, type, cli){
-//
-//
-//   //parses options into an object
-//
-//   var options = {};
-//
-//   if(args.length == 0){
-//     return options;
-//   }
-//
-//   var i = args.indexOf("-p");
-//
-//   while(i > -1){
-//       args.splice(i,1);
-//       var preset = Presets.findOne({type: type, name: args[i]}).options;
-//       if(preset){
-//         for(var x in preset){
-//           options[x] = preset[x];
-//         }
-//       }
-//       args.splice(i,1);
-//       i = args.indexOf("-p");
-//   }
-//
-//
-//   i = args.indexOf("-time");
-//
-//   if(i > -1){
-//     args.splice(i,1);
-//     options["time"] = parseInt(args[i]);
-//     args.splice(i,1);
-//   }
-//
-//
-//
-//   var params = Object.keys(gCurrentOptions[type]);
-//
-//   for(var x = 0; x < params.length; x++){
-//       i = args.indexOf("-" + params[x]);
-//       if(i > -1){
-//         args.splice(i,1);
-//         if(args[i].substring(0,1) == "["){
-//           //repackage as an array
-//           args[i] = args[i].substring(1, args[i].length -1);
-//           options[params[x]] = args[i].split(",");
-//
-//         }else if(args[i].substring(0,1) == "("){
-//           //repackage as an object
-//           args[i] = args[i].substring(1, args[i].length -1);
-//           var ar = args[i].split(",");
-//           options[params[x]] = {min: parseFloat(ar[0]), max: parseFloat(ar[1])};
-//
-//
-//         }else{
-//           options[params[x]] = isNumber(args[i]) ? parseFloat(args[i]) : args[i];
-//           if(options[params[x]] == "T")options[params[x]] = true; //handle booleans
-//           if(options[params[x]] == "F")options[params[x]] = false;
-//         }
-//
-//         args.splice(i,1);
-//       }
-//   }
-//
-//   i = args.indexOf("-s");
-//
-//   if(i > -1){
-//     args.splice(i,1);
-//     Meteor.call("createPreset", Meteor.user()._id, {type: type, name: args[i], options: options},function(e,r){cli.cmdReturn(e,r)});
-//     args.splice(i,1);
-//
-//   }else{
-//     //cli.newCursor();
-//   }
-//
-//   for(var i in options){
-//     gCurrentOptions[type][i] = options[i]; //copy the changes to current options
-//   }
-//
-//   return options;
-//
-//
-// }
+function parseOptions(args, cb)
+{
+
+  //parses options into an object
+
+  var options = {};
+
+  if(args.length == 0)
+  {
+    return options;
+  }
+
+  i = args.indexOf("-time");
+
+  if(i > -1){
+    args.splice(i,1);
+    options["time"] = parseInt(args[i]);
+    args.splice(i,1);
+  }
+
+  //We need the current options for the CLI to do this
+  var params = Object.keys(allOptions);
+
+  for(var x = 0; x < params.length; x++)
+  {
+      i = args.indexOf("-" + params[x]);
+      if(i > -1)
+      {
+        args.splice(i,1);
+        if(args[i].substring(0,1) == "[")
+        {
+          //repackage as an array
+          args[i] = args[i].substring(1, args[i].length -1);
+          options[params[x]] = args[i].split(",");
+
+        }
+        else if(args[i].substring(0,1) == "(")
+        {
+          //repackage as an object
+          args[i] = args[i].substring(1, args[i].length -1);
+          var ar = args[i].split(",");
+          options[params[x]] = {min: parseFloat(ar[0]), max: parseFloat(ar[1])};
+        }
+        else
+        {
+          options[params[x]] = isNumber(args[i]) ? parseFloat(args[i]) : args[i];
+          if(options[params[x]] == "T")options[params[x]] = true; //handle booleans
+          if(options[params[x]] == "F")options[params[x]] = false;
+        }
+
+        args.splice(i,1);
+      }
+  }
+
+  loadPresets(args, options, function(res)
+  {
+
+      console.log("options: " , res);
+
+      //saving presets will go here
+      cb(options);
+
+  });
+
+  //saving presets
+
+  // i = args.indexOf("-s");
+  //
+  // if(i > -1){
+  //   args.splice(i,1);
+  //   Meteor.call("createPreset", Meteor.user()._id, {type: type, name: args[i], options: options},function(e,r){cli.cmdReturn(e,r)});
+  //   args.splice(i,1);
+  //
+  // }else{
+  //   //cli.newCursor();
+  // }
+
+  //we need to add code to check current options
+
+  // for(var i in options){
+  //   gCurrentOptions[type][i] = options[i]; //copy the changes to current options
+  // }
+
+
+
+}
+
+function loadPresets(args, options, cb)
+{
+  var i = args.indexOf("-p");
+
+  if(i > -1)
+  {
+      args.splice(i,1);
+
+      Presets.findOne({type: type, name: args[i]}).then((doc)=>{
+
+        if(doc)
+        {
+
+          var preset = doc.options;
+          if(preset)
+          {
+            for(var x in preset)
+            {
+              options[x] = preset[x];
+            }
+          }
+
+        }
+
+        args.splice(i,1);
+        loadPresets(args, options, cb);
+
+      });
+  }
+  else
+  {
+    cb(options);
+  }
+
+}

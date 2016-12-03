@@ -2,6 +2,7 @@
 var socket = io('/player');
 var currMode = "";
 var userid = getCook('userid');
+var params = {};
 
 var scene = new THREE.Scene();
 var camera = new THREE.OrthographicCamera(
@@ -144,6 +145,16 @@ socket.on('cmd', function(msg)
   else if(msg.cmd == 'chat_clear')
   {
     $('#chatContainer').empty();
+  }
+  else if(msg.cmd == 'set_params')
+  {
+    var resp = {_id: userid, mode: currMode};
+    Object.keys(msg.value).forEach(function(k){
+      params[k] = msg.value[k];
+      resp[k] = msg.value[k];
+    })
+
+    socket.emit('update_user', resp); //tell the server that we have changed
   }
 
 });
