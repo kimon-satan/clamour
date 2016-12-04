@@ -10,9 +10,6 @@ $(document).ready(function(){
 
   //load the sound
 
-
-
-
 });
 
 
@@ -41,6 +38,7 @@ function whoami(){
 
 
 ////////////////////////////SOCKET STUFF//////////////////////////
+
 
 socket.on("whoareyou", function(msg){
   //location.reload(true);
@@ -90,6 +88,13 @@ socket.on('cmd', function(msg)
 
 /////////////////////////////////HELPERS///////////////////////////
 
+function informServer(msg)
+{
+  msg._id = userid;
+  socket.emit('update_user', msg); //tell the server that we have changed mode
+
+}
+
 function parseMsgParams(msg)
 {
   var resp = {_id: userid};
@@ -103,6 +108,29 @@ function parseMsgParams(msg)
     }
 
   });
+
+  if(iface)
+  {
+    if(resp.state != undefined)
+    {
+      iface.changeState(resp.state);
+    }
+
+    if (resp.isSplat != undefined)
+    {
+      iface.setIsSplat(resp.isSplat);
+    }
+
+    if(resp.maxState != undefined)
+    {
+      iface.setMaxState(resp.maxState);
+    }
+
+    if(resp.envTime != undefined)
+    {
+      iface.setEnvTime(resp.envTime);
+    }
+  }
 
   socket.emit('update_user', resp); //tell the server that we have changed
 }
@@ -119,7 +147,9 @@ function changeMode(mode)
 
   if(mode == "play")
   {
-    setup(UserData);
+    $('#container').empty();
+    $('#container').append( '<div id="playContainer"></div>' );
+    setup(UserData, informServer); //sets up canvas
   }
 
   if(mode == "chat")
@@ -132,6 +162,13 @@ function changeMode(mode)
   {
     $('#container').empty();
     $('#container').append( '<div id="chatContainer"><h1>Conditional Love</h1><h2>Please wait for the performance to begin ...</h2></div>' );
+
+  // <h2>Meanwhile ...</h2>
+  //
+  // <h3>Turn your mobile's volume to full</h3>
+  // <h3>Don't put it on silent !</h3>
+  // <h3>Turn off autolock</h3>
+  // <h3>Keep your phone in the portrait position</h3>
   }
 
   if(mode == "blank")

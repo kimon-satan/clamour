@@ -6,17 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
     <link rel="stylesheet" type="text/css" href="style/myStyle.css">
   </head>
-  <body>
+  <body scroll="no" >
 
     <!-- Setup a socket -->
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script src="libs/jquery-3.1.1.min.js"></script>
     <script src="libs/three.min.js"></script>
 
-    <div id="container"></div>
+    <div id="container" class="noselect"></div>
     <script src="libs/utils.js"></script>
-    <script src="player/colorUtils.js"></script>
+    <script src="libs/colorUtils.js"></script>
     <script src="player/shaders.js"></script>
     <script src="player/graphicsDefs.js"></script>
     <script src="player/graphics.js"></script>

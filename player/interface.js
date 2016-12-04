@@ -1,13 +1,13 @@
 iface = undefined;
 
-setup = function (ud)
+setup = function (ud, callback)
 {
   var d = $('#container');
   if(window.Graphics != undefined && window.Sound != undefined && d.length > 0)
   {
     if(iface == undefined)
     {
-      iface = new Interface(ud);
+      iface = new Interface(ud, callback);
       iface.init();
 
     }
@@ -23,7 +23,7 @@ setup = function (ud)
   }
 }
 
-Interface = function(ud){
+Interface = function(ud, callback){
 
   this.graphics
   this.sound
@@ -32,6 +32,7 @@ Interface = function(ud){
   this.accumulator
   this.canvas
   this.ud = ud;
+  this.callback = callback;
 
   this.mousePos
   this.touchStartPos
@@ -562,13 +563,12 @@ Interface = function(ud){
     this.stateEnvelope.z = 0.0;
     this.stateEnvelope.targetVal = 1.0;
 
-
     //call the graphics update
     this.graphics.incrementState(this.stateIndex);
 
-    //TODO
-    //add a call back
-    //UserData.update(Meteor.user()._id, {$set: {state: this.stateIndex} });
+    //tell the server because the change came from here
+    this.callback({state: this.stateIndex});
+
   }
 
   this.changeState = function(idx)
@@ -600,9 +600,6 @@ Interface = function(ud){
       this.changingState = false;
     }
 
-    //Add an update here too
-    //UserData.update(Meteor.user()._id, {$set: {state: this.stateIndex} });
-
   }
 
   this.updateReactionMap = function(){
@@ -632,11 +629,9 @@ Interface = function(ud){
     }
   }
 
-  this.setIsSplat = function(b){
+  this.setIsSplat = function(b)
+  {
     this.isExcitable = b;
-
-    //TODO
-    //UserData.update(Meteor.user()._id, {$set: {isSplat: b}});
   }
 
   this.setMaxState = function(n)
@@ -655,8 +650,6 @@ Interface = function(ud){
       this.changingState = false;
     }
 
-    //TODO
-    //UserData.update(Meteor.user()._id, {$set: {maxState: n}});
   }
 
 
@@ -665,8 +658,6 @@ Interface = function(ud){
     this.envTime = et;
     this.stateEnvelope.setTime(et);
 
-    //TODO
-    //UserData.update(Meteor.user()._id, {$set: {envTime: this.envTime}});
   }
 
 

@@ -10,7 +10,7 @@ Graphics.prototype.init = function()
 	this.renderer.setSize( window.innerWidth, window.innerHeight );
 
 
-	$('#container').append( this.renderer.domElement );
+	$('#playContainer').append( this.renderer.domElement );
 	this.canvas = this.renderer.domElement;
 
 
@@ -133,11 +133,11 @@ Graphics.prototype.init = function()
 
 	this.currStateIdx = 0;
 	this.changeState(this.currStateIdx); //set to state zero
-	this.incrementState();
+
 }
 
 Graphics.prototype.resume = function(){
-	$('#container').append( this.renderer.domElement );
+	$('#playContainer').append( this.renderer.domElement );
 	this.canvas = this.renderer.domElement;
 }
 

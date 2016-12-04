@@ -18,7 +18,7 @@ db.then(() => {
 
 const UserData = db.get('UserData');
 const UserGroups = db.get('UserGroups');
-const Presets = db.get('Presets');
+const Presets = db.get('Presets'); //not using sofar
 const Threads = db.get('Threads'); //This might become a variable ?
 
 
@@ -59,13 +59,19 @@ app.use("/admin",express.static(__dirname + "/admin"));
 app.use("/style",express.static(__dirname + "/style"));
 app.use("/libs",express.static(__dirname + "/libs"));
 app.use("/player",express.static(__dirname + "/player"));
+app.use("/display",express.static(__dirname + "/display"));
 app.use("/samples",express.static(__dirname + "/samples"));
 app.use("/images",express.static(__dirname + "/images"));
 
-//two types of user
+//three types of user
  app.get('/admin', function(req, res){
    res.sendFile(__dirname + '/admin/admin.html');
  });
+ //
+ app.get('/display', function(req, res){
+   res.sendFile(__dirname + '/display/display.html');
+ });
+
 //
  app.get('/', function(req, res){
    res.sendFile(__dirname + '/player/player.html');
@@ -85,7 +91,9 @@ admin.on('connection', function(socket){
 
     if(msg.cmd == "change_mode")
     {
-      parseOptions(msg.args, function(options){
+
+      parseOptions(msg.args, function(options)
+      {
 
         getThread(msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(uids){
 
@@ -327,6 +335,38 @@ admin.on('connection', function(socket){
 
   });
 
+  socket.on('disp_cmd', function(msg)
+  {
+
+    console.log(msg);
+
+    if(msg.cmd == "instruct")
+    {
+      display.emit("cmd", {type: "instruct"});
+      admin.emit('server_report', {id: msg.cli_id}); //empty response
+    }
+    else if(msg.cmd == "display")
+    {
+      display.emit("cmd", {type: "display"});
+      admin.emit('server_report', {id: msg.cli_id}); //empty response
+    }
+    else if(msg.cmd == "splat")
+    {
+      if(msg.args.length > 0)
+      {
+          var id = msg.args[0];
+      }
+      else
+      {
+          var id = generateTempId(5);
+      }
+
+      display.emit("cmd", {type: "splat", val: {id: id, colSeed: allOptions.colSeed, colMode: allOptions.colMode}});
+      admin.emit('server_report', {id: msg.cli_id}); //empty response
+    }
+
+  })
+
   socket.on('disconnect', function()
   {
     console.log('an admin disconnected');
@@ -334,9 +374,14 @@ admin.on('connection', function(socket){
 
 });
 
+var display = io.of('/display');
 
+display.on('connection', function(socket)
+{
 
+  console.log("a display connected");
 
+});
 //io is everyone
 var players = io.of('/player');
 
@@ -722,7 +767,8 @@ function parseOptions(args, cb)
 
   if(args.length == 0)
   {
-    return options;
+    cb(options);
+    return;
   }
 
   i = args.indexOf("-time");
@@ -764,6 +810,7 @@ function parseOptions(args, cb)
         }
 
         args.splice(i,1);
+
       }
   }
 
@@ -801,6 +848,7 @@ function parseOptions(args, cb)
 function loadPresets(args, options, cb)
 {
   var i = args.indexOf("-p");
+
 
   if(i > -1)
   {

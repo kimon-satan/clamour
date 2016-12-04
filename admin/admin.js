@@ -292,23 +292,23 @@ CLMR_CMDS["_pedalStart"] = function(args, cli){
 
 CLMR_CMDS["_splat"] = function(args, cli){
 
-  // if(args.length > 0)
-  // {
-  //     var id = args[0];
-  // }
-  // else
-  // {
-  //     var id = Meteor.user()._id.substring(0,5);
-  // }
-  // msgStream.emit('displayMessage', {type: 'splat', id: id});
-  cli.newCursor();
+  var msgobj = {cmd: "splat", args: args, cli_id: cli.idx}
+  socket.emit('disp_cmd', msgobj);
+
 }
 
-CLMR_CMDS["_instructions"] = function(args, cli){
+CLMR_CMDS["_instruct"] = function(args, cli){
 
-  // var b = (args[0] == "T");
-  // msgStream.emit('displayMessage', {type: 'instruction', value: b});
-  cli.newCursor();
+  var msgobj = {cmd: "instruct", args: args, cli_id: cli.idx}
+  socket.emit('disp_cmd', msgobj);
+
+}
+
+CLMR_CMDS["_display"] = function(args, cli){
+
+  var msgobj = {cmd: "display", args: args, cli_id: cli.idx}
+  socket.emit('disp_cmd', msgobj);
+
 }
 
 CLMR_CMDS["_end"] = function(args, cli){
@@ -695,7 +695,7 @@ CLMR_CMDS["_c"] = function(args,  cli){
 //CHANGE OPTIONS WITHIN A MODE !!!!!!!!!!!!
 
 CLMR_CMDS["_set"] = function(args,  cli)
-{ 
+{
 
   var msgobj = {cmd: "set_params", args: args, cli_id: cli.idx, thread: cli.thread, mode: cli.cli_mode}
   socket.emit('cmd', msgobj);

@@ -30,10 +30,31 @@ h1{
 
 }
 
+#displayInstructions{
+	text-align: center;
+	margin: 50px;
+
+}
+
+#displayInstructions>h1{
+	font-size: 40px;
+}
+
+#displayInstructions>h3{
+	font-size: 25px;
+}
+
 #chatContainer{
 	text-align: center;
 	margin: 5px;
 }
+
+#playContainer{
+	height: 100%;
+	position: fixed; //this prevents scrolling
+}
+
+
 
 .largeText{
 	font-size: 35px;

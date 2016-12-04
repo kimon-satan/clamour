@@ -1,11 +1,21 @@
 TODO
 
-- add full graphics and sound
-- make display client add functions
+- make display client add functions (70%)
+
+//finish of userdata decoupling
+//direct message from player to display ? or via router
+//osc messaging
+
 - add supercollider osc
 - add the step function (if time)
 - check all works for performance
 - write extra monologue
+
+little extras ...
+
+- list env values (fix list so it params are based on player mode)
+- presets ? hmmm 
+- check touch response
 
 /////////////////////////////////////////////
 
