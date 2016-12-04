@@ -1,5 +1,6 @@
 
 var express = require('express');
+
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
@@ -25,7 +26,10 @@ const allOptions = {
     state: 0,
     isSplat: false,
     maxState: 5,
-    envTime: 8
+    envTime: 8,
+    blobSeed: 0.01,
+    colSeed: 0.01,
+    colMode: 0 //0 -> 3 (int)
 }
 
 //clear the Databases - temporary
@@ -56,6 +60,7 @@ app.use("/style",express.static(__dirname + "/style"));
 app.use("/libs",express.static(__dirname + "/libs"));
 app.use("/player",express.static(__dirname + "/player"));
 app.use("/samples",express.static(__dirname + "/samples"));
+app.use("/images",express.static(__dirname + "/images"));
 
 //two types of user
  app.get('/admin', function(req, res){
@@ -355,6 +360,9 @@ players.on('connection', function(socket)
     Object.keys(allOptions).forEach(function(e){
       usrobj[e] = allOptions[e];
     })
+
+    usrobj.colSeed = Math.random();
+    usrobj.blobSeed = Math.random();
 
     if(msg == "new")
     {

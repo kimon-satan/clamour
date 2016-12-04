@@ -1,90 +1,21 @@
 
+
 var socket = io('/player');
 var currMode = "";
 var userid = getCook('userid');
-var params = {};
+UserData = {};
 
-var scene = new THREE.Scene();
-var camera = new THREE.OrthographicCamera(
-  window.innerWidth /-2,
-  window.innerWidth / 2,
-  window.innerHeight/ 2,
-  window.innerHeight/ -2,
-  1, 1000 );
-
-var renderer = new THREE.WebGLRenderer();
-
-renderer.setSize( window.innerWidth, window.innerHeight );
-
-var canvas = renderer.domElement;
-var geometry = new THREE.PlaneGeometry( window.innerWidth, window.innerHeight, 1 );
-var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-var plane = new THREE.Mesh( geometry, material );
-scene.add( plane );
-
-var isTouch = false;
-
-canvas.addEventListener('touchend', tapon );
-canvas.addEventListener('touchstart', function(){
-  isTouch = true;
-});
-
-canvas.addEventListener('mousedown',function(e){
-  if(!isTouch)tapon(e);
-});
-
-camera.position.z = 5;
-
-var sound;
-
-function tapon(e){
-
-  clicks++;
-
-  if(isTouch)
-  {
-    socket.emit('click', {_id: userid, x: e.layerX, y: e.layerY, clicks: clicks });
-  }
-  else
-  {
-    socket.emit('click', {_id: userid, x: e.clientX, y: e.clientY, clicks: clicks });
-  }
-
-  //a random color
-  plane.material.color.r = Math.random();
-  plane.material.color.g = Math.random();
-  plane.material.color.b = Math.random();
-
-  sound.simplePlay("samples/cat.wav");
-
-}
-
-function tapoff(e){
-
-  if(!isTouchDown)return;
-  isTouchDown = false;
-
-}
 
 $(document).ready(function(){
 
   //load the sound
-  sound = new Sound();
-  sound.init();
-  sound.loadSample("/samples/cat.wav");
 
-  //whoami();
+
+
 
 });
 
 
-function render()
-{
-  requestAnimationFrame( render );
-  renderer.render( scene, camera );
-}
-
-render();
 
 function whoami(){
 
@@ -113,7 +44,6 @@ function whoami(){
 
 socket.on("whoareyou", function(msg){
   //location.reload(true);
-
   whoami();
 });
 
@@ -168,7 +98,7 @@ function parseMsgParams(msg)
 
     if(msg[k] != undefined && k != "_id" && k != "mode" && k != "groups" && k != "threads")
     {
-      params[k] = msg[k];
+      UserData[k] = msg[k];
       resp[k] = msg[k];
     }
 
@@ -184,13 +114,12 @@ function changeMode(mode)
 
   if(currMode == "play")
   {
-    $(canvas).remove();
+    iface.stopRendering();
   }
 
   if(mode == "play")
   {
-    $('#container').empty();
-    $('#container').append( canvas );
+    setup(UserData);
   }
 
   if(mode == "chat")
