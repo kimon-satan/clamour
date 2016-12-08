@@ -521,7 +521,13 @@ Interface = function(ud, callback){
         window.setTimeout(
           function()
           {
-            socket.emit('splat', {id: userid, splatPos: this.splatPos, splatPan: this.splatPan , splatRate: this.splatRate});
+            socket.emit('splat', {_id: userid,
+              splatPos: this.splatPos,
+              splatPan: this.splatPan ,
+              splatRate: this.splatRate,
+              colMode: this.ud.colMode, //passing these to display means no need for DB lookup
+              colSeed: this.ud.colSeed
+            });
 
           }.bind(this),
         300);
@@ -581,7 +587,7 @@ Interface = function(ud, callback){
     this.graphics.incrementState(this.stateIndex);
 
     //tell the server because the change came from here
-    this.callback({state: this.stateIndex}); // this
+    this.callback({state: this.stateIndex});
 
   }
 

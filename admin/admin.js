@@ -312,21 +312,8 @@ CLMR_CMDS["_display"] = function(args, cli){
 }
 
 CLMR_CMDS["_end"] = function(args, cli){
-  // Meteor.call("killSynths", Meteor.user()._id);
-  //
-  // cli.cli_mode = "chat"
-  //
-  // permThread(cli.cli_mode,["-f"], //select everyone
-  // function(options, th){
-  //   msgStream.emit('message', {type: 'chatClear', 'value':  "", thread: cli.thread});
-  //   msgStream.emit('message', {type: 'screenChange', 'value' : {mode: "chat"}, thread: th});
-  // }, cli);
-  //
-  // //kill display
-  //
-  // msgStream.emit('displayMessage', {type: 'end'});
-
-  cli.newCursor();
+  var msgobj = {cmd: "end", args: args, cli_id: cli.idx}
+  socket.emit('cmd', msgobj);
 }
 
 CLMR_CMDS["_killSound"]  = function(args, cli){

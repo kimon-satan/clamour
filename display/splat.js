@@ -212,31 +212,27 @@ SplatManager = function(_resolution, _socket)
 
   }
 
-  this.addSplat = function(id)
+  this.addSplat = function(ud)
   {
 
     //TODO surely OSC to supercollider here
+
+    var id = ud._id;
 
     if(this.spots[id] == undefined)
     {
 
       console.log("new player")
-      var ud;
-      //var ud = UserData.findOne(id, {reactive: false});
 
-      if(ud == undefined){
 
-        ud ={colSeed: Math.random(), colMode: Math.random()};
-      }
 
       var colArray = getColors(ud.colSeed, ud.colMode);
+      console.log(colArray);
       var prop = this.uniforms.resolution.value.x/this.uniforms.resolution.value.y;
       this.spots[id]= new Array();
 
-      console.log(colArray[0]);
-
       var scidx = Object.keys(this.playerInfo).length + 1;
-      var pan = 0.75; //ud.splatPan * 0.75; //FIXME
+      var pan = ud.splatPan * 0.75;
 
       this.playerInfo[id] = {
         scidx: scidx,

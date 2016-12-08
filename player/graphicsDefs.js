@@ -14,6 +14,7 @@ window.Graphics = function(ud){
 	this.ud = ud;
 
 	var colArray = getColors(this.ud.colSeed, this.ud.colMode);
+	console.log(colArray);
 
 	this.col1 = convertRGB(colArray[0]);
 	this.col2 = convertRGB(colArray[1]);

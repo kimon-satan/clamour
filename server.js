@@ -7,11 +7,22 @@ var io = require('socket.io')(http);
 var osc = require("osc");
 
 var udpPort = new osc.UDPPort({
-    localAddress: "0.0.0.0",
-    localPort: 123456
+    localAddress: "127.0.0.1",
+    localPort: 12345
 });
 
 udpPort.open();
+
+//update the graphics
+
+udpPort.on('message', (msg, rinfo) => {
+
+		if(msg.address == "/poll")
+		{
+		   display.emit('cmd', { type: 'update', id: msg.args[0], val: msg.args[1]});
+		}
+
+});
 
 require('./libs/utils.js'); //include the global utils functions
 
@@ -367,7 +378,7 @@ admin.on('connection', function(socket){
     else if(msg.cmd == "start_misty")
     {
       udpPort.send({
-          address: "/startMisty",
+          ress: "/startMisty",
           args: []
       }, "127.0.0.1", 57120);
       admin.emit('server_report', {id: msg.cli_id});
@@ -379,6 +390,17 @@ admin.on('connection', function(socket){
           args: []
       }, "127.0.0.1", 57120);
       admin.emit('server_report', {id: msg.cli_id});
+    }
+    else if(msg.cmd == "end")
+    {
+      udpPort.send({
+          address: "/allOff",
+          args: []
+      }, "127.0.0.1", 57120);
+      admin.emit('server_report', {id: msg.cli_id});
+      display.emit("cmd", {type: "end"});
+      players.emit('cmd', {cmd: 'change_mode', value: {mode: "blank"}});
+
     }
 
 
@@ -412,7 +434,11 @@ admin.on('connection', function(socket){
           var id = generateTempId(5);
       }
 
-      display.emit("cmd", {type: "splat", val: {id: id, colSeed: allOptions.colSeed, colMode: allOptions.colMode}});
+      display.emit("cmd", {type: "splat", val: {_id: id,
+        colSeed: allOptions.colSeed,
+        colMode: allOptions.colMode,
+        splatPan: Math.random() * 2.0 - 1.0,
+      }});
       admin.emit('server_report', {id: msg.cli_id}); //empty response
     }
 
@@ -487,6 +513,7 @@ players.on('connection', function(socket)
     })
 
     usrobj.colSeed = Math.random();
+    usrobj.colMode = Math.floor(Math.random() * 4);
     usrobj.blobSeed = Math.random();
 
     if(msg == "new")
@@ -549,6 +576,8 @@ players.on('connection', function(socket)
 
   socket.on('splat', function(msg){
 
+    console.log("splat", msg);
+
     var args = ["pan", msg.splatPan, "rate", msg.splatRate, "pos", msg.splatPos];
 
     udpPort.send({
@@ -557,7 +586,7 @@ players.on('connection', function(socket)
     }, "127.0.0.1", 57120);
 
 
-    display.emit('cmd', {type: "splat", val: msg.id});
+    display.emit('cmd', {type: "splat", val: msg});
 
   })
 

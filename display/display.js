@@ -9,7 +9,7 @@ var socket = io('/display');
 
 socket.on('cmd', function(msg){
 
-  console.log(msg);
+  //console.log(msg);
 
   if(msg.type == "splat")
   {
@@ -18,7 +18,7 @@ socket.on('cmd', function(msg){
   }
   else if(msg.type == "update")
   {
-    display.splatManager.updateGlow(msg.val);
+    display.splatManager.updateGlow(msg.id, msg.val);
   }
   else if (msg.type == "end")
   {
