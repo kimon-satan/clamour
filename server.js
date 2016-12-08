@@ -4,6 +4,14 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var osc = require("osc");
+
+var udpPort = new osc.UDPPort({
+    localAddress: "0.0.0.0",
+    localPort: 123456
+});
+
+udpPort.open();
 
 require('./libs/utils.js'); //include the global utils functions
 
@@ -17,8 +25,8 @@ db.then(() => {
 })
 
 const UserData = db.get('UserData');
-const UserGroups = db.get('UserGroups');
-const Presets = db.get('Presets'); //not using sofar
+const UserGroups = db.get('UserGroups'); //not used so far
+const Presets = db.get('Presets'); //not using so far - probably should just be json
 const Threads = db.get('Threads'); //This might become a variable ?
 
 
@@ -32,11 +40,7 @@ const allOptions = {
     colMode: 0 //0 -> 3 (int)
 }
 
-//clear the Databases - temporary
-UserData.remove({});
-Threads.remove({});
-UserGroups.remove({});
-Presets.remove({});
+
 
 //check the various collections exist if not create them
 
@@ -329,6 +333,53 @@ admin.on('connection', function(socket){
 
 
     }
+    else if(msg.cmd == "cleanup")
+    {
+
+
+        UserData.find({connected: false}).then((docs)=>{
+          if(docs == null)return;
+
+          var users = [];
+
+          docs.forEach(function(e){
+
+            UserData.remove(e._id);
+            users.push(e._id);
+
+          });
+          Threads.update({},{$pull: {population: {$in: users }}}); //remove these users from any threads
+                                                                    //TODO remove users from groups too
+          admin.emit('server_report', {id: msg.cli_id, msg: docs.length + " disconnected users removed "});
+        });
+
+    }
+    else if(msg.cmd == "reset_all")
+    {
+      //clear the Databases - temporary
+      UserData.remove({});
+      Threads.remove({});
+      UserGroups.remove({});
+      admin.emit('server_report', {id: msg.cli_id, msg: "all databases reset"});
+      players.emit('whoareyou'); //causes any connected players to reset
+      //TODO display reset
+    }
+    else if(msg.cmd == "start_misty")
+    {
+      udpPort.send({
+          address: "/startMisty",
+          args: []
+      }, "127.0.0.1", 57120);
+      admin.emit('server_report', {id: msg.cli_id});
+    }
+    else if(msg.cmd == "kill_sound")
+    {
+      udpPort.send({
+          address: "/allOff",
+          args: []
+      }, "127.0.0.1", 57120);
+      admin.emit('server_report', {id: msg.cli_id});
+    }
 
 
     //console.log('admin command: ' , msg);
@@ -381,12 +432,20 @@ display.on('connection', function(socket)
 
   console.log("a display connected");
 
+  socket.on('addTone', function(msg){
+
+    console.log("addTone", msg);
+
+  })
+
 });
 //io is everyone
 var players = io.of('/player');
 
 players.on('connection', function(socket)
 {
+
+  var id;
 
   console.log('a player connected ');
   socket.emit("whoareyou", "?")
@@ -398,6 +457,7 @@ players.on('connection', function(socket)
 
     var usrobj = {
         mode: "wait",
+        connected: true,
         threads: [],
         groups: []
     }
@@ -417,6 +477,7 @@ players.on('connection', function(socket)
         if(err) throw err;
         console.log('hello new user: ' + res._id);
         socket.join(res._id);
+        id = res._id;
         socket.emit('welcome', res);
       });
 
@@ -436,15 +497,24 @@ players.on('connection', function(socket)
           {
             if(err) throw err;
             console.log('hello new user: ' + res._id);
+            id = res._id;
             socket.join(res._id);
             socket.emit('welcome', res);
           });
         }
         else
         {
-          console.log('welcome back user: ' + msg);
+
           socket.join(res._id);
-          socket.emit('welcome', res);
+          id = res._id;
+          console.log('welcome back user: ' + id);
+          res.connected = true;
+          UserData.update( id,{$set: {connected: true}},{},function(){
+              socket.emit('welcome', res);
+          });
+
+
+
         }
 
       });
@@ -459,7 +529,8 @@ players.on('connection', function(socket)
 
   socket.on('disconnect', function()
   {
-    console.log('a player disconnected');
+    console.log('a player disconnected ' + id);
+    UserData.update({_id: id},{$set: {connected: false}});
   });
 
 });
@@ -491,9 +562,11 @@ function listPlayers(args, cli, cb)
     docs.forEach(function(e)
     {
       var id = String(e._id);
-      var str = id.substring(0,3) + "..." + id.substring(id.length -3, id.length) + ",  mode: " + e.mode;
+      var str = id.substring(0,3) + "..." + id.substring(id.length -3, id.length) ;
+      str += (e.connected) ? " connected " : " dormant ";
+      str += ",  mode: " + e.mode;
 
-      if(cli.mode == "play")
+      if(e.mode == "play")
       {
         str += ", state: " + e.state;
         str += ", isSplat: " + e.isSplat;
@@ -688,6 +761,10 @@ function parseFilters(args, cli){
 
         switch(args[i]){
 
+          case "connected":
+            filter.mode = "connected";
+          break;
+
           case "thread":
             filter.mode = "thread";
             filter.thread = cli.thread;
@@ -699,6 +776,10 @@ function parseFilters(args, cli){
 
           case "chat":
             filter.mode = "chat";
+          break;
+
+          case "wait":
+            filter.mode = "wait";
           break;
 
           case "state":

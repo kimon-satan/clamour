@@ -72,8 +72,13 @@ generateSearchObj = function(args){
 	switch(filter.mode){
 
 		case "chat":
-			searchObj.view = filter.not ? {$ne: filter.mode} : filter.mode;
+    case "play":
+    case "wait":
+			searchObj.mode = filter.not ? {$ne: filter.mode} : filter.mode;
 		break;
+    case "connected":
+      searchObj.connected = !filter.not;
+    break;
 		case "thread":
 			searchObj.threads = filter.not  ? {$nin: [filter.thread]} : {$in: [filter.thread]}
 		break;

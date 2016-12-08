@@ -53,11 +53,13 @@ Spot = function (owner)
 
 const MAX_PARTICLES = 20000; //could be higher wait and see
 
-SplatManager = function(_resolution)
+SplatManager = function(_resolution, _socket)
 {
   this.spots = {};
   this.playerInfo = {};
   this.glowWaveEnvs = [];
+
+  this.socket = _socket;
 
   this.geo = new THREE.BufferGeometry();
   this.geo.dynamic = true;
@@ -213,6 +215,8 @@ SplatManager = function(_resolution)
   this.addSplat = function(id)
   {
 
+    //TODO surely OSC to supercollider here
+
     if(this.spots[id] == undefined)
     {
 
@@ -258,7 +262,7 @@ SplatManager = function(_resolution)
       if(this.playerInfo[id].energy == 0.4)
       {
 
-        Meteor.call('addTone', {
+        this.socket.emit('addTone', {
           scidx: this.playerInfo[id].scidx ,
           freq: this.playerInfo[id].freq,
           phase: this.playerInfo[id].phase,
@@ -269,7 +273,8 @@ SplatManager = function(_resolution)
       else if(this.playerInfo[id].energy > 0.4)
       {
         var glowTarget = (this.playerInfo[id].energy - 0.3)/0.6;
-        Meteor.call('updateTone', {scidx: this.playerInfo[id].scidx, amp: glowTarget});
+
+        this.socket.emit('updateTone', {scidx: this.playerInfo[id].scidx, amp: glowTarget});
       }
 
 

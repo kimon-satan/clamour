@@ -64,7 +64,7 @@ function setupDisplay ()
   {
     if(display == undefined)
     {
-      display = new Display();
+      display = new Display(socket);
     }
     else{
       $('#displayscreen').append( display.renderer.domElement );
@@ -77,7 +77,7 @@ function setupDisplay ()
   }
 }
 
-Display = function()
+Display = function(socket)
 {
   this.renderer = new THREE.WebGLRenderer();
   this.renderer.setSize( window.innerWidth, window.innerHeight );
@@ -94,7 +94,7 @@ Display = function()
   this.fps = 0;
 
   this.scene = new THREE.Scene();
-  this.splatManager = new SplatManager(this.resolution);
+  this.splatManager = new SplatManager(this.resolution, socket);
   this.scene.add(this.splatManager.mesh);
 
   this.mousePos = new THREE.Vector2(0,0);

@@ -330,13 +330,14 @@ CLMR_CMDS["_end"] = function(args, cli){
 }
 
 CLMR_CMDS["_killSound"]  = function(args, cli){
-  // Meteor.call("killSynths", Meteor.user()._id);
-  cli.newCursor();
+  var msgobj = {cmd: "kill_sound", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
+  socket.emit('cmd', msgobj);
 },
 
 CLMR_CMDS["_startMisty"]  = function(args, cli){
-  // Meteor.call("startMisty", Meteor.user()._id);
-  cli.newCursor();
+
+  var msgobj = {cmd: "start_misty", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
+  socket.emit('cmd', msgobj);
 },
 
 CLMR_CMDS["_killProcs"] = function(args, cli){
@@ -677,6 +678,16 @@ CLMR_CMDS["_thread"] = function(args,  cli){
     socket.emit('cmd', msgobj);
   }
 
+}
+
+CLMR_CMDS["_cleanup"] = function(args,  cli){
+    var msgobj = {cmd: "cleanup", args: args, cli_id: cli.idx, thread: cli.thread}
+    socket.emit('cmd', msgobj);
+}
+
+CLMR_CMDS["_resetall"] = function(args,  cli){
+    var msgobj = {cmd: "reset_all", args: args, cli_id: cli.idx, thread: cli.thread}
+    socket.emit('cmd', msgobj);
 }
 
 /*-----------------------------------------------MORE SPECIFIC-------------------------------------------*/
