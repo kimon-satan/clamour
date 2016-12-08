@@ -56,6 +56,10 @@ Interface = function(ud, callback){
 
   this.maxState;
 
+  this.splatPan = -1.0 + Math.random() * 2.0;
+  this.splatRate = Math.random();
+  this.splatPos = Math.random();
+
 
 
   this.reactionMaps =
@@ -185,7 +189,6 @@ Interface = function(ud, callback){
 
     this.currentReactionMap = this.reactionMaps[0][0];
 
-    this.incrementState();
 
 
     ///////////////////////SETUP EVENTS////////////////////////////////////////
@@ -512,7 +515,18 @@ Interface = function(ud, callback){
       }
 
       // ultimately we don't need mousePos
-      this.graphics.draw(this.ellapsedTime, this.mousePos, this.sound.spit);
+      this.graphics.draw(this.ellapsedTime, this.mousePos, function(){
+
+        this.sound.spit();
+        window.setTimeout(
+          function()
+          {
+            socket.emit('splat', {id: userid, splatPos: this.splatPos, splatPan: this.splatPan , splatRate: this.splatRate});
+
+          }.bind(this),
+        300);
+
+      }.bind(this));
       this.sound.update(this.ellapsedTime, this.mousePos, this.envsActive, this.reactEnvelopes);
     }
 
@@ -567,7 +581,7 @@ Interface = function(ud, callback){
     this.graphics.incrementState(this.stateIndex);
 
     //tell the server because the change came from here
-    this.callback({state: this.stateIndex});
+    this.callback({state: this.stateIndex}); // this
 
   }
 

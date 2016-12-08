@@ -154,11 +154,7 @@ window.Sound = function(){
 
     this.simplePlay("232211_spit.wav"); //FIXME !!!!
 
-    window.setTimeout(
-      function(){
-        msgStream.emit('displayMessage', { type: 'splat', id: Meteor.user()._id});
-        Meteor.call("splatSound", Meteor.user()._id);
-      }.bind(this), 300);
+
   }.bind(this);
 
 }

@@ -236,7 +236,7 @@ SplatManager = function(_resolution, _socket)
       console.log(colArray[0]);
 
       var scidx = Object.keys(this.playerInfo).length + 1;
-      var pan = ud.splatPan * 0.75;
+      var pan = 0.75; //ud.splatPan * 0.75; //FIXME
 
       this.playerInfo[id] = {
         scidx: scidx,

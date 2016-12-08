@@ -436,7 +436,27 @@ display.on('connection', function(socket)
 
     console.log("addTone", msg);
 
+    var args = [];
+
+    Object.keys(msg).forEach(function(p)
+    {
+      args.push(p);
+      args.push(msg[p]);
+    })
+
+    udpPort.send({
+        address: "/addTone",
+        args: args,
+    }, "127.0.0.1", 57120);
+
   })
+
+  socket.on('updateTone', function(msg){
+
+    console.log("updateTone", msg);
+
+  })
+
 
 });
 //io is everyone
@@ -526,6 +546,20 @@ players.on('connection', function(socket)
   {
     UserData.update({_id: msg._id},{$set: msg});
   });
+
+  socket.on('splat', function(msg){
+
+    var args = ["pan", msg.splatPan, "rate", msg.splatRate, "pos", msg.splatPos];
+
+    udpPort.send({
+        address: "/splat",
+        args: args,
+    }, "127.0.0.1", 57120);
+
+
+    display.emit('cmd', {type: "splat", val: msg.id});
+
+  })
 
   socket.on('disconnect', function()
   {

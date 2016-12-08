@@ -113,6 +113,7 @@ function parseMsgParams(msg)
   {
     if(resp.state != undefined)
     {
+
       iface.changeState(resp.state);
     }
 
@@ -132,6 +133,8 @@ function parseMsgParams(msg)
     }
   }
 
+
+      console.log(resp)
   socket.emit('update_user', resp); //tell the server that we have changed
 }
 

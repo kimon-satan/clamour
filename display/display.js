@@ -13,6 +13,7 @@ socket.on('cmd', function(msg){
 
   if(msg.type == "splat")
   {
+    console.log("splat");
     display.splatManager.addSplat(msg.val);
   }
   else if(msg.type == "update")
