@@ -155,6 +155,17 @@ function changeMode(mode)
     setup(UserData, informServer); //sets up canvas
   }
 
+  if(mode == "broken")
+  {
+    $('#container').empty();
+    $('#container').append( "<div id='chatContainer'> \
+    <h1>Sorry, I don't think I can do this on your device. </h1> \
+    <h2>Just enjoy the sounds for the moment. </h2> \
+    <h2>I'll be back soon. </h2> \
+    </div>" );
+  }
+
+
   if(mode == "chat")
   {
     $('#container').empty();

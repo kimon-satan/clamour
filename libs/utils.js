@@ -74,6 +74,7 @@ generateSearchObj = function(args){
 		case "chat":
     case "play":
     case "wait":
+    case "broken":
 			searchObj.mode = filter.not ? {$ne: filter.mode} : filter.mode;
 		break;
     case "connected":

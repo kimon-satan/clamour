@@ -284,12 +284,6 @@ evaluateCommand = function(cmd,  cli){
 }
 
 
-
-CLMR_CMDS["_pedalStart"] = function(args, cli){
-  //Meteor.call("startPedal", Meteor.user()._id);
-  cli.newCursor();
-}
-
 CLMR_CMDS["_splat"] = function(args, cli){
 
   var msgobj = {cmd: "splat", args: args, cli_id: cli.idx}
@@ -307,6 +301,13 @@ CLMR_CMDS["_instruct"] = function(args, cli){
 CLMR_CMDS["_display"] = function(args, cli){
 
   var msgobj = {cmd: "display", args: args, cli_id: cli.idx}
+  socket.emit('disp_cmd', msgobj);
+
+}
+
+CLMR_CMDS["_clearDisplay"] = function(args, cli){
+
+  var msgobj = {cmd: "clear_display", args: args, cli_id: cli.idx}
   socket.emit('disp_cmd', msgobj);
 
 }
@@ -415,11 +416,6 @@ CLMR_CMDS["_blank"] = function(args, cli){
 
   socket.emit('cmd', msgobj);
 
-  //work out how to do this later
-  // if(!addStep(args, cb, cli)){
-  //   permThread(cli.cli_mode, args, cb, cli);
-  // }
-
 }
 
 
@@ -444,33 +440,6 @@ CLMR_CMDS["_group"] = function(args,  cli){
 
 }
 
-CLMR_CMDS["_remove"] = function(args,  cli){
-
-  var i = args.indexOf("-p");
-  var p;
-  var t;
-
-  if(i > -1){
-    args.splice(i,1);
-    p = args[i];
-    args.splice(i,1);
-  }
-
-  i = args.indexOf("-t");
-  if(i > -1){
-     args.splice(i,1);
-     t = args[i];
-     args.splice(i,1);
-  }
-
-  if(typeof(p) != "undefined" && typeof(t) != "undefined"){
-    Meteor.call("removePreset", Meteor.user()._id, {type: t, name: p}, function(e,r){cli.cmdReturn(e,r)});
-  }else{
-    cli.newCursor();
-  }
-
-
-}
 
 CLMR_CMDS["_lplayers"] = function(args, cli)
 {
@@ -548,80 +517,6 @@ CLMR_CMDS["_lcmds"] = function(args,  cli){
   cli.newCursor();
 }
 
-CLMR_CMDS["_lpresets"] = function(args,  cli){
-
-  // var i = args.indexOf("-t");
-  // var t;
-  //
-  // if(i > -1){
-  //   args.splice(i,1);
-  //   t = args[i];
-  //   args.splice(i,1);
-  // }else{
-  //   t = cli.cli_mode;
-  // }
-  //
-  // Presets.find({type: t}).forEach(function(r){
-  //
-  //   cli.println(r.name);
-  // });
-
-  cli.newCursor();
-
-}
-
-CLMR_CMDS["_loptions"] = function(args,  cli){
-
- //  var i = args.indexOf("-t");
- //  var t;
- //
- //  if(i > -1){
- //    args.splice(i,1);
- //    t = args[i];
- //    args.splice(i,1);
- //  }else{
- //    t = cli.cli_mode;
- //  }
- //
- //  i = args.indexOf("-p");
- //  var name;
- //
- //  if(i > -1){
- //    args.splice(i,1);
- //    name = args[i]
- //    args.splice(i,1);
- //  }
- //
- // console.log(name, t);
- //
- //  var preset = Presets.findOne({name: name, type: t});
- //  console.log(preset);
- //
- //
- //  if(preset){
- //    for(item in preset.options){
- //      var tp = typeof(preset.options[item]);
- //      if(tp == "number" || tp == "string" || tp == "boolean"){
- //        cli.println(item + ": " + preset.options[item]);
- //      }else{
- //        var str = item + ": ";
- //        for(var o in preset.options[item]){
- //          str += ", " + preset.options[item][o];
- //        }
- //        cli.println(str);
- //      }
- //
- //    }
- //  }else{
- //    for(o in gCurrentOptions[t]){
- //      cli.println(o + ": " + gCurrentOptions[t][o]);
- //    }
- //  }
-
-  cli.newCursor();
-
-}
-
 CLMR_CMDS["_q"] = function(args,  cli){ //need to think about what these commands can usefully do
     cli.cli_mode = "clmr";
     cli.newCursor();
@@ -635,7 +530,7 @@ CLMR_CMDS["_kill"] = function(args,  cli){
 
 }
 
-CLMR_CMDS["_killall"] = function(args,  cli){
+CLMR_CMDS["_killAll"] = function(args,  cli){
 
   cli.thread = "";
   var msgobj = {cmd: "kill_threads", cli_id: cli.idx}
@@ -667,12 +562,12 @@ CLMR_CMDS["_thread"] = function(args,  cli){
 
 }
 
-CLMR_CMDS["_cleanup"] = function(args,  cli){
+CLMR_CMDS["_cleanUp"] = function(args,  cli){
     var msgobj = {cmd: "cleanup", args: args, cli_id: cli.idx, thread: cli.thread}
     socket.emit('cmd', msgobj);
 }
 
-CLMR_CMDS["_resetall"] = function(args,  cli){
+CLMR_CMDS["_resetAll"] = function(args,  cli){
     var msgobj = {cmd: "reset_all", args: args, cli_id: cli.idx, thread: cli.thread}
     socket.emit('cmd', msgobj);
 }

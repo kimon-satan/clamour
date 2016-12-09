@@ -33,6 +33,7 @@ Interface = function(ud, callback){
   this.canvas
   this.ud = ud;
   this.callback = callback;
+  this.panicCount = 0;
 
   this.mousePos
   this.touchStartPos
@@ -146,8 +147,6 @@ Interface = function(ud, callback){
   this.init = function()
   {
 
-
-
     this.graphics = new Graphics(this.ud);
     this.graphics.init();
     this.sound = new Sound();
@@ -169,8 +168,9 @@ Interface = function(ud, callback){
 
 
     this.stateEnvelope = new Envelope(this.envTime, 60);
-    this.stateIndex = 0;
-    this.maxState = 2;
+    this.stateEnvelope.targetVal = 1.0;
+    this.stateIndex = ud.stateIndex;
+    this.maxState = ud.maxState;
     this.changingState = true;
 
     this.excitementEnv = new Envelope2(1.75, 25, 60);
@@ -291,7 +291,6 @@ Interface = function(ud, callback){
   this.gestureStart = function ()
   {
 
-    console.log("st")
     this.isGesture = false;
     this.currentGesture = 0;
 
@@ -421,6 +420,22 @@ Interface = function(ud, callback){
     var n_et = (new Date().getTime() - this.startTime) * 0.001;
     this.accumulator += (n_et - this.ellapsedTime);
     this.ellapsedTime = n_et;
+
+    if(this.accumulator > 3.0/60)
+    {
+      this.panicCount += 1;
+      if(this.panicCount > 5)
+      {
+        //tell the server that we can't render graphics
+        this.stopRendering();
+        changeMode("broken"); //FIXME should be a callback
+        this.panicCount = 0;
+        return;
+      }
+
+    }
+
+
 
     if(this.accumulator > 1.0/60)
     {

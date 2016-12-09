@@ -44,7 +44,7 @@ const Threads = db.get('Threads'); //This might become a variable ?
 const allOptions = {
     state: 0,
     isSplat: false,
-    maxState: 5,
+    maxState: 2,
     envTime: 8,
     blobSeed: 0.01,
     colSeed: 0.01,
@@ -114,12 +114,12 @@ admin.on('connection', function(socket){
 
           options.mode = msg.mode;
 
-          if(uids != null)
-          {
-            uids.forEach(function(e){
-              players.to(e).emit('cmd', {cmd: 'change_mode', value: options});
-            });
-          }
+          if(uids == null)return;
+
+          uids.forEach(function(e){
+            players.to(e).emit('cmd', {cmd: 'change_mode', value: options});
+          });
+
 
         });
 
@@ -131,10 +131,14 @@ admin.on('connection', function(socket){
       Threads.find({thread: msg.thread}, 'population').then((docs)=>{
 
         if(docs == null)return;
+        if(docs[0] != undefined)
+        {
 
-        docs[0].population.forEach(function(e){
-          players.to(e).emit('cmd', {cmd: 'chat_update', value: msg.value});
-        });
+          docs[0].population.forEach(function(e){
+            players.to(e).emit('cmd', {cmd: 'chat_update', value: msg.value});
+          });
+
+        }
 
       });
     }
@@ -143,10 +147,13 @@ admin.on('connection', function(socket){
       Threads.find({thread: msg.thread}, 'population').then((docs)=>{
 
         if(docs == null)return;
+        if(docs[0] != undefined)
+        {
 
-        docs[0].population.forEach(function(e){
-          players.to(e).emit('cmd', {cmd: 'chat_clear'});
-        });
+          docs[0].population.forEach(function(e){
+            players.to(e).emit('cmd', {cmd: 'chat_clear'});
+          });
+        }
 
       });
     }
@@ -155,10 +162,14 @@ admin.on('connection', function(socket){
       Threads.find({thread: msg.thread}, 'population').then((docs)=>{
 
         if(docs == null)return;
+        if(docs[0] != undefined)
+        {
 
-        docs[0].population.forEach(function(e){
-          players.to(e).emit('cmd', {cmd: 'chat_newline'});
-        });
+          docs[0].population.forEach(function(e){
+            players.to(e).emit('cmd', {cmd: 'chat_newline'});
+          });
+
+        }
 
       });
     }
@@ -332,10 +343,14 @@ admin.on('connection', function(socket){
             Threads.find({thread: msg.thread}, 'population').then((docs)=>{
 
               if(docs == null)return;
+              if(docs[0] != undefined)
+              {
 
-              docs[0].population.forEach(function(e){
-                players.to(e).emit('cmd', {cmd: 'set_params', value: options});
-              });
+                docs[0].population.forEach(function(e){
+                  players.to(e).emit('cmd', {cmd: 'set_params', value: options});
+                });
+
+              }
 
             });
           }
@@ -378,7 +393,7 @@ admin.on('connection', function(socket){
     else if(msg.cmd == "start_misty")
     {
       udpPort.send({
-          ress: "/startMisty",
+          address: "/startMisty",
           args: []
       }, "127.0.0.1", 57120);
       admin.emit('server_report', {id: msg.cli_id});
@@ -411,7 +426,7 @@ admin.on('connection', function(socket){
   socket.on('disp_cmd', function(msg)
   {
 
-    console.log(msg);
+    //console.log(msg);
 
     if(msg.cmd == "instruct")
     {
@@ -421,6 +436,11 @@ admin.on('connection', function(socket){
     else if(msg.cmd == "display")
     {
       display.emit("cmd", {type: "display"});
+      admin.emit('server_report', {id: msg.cli_id}); //empty response
+    }
+    else if(msg.cmd == "clear_display")
+    {
+      display.emit("cmd", {type: "clear_display"});
       admin.emit('server_report', {id: msg.cli_id}); //empty response
     }
     else if(msg.cmd == "splat")
@@ -480,6 +500,19 @@ display.on('connection', function(socket)
   socket.on('updateTone', function(msg){
 
     console.log("updateTone", msg);
+
+    var args = [];
+
+    Object.keys(msg).forEach(function(p)
+    {
+      args.push(p);
+      args.push(msg[p]);
+    })
+
+    udpPort.send({
+        address: "/updateTone",
+        args: args,
+    }, "127.0.0.1", 57120);
 
   })
 
@@ -573,6 +606,7 @@ players.on('connection', function(socket)
   {
     UserData.update({_id: msg._id},{$set: msg});
   });
+
 
   socket.on('splat', function(msg){
 
@@ -824,25 +858,17 @@ function parseFilters(args, cli){
 
         switch(args[i]){
 
-          case "connected":
-            filter.mode = "connected";
-          break;
-
           case "thread":
             filter.mode = "thread";
             filter.thread = cli.thread;
           break;
 
           case "play":
-            filter.mode = "play";
-          break;
-
           case "chat":
-            filter.mode = "chat";
-          break;
-
           case "wait":
-            filter.mode = "wait";
+          case "broken":
+          case "connected":
+            filter.mode = args[i];
           break;
 
           case "state":

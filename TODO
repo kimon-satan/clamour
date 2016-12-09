@@ -1,12 +1,5 @@
 TODO
 
-- make display client add functions (70%)
-
-//finish of userdata decoupling
-//direct message from player to display ? or via router
-//osc messaging
-
-- add supercollider osc
 - add the step function (if time)
 - check all works for performance
 - write extra monologue

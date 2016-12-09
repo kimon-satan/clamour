@@ -13,14 +13,13 @@ socket.on('cmd', function(msg){
 
   if(msg.type == "splat")
   {
-    console.log("splat");
     display.splatManager.addSplat(msg.val);
   }
   else if(msg.type == "update")
   {
     display.splatManager.updateGlow(msg.id, msg.val);
   }
-  else if (msg.type == "end")
+  else if (msg.type == "end" || msg.type == "clear_display")
   {
     display.splatManager.clearAll();
   }
