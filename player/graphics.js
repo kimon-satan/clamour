@@ -1,10 +1,29 @@
 
+function webglAvailable() {
+	try {
+		var canvas = document.createElement( 'canvas' );
+		return !!( window.WebGLRenderingContext && (
+			canvas.getContext( 'webgl' ) ||
+			canvas.getContext( 'experimental-webgl' ) )
+		);
+	} catch ( e ) {
+		return false;
+	}
+}
+
 
 Graphics.prototype.init = function()
 {
 	//the graphics renderer
-	this.renderer = new THREE.WebGLRenderer();
-
+	if ( webglAvailable() )
+	{
+			this.renderer = new THREE.WebGLRenderer();
+			this.isNoWebGL = false;
+	}
+	else
+	{
+			this.isNoWebGL = true;
+	}
 
 	//maybe reduce size to improve performance
 	this.renderer.setSize( window.innerWidth, window.innerHeight );

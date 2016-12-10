@@ -413,15 +413,26 @@ Interface = function(ud, callback){
 
   this.render = function() {
 
+    if(this.graphics.isNoWebGL){
+      changeMode("broken")
+      return;
+    }
+
+    var old_acc = this.accumulator;
+
     var n_et = (new Date().getTime() - this.startTime) * 0.001;
     this.accumulator += (n_et - this.ellapsedTime);
     this.ellapsedTime = n_et;
 
-    if(this.accumulator > 3.0/60)
+
+    if(this.accumulator > 0.04)
     {
+
       this.panicCount += 1;
-      if(this.panicCount > 5)
+      if(this.panicCount > 4)
       {
+
+
         //tell the server that we can't render graphics
         this.stopRendering();
         changeMode("broken"); //FIXME should be a callback
@@ -430,10 +441,10 @@ Interface = function(ud, callback){
       }
 
     }else {
+      //console.log(this.accumulator);
       this.panicCount = 0;
+
     }
-
-
 
     if(this.accumulator > 1.0/60)
     {
