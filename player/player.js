@@ -10,6 +10,7 @@ $(document).ready(function(){
 
   //load the sound
 
+
 });
 
 
@@ -52,7 +53,10 @@ socket.on('welcome', function (msg) {
   userid = msg._id;
 
   parseMsgParams(msg);
+  setup(UserData, informServer); //sets up canvas
   changeMode(msg.mode);
+
+
 
 });
 
@@ -69,7 +73,7 @@ socket.on('cmd', function(msg)
     $('#chatContainer>div.largeText:last-child').remove();
     $('#chatContainer').append( '<div class="largeText">' + msg.value +'</div>' );
   }
-  else if(msg.cmd == 'chat_newline')
+  else if(msg.cmd == 'chat_newh3ne')
   {
     $('#chatContainer').append( '<div class="largeText"></div>' );
   }
@@ -152,7 +156,10 @@ function changeMode(mode)
   {
     $('#container').empty();
     $('#container').append( '<div id="playContainer"></div>' );
-    setup(UserData, informServer); //sets up canvas
+
+    //resume graphics
+    iface.graphics.resume();
+    iface.render();
   }
 
   if(mode == "broken")
@@ -175,14 +182,15 @@ function changeMode(mode)
   if(mode == "wait")
   {
     $('#container').empty();
-    $('#container').append( '<div id="chatContainer"><h1>Conditional Love</h1><h2>Please wait for the performance to begin ...</h2></div>' );
+    $('#container').append( "<div id='chatContainer'> \
+    <h1>Conditional Love</h1> \
+    <h2>Whilst you're waiting ...</h2>\
+      <h3>Put your volume on full</h3> \
+      <h3>Turn silent OFF!</h3> \
+      <h3>Turn autolock OFF!</h3> \
+      <h3>Keep your phone in portrait position</h3> \
+    </div>" );
 
-  // <h2>Meanwhile ...</h2>
-  //
-  // <h3>Turn your mobile's volume to full</h3>
-  // <h3>Don't put it on silent !</h3>
-  // <h3>Turn off autolock</h3>
-  // <h3>Keep your phone in the portrait position</h3>
   }
 
   if(mode == "blank")

@@ -51,7 +51,7 @@ h1{
 
 #playContainer{
 	height: 100%;
-	position: fixed; //this prevents scrolling
+	position: fixed; 
 }
 
 

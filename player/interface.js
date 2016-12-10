@@ -11,17 +11,13 @@ setup = function (ud, callback)
       iface.init();
 
     }
-    else{
-      //resume graphics
-      iface.graphics.resume();
-      iface.render();
-    }
   }
   else
   {
     window.setTimeout(setup, 10);
   }
 }
+
 
 Interface = function(ud, callback){
 
@@ -280,7 +276,7 @@ Interface = function(ud, callback){
     , false);
 
     //start rendering
-    this.render();
+    //this.render(); // no longer using this as we do loading at the start to spread server load
 
     this.changeState(ud.state);
     this.setEnvTime(ud.envTime);
@@ -433,6 +429,8 @@ Interface = function(ud, callback){
         return;
       }
 
+    }else {
+      this.panicCount = 0;
     }
 
 
