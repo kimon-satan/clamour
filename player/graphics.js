@@ -247,124 +247,15 @@ Graphics.prototype.hideInstruction = function(){
 
 ////////////////////////////////////////////////////GROWTH STATES///////////////////////////////
 
-Graphics.prototype.changeState = function(idx)
-{
+Graphics.prototype.changeState = changeState;
 
-	this.currStateIdx = idx;
-	this.currState = {};
+Graphics.prototype.getState = getState;
 
-	for(var i = 0; i <= idx; i++ )
-	{
-			this.prevState = this.currState;
-			this.currState = {};
-			this.getState(i);
-	}
+Graphics.prototype.updateUniforms = updateUniforms;
 
+Graphics.prototype.incrementState = incrementState;
 
-}
-
-Graphics.prototype.getState = function(idx)
-{
-
-	for(property in this.uniforms)
-	{
-		if(typeof(this.uniforms[property].value) == "number")
-		{
-			if(this.states[idx][property] !== undefined)
-			{
-				this.uniforms[property].value = this.states[idx][property];
-			}
-
-			this.currState[property] = this.uniforms[property].value;
-
-		}
-		else if(this.uniforms[property].value instanceof THREE.Vector3)
-		{
-			if(this.states[idx][property] !== undefined)
-			{
-				this.uniforms[property].value.copy(this.states[idx][property]);
-			}
-
-			this.currState[property]  = new THREE.Vector3().copy(this.uniforms[property].value);
-		}
-		else if(this.uniforms[property].value instanceof THREE.Vector2)
-		{
-			if(this.states[idx][property] !== undefined)
-			{
-
-				this.uniforms[property].value.copy(this.states[idx][property]);
-			}
-
-			this.currState[property] = new THREE.Vector2().copy(this.uniforms[property].value);
-		}
-	}
-
-}
-
-Graphics.prototype.updateUniforms = function()
-{
-
-	//reset the uniforms after any jiggery pokery
-
-	for(property in this.uniforms)
-	{
-		if(this.uniforms[property].locked)
-		{
-			//skip it
-		}
-		else if(typeof(this.uniforms[property].value) == "number")
-		{
-			this.uniforms[property].value = this.currState[property];
-		}
-		else if(this.uniforms[property].value instanceof THREE.Vector3)
-		{
-			this.uniforms[property].value.copy(this.currState[property]);
-		}
-		else if(this.uniforms[property].value instanceof THREE.Vector2)
-		{
-			this.uniforms[property].value.copy(this.currState[property]);
-		}
-	}
-
-}
-
-Graphics.prototype.incrementState = function(idx)
-{
-
-	if(idx != this.currStateIdx + 1){
-		this.changeState(idx - 1);
-	}
-
-	this.currStateIdx = idx;
-
-	//beginning a new state
-
-	this.prevState = {};
-	this.stateDeltas = {};
-
-	for(property in this.states[idx])
-	{
-
-		if(typeof(this.uniforms[property].value) == "number")
-		{
-			this.prevState[property] = this.currState[property];
-			this.stateDeltas[property] = this.states[idx][property] - this.currState[property];
-		}
-		else if(this.uniforms[property].value instanceof THREE.Vector3)
-		{
-			this.prevState[property] = new THREE.Vector3().copy(this.currState[property]);
-			this.stateDeltas[property] = new THREE.Vector3().subVectors(this.states[idx][property],this.currState[property] );
-		}
-		else if(this.uniforms[property].value instanceof THREE.Vector2)
-		{
-			this.prevState[property] = new THREE.Vector2().copy(this.currState[property].value);
-			this.stateDeltas[property] = new THREE.Vector2().subVectors(this.states[idx][property],this.currState[property] );
-		}
-	}
-
-}
-
-Graphics.prototype.updateState = function(stateEnvelope)
+Graphics.prototype.updateState = function(stateEnvelope) //this needs to be changed to just the z val
 {
 
 	//increment the current state

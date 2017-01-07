@@ -483,6 +483,24 @@ admin.on('connection', function(socket){
       }});
       admin.emit('server_report', {id: msg.cli_id}); //empty response
     }
+    else if(msg.cmd == "dispBlob")
+    {
+      if(msg.args.length > 0)
+      {
+          var id = msg.args[0];
+      }
+      else
+      {
+          var id = generateTempId(5);
+      }
+
+      display.emit("cmd", {type: "blob", val: {_id: id,
+        colSeed: Math.random(),
+        colMode: Math.floor(Math.random() * 4),
+        blobSeed: Math.random()
+      }});
+      admin.emit('server_report', {id: msg.cli_id}); //empty response
+    }
 
   })
 

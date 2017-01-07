@@ -193,9 +193,9 @@ blobFragmentShader = `
 		float ct = cos(theta);
 		float st = sin(theta);
 
-		float o_noise = noise(vec3(ustheta * o_step + move.x , ustheta * o_step + move.y , seed)); //symmetrical noise
-		float c_noise = noise(vec3(ct + c_time, st + c_time, 0.));
-		float r_noise = noise(vec3(ct + r_time, st + r_time, 10.));
+		float o_noise = noise(vec3(ustheta * o_step + move.x , ustheta * o_step + move.y , seed * 200.)); //symmetrical noise
+		float c_noise = noise(vec3(ct + c_time, st + c_time, seed * 75.));
+		float r_noise = noise(vec3(ct + r_time, st + r_time, 10. + seed * 100.));
 
 		//edges
 		float o_edge = 0.7 + o_amp * 0.3 * o_noise + r_amp * 0.3 * r_noise;
@@ -223,7 +223,7 @@ blobFragmentShader = `
 		vec3 c_col = tex2D(vec2(ct * c_nrho , st * c_nrho )) * c_fade;
 
 
-		gl_FragColor = vec4( vec3(o_col * o_lum * (1.0 - c_lum) + c_lum * c_col),1.0);
+		gl_FragColor = vec4( vec3(o_col * o_lum * (1.0 - c_lum) + c_lum * c_col),o_lum);
 
 
   }

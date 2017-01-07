@@ -291,6 +291,13 @@ CLMR_CMDS["_splat"] = function(args, cli){
 
 }
 
+CLMR_CMDS["_dispBlob"] = function(args, cli){
+
+  var msgobj = {cmd: "dispBlob", args: args, cli_id: cli.idx}
+  socket.emit('disp_cmd', msgobj);
+
+}
+
 CLMR_CMDS["_instruct"] = function(args, cli){
 
   var msgobj = {cmd: "instruct", args: args, cli_id: cli.idx}

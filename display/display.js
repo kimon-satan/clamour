@@ -15,6 +15,11 @@ socket.on('cmd', function(msg){
   {
     display.splatManager.addSplat(msg.val);
   }
+  else if(msg.type == "blob")
+  {
+    var mesh = display.blobManager.addBlob(new THREE.Vector2(Math.random() * 2.0 - 1.0,Math.random() * 2.0 -1), msg.val);
+    display.scene.add(mesh);
+  }
   else if(msg.type == "update")
   {
     display.splatManager.updateGlow(msg.id, msg.val);
@@ -95,12 +100,10 @@ Display = function(socket)
 
   this.scene = new THREE.Scene();
   this.splatManager = new SplatManager(this.resolution, socket);
-  this.blobManager = new BlobManager(this.resolution, socket);
+  this.blobManager = new BlobManager(socket);
   this.scene.add(this.splatManager.mesh);
 
-  //debug code
-  b = new Blob();
-  this.scene.add(b.mesh);
+  this.mousePos = new THREE.Vector2();
 
 /////////////////////////////////////
 
@@ -113,6 +116,9 @@ Display = function(socket)
       1 + e.clientY* -2/this.canvas.height
     );
 
+    var m = this.blobManager.addBlob(this.mousePos, generateTempId(5));
+    this.scene.add(m);
+    console.log("md");
 
     this.isMouseDown = true;
   }.bind(this)
@@ -152,7 +158,7 @@ Display = function(socket)
       this.accumulator = 0;
       this.splatManager.updateSpots(this.ellapsedTime);
       //debug code
-      b.draw();
+      this.blobManager.update(this.ellapsedTime);
       this.renderer.render( this.scene, this.camera );
       lastFrameTime = this.ellapsedTime;
     }
