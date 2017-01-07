@@ -33,22 +33,17 @@ Graphics.prototype.init = function()
 	this.canvas = this.renderer.domElement;
 
 
-
-	this.uniforms.resolution.value.x = this.renderer.domElement.width;
-	this.uniforms.resolution.value.y = this.renderer.domElement.height;
-
 	this.camera = new THREE.Camera();
 	this.camera.position.z = 1;
 
 	this.scene = new THREE.Scene();
 	this.isExploding = false;
 
-
-
-
 	//////////////////////BLOB///////////////////////////////
 
-	var geometry = new THREE.PlaneBufferGeometry( 2, 2 );
+	var p = this.renderer.domElement.width/this.renderer.domElement.height;
+	var geometry = new THREE.PlaneBufferGeometry( 2 * p, 2); // we are about to rotate so x & y are reveresed
+	geometry.rotateZ(Math.PI/2); //quarter turn
 
 	var material = new THREE.ShaderMaterial( {
 		uniforms: this.uniforms,
@@ -222,10 +217,7 @@ Graphics.prototype.draw = function(ellapsedTime , mousePos, splatCB){
 		}
 	}
 
-
-
 	this.uniforms.time.value = ellapsedTime;
-	this.uniforms.mouse.value.copy(mousePos);
 
 	if(this.instruct_material.visible)
 	{

@@ -95,9 +95,16 @@ Display = function(socket)
 
   this.scene = new THREE.Scene();
   this.splatManager = new SplatManager(this.resolution, socket);
+  this.blobManager = new BlobManager(this.resolution, socket);
   this.scene.add(this.splatManager.mesh);
 
-  this.mousePos = new THREE.Vector2(0,0);
+  //debug code
+  b = new Blob();
+  this.scene.add(b.mesh);
+
+/////////////////////////////////////
+
+//  this.mousePos = new THREE.Vector2(0,0);
 
   this.canvas.addEventListener('mousedown', function(e)
   {
@@ -113,10 +120,10 @@ Display = function(socket)
 
   this.canvas.addEventListener("mousemove", function (e)
   {
-    this.mousePos.set(
-      -1 + e.clientX * 2/this.canvas.width,
-      1 + e.clientY* -2/this.canvas.height
-    );
+    // this.mousePos.set(
+    //   -1 + e.clientX * 2/this.canvas.width,
+    //   1 + e.clientY* -2/this.canvas.height
+    // );
 
 
 
@@ -144,6 +151,8 @@ Display = function(socket)
       this.fps = (this.fps + 1.0/framePeriod)/2.0;
       this.accumulator = 0;
       this.splatManager.updateSpots(this.ellapsedTime);
+      //debug code
+      b.draw();
       this.renderer.render( this.scene, this.camera );
       lastFrameTime = this.ellapsedTime;
     }

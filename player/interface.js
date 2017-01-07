@@ -538,7 +538,7 @@ Interface = function(ud, callback){
         this.graphics.updateExplosion(this.excitementEnv);
       }
 
-      // ultimately we don't need mousePos
+
       this.graphics.draw(this.ellapsedTime, this.mousePos, function(){
 
         this.sound.spit();
