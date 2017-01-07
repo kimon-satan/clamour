@@ -382,13 +382,35 @@ admin.on('connection', function(socket){
     }
     else if(msg.cmd == "reset_all")
     {
-      //clear the Databases - temporary
+      //clear the Databases
       UserData.remove({});
       Threads.remove({});
       UserGroups.remove({});
       admin.emit('server_report', {id: msg.cli_id, msg: "all databases reset"});
       players.emit('whoareyou'); //causes any connected players to reset
       //TODO display reset
+    }
+    else if(msg.cmd == "get_stats")
+    {
+
+      UserData.find({},'connected').then((docs)=>{
+
+        var resp = "";
+
+        resp += "players: " + docs.length + "\n";
+
+        var numconnected = 0;
+
+        docs.forEach(function(e){
+          if(e.connected)numconnected += 1;
+        })
+
+        resp += "connected: " + numconnected;
+
+        admin.emit('server_report', {id: msg.cli_id, msg: resp});
+      });
+
+
     }
     else if(msg.cmd == "start_misty")
     {

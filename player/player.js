@@ -73,7 +73,7 @@ socket.on('cmd', function(msg)
     $('#chatContainer>div.largeText:last-child').remove();
     $('#chatContainer').append( '<div class="largeText">' + msg.value +'</div>' );
   }
-  else if(msg.cmd == 'chat_newh3ne')
+  else if(msg.cmd == 'chat_newline')
   {
     $('#chatContainer').append( '<div class="largeText"></div>' );
   }

@@ -448,6 +448,13 @@ CLMR_CMDS["_lplayers"] = function(args, cli)
 
 }
 
+CLMR_CMDS["_stats"] = function(args, cli)
+{
+  var msgobj = {cmd: "get_stats", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
+  socket.emit('cmd', msgobj);
+}
+
+
 CLMR_CMDS["_iplayers"] =  function(args, cli){
 
   if(cli.proc != undefined){
