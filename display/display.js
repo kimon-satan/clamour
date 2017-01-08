@@ -18,12 +18,15 @@ socket.on('cmd', function(msg){
     {
       //TODO check if canTransform is turned on for this player
       //do the transform;
-      display.splatManager.transform(msg.val._id);
+
       var pos = new THREE.Vector2().copy(display.splatManager.playerInfo[msg.val._id].center);
       var mesh = display.blobManager.addBlob(pos, msg.val);
-      display.scene.add(mesh);
 
-      console.log("transform", pos);
+      display.splatManager.transform(msg.val._id, function(){
+            display.scene.add(mesh);
+      });
+
+
     }
   }
   else if(msg.type == "blob")

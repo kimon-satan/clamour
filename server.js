@@ -557,6 +557,44 @@ display.on('connection', function(socket)
 
   })
 
+  socket.on('endTone', function(msg){
+
+    console.log("endTone", msg);
+
+    var args = [];
+
+    Object.keys(msg).forEach(function(p)
+    {
+      args.push(p);
+      args.push(msg[p]);
+    })
+
+    udpPort.send({
+        address: "/endTone",
+        args: args,
+    }, "127.0.0.1", 57120);
+
+  })
+
+  socket.on('transTone', function(msg){
+
+    console.log("transTone", msg);
+
+    var args = [];
+
+    Object.keys(msg).forEach(function(p)
+    {
+      args.push(p);
+      args.push(msg[p]);
+    })
+
+    udpPort.send({
+        address: "/transTone",
+        args: args,
+    }, "127.0.0.1", 57120);
+
+  })
+
 
 });
 //io is everyone

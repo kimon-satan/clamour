@@ -9,7 +9,9 @@
 Spot = function (owner)
 {
   this.attributes = {
-    position: new THREE.Vector2(),
+    center: new THREE.Vector2(),
+    decenter: new THREE.Vector2(),
+    spread: 1.0,
     size: 100 ,
     noise_seed: Math.random() ,
     col1: [1.0,0.0,0.0],
@@ -25,9 +27,11 @@ Spot = function (owner)
 
   this.isGlowing = false;
   this.isDecaying = true;
+  this.isTransforming = false;
 
   this.decayEnv = new Envelope(5,45);
-  this.decayEnv.z = 1.0;
+  this.decayEnv.z = 1.0
+
 
   this.decay = function()
   {
@@ -49,6 +53,10 @@ Spot = function (owner)
   }
 
 
+
+
+
+
 }
 
 const MAX_PARTICLES = 20000; //could be higher wait and see
@@ -68,6 +76,7 @@ SplatManager = function(_resolution, _socket)
 
   //allocate space for particles
   this.verts = new Float32Array(MAX_PARTICLES * 3);
+  this.decenters = new Float32Array(MAX_PARTICLES * 2);
   this.color1s = new Float32Array(MAX_PARTICLES * 3);
   this.color2s = new Float32Array(MAX_PARTICLES * 3);
   this.sizes = new Float32Array(MAX_PARTICLES);
@@ -76,9 +85,12 @@ SplatManager = function(_resolution, _socket)
   this.glowWaves = new Float32Array(MAX_PARTICLES);
   this.fades = new Float32Array(MAX_PARTICLES);
   this.noise_seeds = new Float32Array(MAX_PARTICLES);
+  this.spreads = new Float32Array(MAX_PARTICLES);
 
   this.geo.addAttribute('noise_seed', new THREE.BufferAttribute(this.noise_seeds, 1));
   this.geo.addAttribute('position', new THREE.BufferAttribute(this.verts, 3));
+  this.geo.addAttribute('decenter', new THREE.BufferAttribute(this.decenters, 2));
+  this.geo.addAttribute('spread', new THREE.BufferAttribute(this.spreads, 1));
   this.geo.addAttribute('color1', new THREE.BufferAttribute(this.color1s, 3));
   this.geo.addAttribute('color2', new THREE.BufferAttribute(this.color2s, 3));
   this.geo.addAttribute('phase', new THREE.BufferAttribute(this.phases, 1));
@@ -117,15 +129,61 @@ SplatManager = function(_resolution, _socket)
     for(var id in this.playerInfo)
     {
         this.glowWaveEnvs[this.playerInfo[id].scidx - 1].step();
+
+        if(this.playerInfo[id].transform)
+        {
+
+          this.playerInfo[id].transEnv.step();
+
+          if(this.playerInfo[id].transEnv.z < 0.05)
+          {
+            this.playerInfo[id].transEnv.z = 0;
+            //callback
+
+            this.socket.emit('endTone', {
+              scidx: this.playerInfo[id].scidx
+            });
+
+            this.playerInfo[id].transform = false;
+
+            this.playerInfo[id].callback();
+          }
+        }
     }
 
     for(var id in this.spots)
     {
 
+
       for(var i = 0; i < this.spots[id].length; )
       {
 
-        if(this.spots[id][i].isDecaying)
+
+        if(this.spots[id][i].isTransforming)
+        {
+          this.spots[id][i].attributes.spread = this.playerInfo[id].transEnv.z;
+          this.spots[id][i].attributes.fade = Math.max(0.1, this.spots[id][i].attributes.fade * 0.95); // a bit of a hack
+
+          this.updateAttributes(this.spots[id][i]);
+
+          if(this.spots[id][i].attributes.spread < 0.1e-5)
+          {
+            if(this.spots[id][i].index == this.highestIndex)
+            {
+              this.highestIndex = this.findHighestIndex(this.spots[id][i].index);
+              this.geo.setDrawRange(0, this.highestIndex);
+
+            }
+
+            delete this.spots[id][i];
+            this.spots[id].splice(i,1);
+          }
+          else
+          {
+            i++;
+          }
+        }
+        else if(this.spots[id][i].isDecaying)
         {
           this.spots[id][i].decay();
 
@@ -167,7 +225,7 @@ SplatManager = function(_resolution, _socket)
   }
 
   this.findHighestIndex = function(index){
-    if(this.fades[index] < 0.1e-5)
+    if(this.fades[index] < 0.1e-5 || this.spreads[index] < 0.1e-5 )
     {
       index -= 1;
       index = this.findHighestIndex(index);
@@ -184,10 +242,11 @@ SplatManager = function(_resolution, _socket)
 
     this.fades[spot.index] = spot.attributes.fade;
     this.glowWaves[spot.index] = spot.attributes.glowWave;
+    this.spreads[spot.index] = spot.attributes.spread;
 
     this.geo.attributes.glowWave.needsUpdate = true;
     this.geo.attributes.fade.needsUpdate = true;
-
+    this.geo.attributes.spread.needsUpdate = true;
   }
 
   this.clearAll = function()
@@ -235,6 +294,7 @@ SplatManager = function(_resolution, _socket)
         energy: 0.1,
         isGlowing: false,
         transform: false,
+        transEnv: new Envelope(1,45),
         freq: 0.05 + Math.random() * 0.25,
         phase: Math.random() * Math.PI * 2.0,
         pan: pan,
@@ -281,7 +341,7 @@ SplatManager = function(_resolution, _socket)
     var seed  = Math.random();
     var spread = 0.25 + this.playerInfo[id].energy * 0.25;
     var splatter = 0.5 + (1.0 - this.playerInfo[id].energy) * 0.5;
-    var maxSize = 50 + this.playerInfo[id].energy * 100;
+    var maxSize = 50 + this.playerInfo[id].energy * 25;
 
     var detune = new THREE.Vector2((2 * Math.random() - 1.) * prop * .1,  (2* Math.random() - 1.) * .1)
 
@@ -290,14 +350,16 @@ SplatManager = function(_resolution, _socket)
       var theta = Math.random() * Math.PI * 2.0;
       var n = (noise.simplex3(Math.cos(theta) * .5, Math.sin(theta) * .5, seed) + 1.0)/2.0;
       var rho = (spread + n * spread) * Math.pow(Math.random(), splatter);
-      var x = Math.sin(theta) * rho * (this.resolution.y/this.resolution.x) + this.playerInfo[id].center.x;
-      var y = Math.cos(theta) * rho + this.playerInfo[id].center.y;
+      var x = Math.sin(theta) * rho * (this.resolution.y/this.resolution.x);
+      var y = Math.cos(theta) * rho;
       var l = Math.max( 0.01, 1.0 - rho * 2.0);
 
       var spot = new Spot(id);
 
       spot.attributes.size = 2. + Math.pow(l,2.0) * maxSize;
-      spot.attributes.position.set(x,y);
+      spot.attributes.center.copy(this.playerInfo[id].center);
+      spot.attributes.decenter.set(x,y);
+      spot.attributes.spread = 1.0;
       spot.attributes.freq = this.playerInfo[id].freq;
       spot.attributes.phase = this.playerInfo[id].phase + Math.random() * 0.05;
       spot.attributes.fade = 1.0;
@@ -353,10 +415,14 @@ SplatManager = function(_resolution, _socket)
         this.freqs[idx] = spot.attributes.freq;
         this.glowWaves[idx] = spot.attributes.glowWave;
         this.noise_seeds[idx] = spot.attributes.noise_seed;
+        this.spreads[idx] = spot.attributes.spread;
 
-        this.verts[idx * 3 + 0] = spot.attributes.position.x; //x
-        this.verts[idx * 3 + 1] = spot.attributes.position.y; //y
-        this.verts[idx * 3 + 2] = spot.attributes.position.z; //z
+        this.verts[idx * 3 + 0] = spot.attributes.center.x; //x
+        this.verts[idx * 3 + 1] = spot.attributes.center.y; //y
+        this.verts[idx * 3 + 2] = 0; //z
+
+        this.decenters[idx * 2 + 0] = spot.attributes.decenter.x; //x
+        this.decenters[idx * 2 + 1] = spot.attributes.decenter.y; //y
 
         for(var j = 0; j < 3; j++)
         {
@@ -386,12 +452,23 @@ SplatManager = function(_resolution, _socket)
     return 0;
   }
 
-  this.transform = function(uid)
+  this.transform = function(uid, callback)
   {
     for(var i = 0; i < this.spots[uid].length; i++)
     {
-      this.spots[uid][i].isDecaying = true;
+      this.spots[uid][i].isTransforming = true;
     }
+
+    this.playerInfo[uid].transform = true;
+    this.playerInfo[uid].transEnv.targetVal = 0;
+    this.playerInfo[uid].transEnv.z  = 1.0;
+
+    this.playerInfo[uid].callback = callback;
+
+    this.socket.emit('transTone', {
+
+    });
+
   }
 
 

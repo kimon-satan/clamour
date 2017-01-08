@@ -12,6 +12,8 @@ attribute float fade;
 attribute float freq;
 attribute float glowFactor;
 attribute float glowWave;
+attribute vec2 decenter;
+attribute float spread;
 
 varying vec3 v_col1;
 varying vec3 v_col2;
@@ -30,7 +32,7 @@ float TWO_PI = 6.283185307179586;
 
 void main()	{
 
-  gl_Position = vec4(position.x, position.y, 0.0, 1.0 );
+  gl_Position = vec4(position.x + decenter.x * spread, position.y + decenter.y * spread, 0.0, 1.0 );
   gl_PointSize = size;
 
   v_col1 = color1;
