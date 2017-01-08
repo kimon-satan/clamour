@@ -56,7 +56,7 @@ Blob = function(pos, ud)
                         0,0,0,1);
 
 
-  this.currStateIdx = 4;
+  this.currStateIdx = ud.state;
 
 
   ///

@@ -122,14 +122,14 @@ Display = function(socket)
 
   this.canvas.addEventListener('mousedown', function(e)
   {
-    this.mousePos.set(
-      -1 + e.clientX * 2/this.canvas.width,
-      1 + e.clientY* -2/this.canvas.height
-    );
-
-    var m = this.blobManager.addBlob(this.mousePos, generateTempId(5));
-    this.scene.add(m);
-    console.log("md");
+    // this.mousePos.set(
+    //   -1 + e.clientX * 2/this.canvas.width,
+    //   1 + e.clientY* -2/this.canvas.height
+    // );
+    //
+    // var m = this.blobManager.addBlob(this.mousePos, generateTempId(5));
+    // this.scene.add(m);
+    // console.log("md");
 
     this.isMouseDown = true;
   }.bind(this)

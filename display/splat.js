@@ -87,6 +87,8 @@ SplatManager = function(_resolution, _socket)
   this.geo.addAttribute('fade', new THREE.BufferAttribute(this.fades, 1));
   this.geo.addAttribute('size', new THREE.BufferAttribute(this.sizes, 1));
 
+  this.resolution = _resolution;
+
   this.uniforms =
   {
     time: {value: 0.0},
@@ -288,8 +290,8 @@ SplatManager = function(_resolution, _socket)
       var theta = Math.random() * Math.PI * 2.0;
       var n = (noise.simplex3(Math.cos(theta) * .5, Math.sin(theta) * .5, seed) + 1.0)/2.0;
       var rho = (spread + n * spread) * Math.pow(Math.random(), splatter);
-      var x = Math.sin(theta) * rho + this.playerInfo[id].center.x + detune.x;
-      var y = Math.cos(theta) * rho + this.playerInfo[id].center.y + detune.y;
+      var x = Math.sin(theta) * rho * (this.resolution.y/this.resolution.x) + this.playerInfo[id].center.x;
+      var y = Math.cos(theta) * rho + this.playerInfo[id].center.y;
       var l = Math.max( 0.01, 1.0 - rho * 2.0);
 
       var spot = new Spot(id);

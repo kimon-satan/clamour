@@ -550,7 +550,9 @@ Interface = function(ud, callback){
               splatPan: this.splatPan ,
               splatRate: this.splatRate,
               colMode: this.ud.colMode, //passing these to display means no need for DB lookup
-              colSeed: this.ud.colSeed
+              colSeed: this.ud.colSeed,
+              blobSeed: this.ud.blobSeed,
+              state: this.graphics.currStateIdx //bit messy
             });
 
           }.bind(this),
