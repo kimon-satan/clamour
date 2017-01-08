@@ -479,6 +479,7 @@ admin.on('connection', function(socket){
       display.emit("cmd", {type: "splat", val: {_id: id,
         colSeed: allOptions.colSeed,
         colMode: allOptions.colMode,
+        blobSeed: Math.random(),
         splatPan: Math.random() * 2.0 - 1.0,
       }});
       admin.emit('server_report', {id: msg.cli_id}); //empty response

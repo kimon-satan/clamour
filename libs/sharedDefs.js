@@ -5,6 +5,7 @@ window.BlobUniforms = {
 	o_time: 		{value: 1.0, locked: true },
 	r_time: 		{value: 1.0, locked: true },
 	shake:      {value: 0.1,  min: 0.0, max: 1.0},
+	scale:      {value: 0.1,  min: 0.0, max: 1.0}, // this needs work
 	seed:      {value: 0.0,  locked: true},
 	slices:      {value: 8.0,  min: 1.0, max: 20.0},
 	segments:      {value: 1.0,  min: 1.0, max: 10.0},
@@ -269,7 +270,9 @@ function updateUniforms()
 		}
 		else if(this.uniforms[property].value instanceof THREE.Vector3)
 		{
+
 			this.uniforms[property].value.copy(this.currState[property]);
+
 		}
 		else if(this.uniforms[property].value instanceof THREE.Vector2)
 		{
@@ -281,6 +284,8 @@ function updateUniforms()
 
 function incrementState(idx)
 {
+
+
 
 	if(idx != this.currStateIdx + 1){
 		this.changeState(idx - 1);
@@ -303,9 +308,10 @@ function incrementState(idx)
 		}
 		else if(this.uniforms[property].value instanceof THREE.Vector3)
 		{
+			
 			this.prevState[property] = new THREE.Vector3().copy(this.currState[property]);
 
-			if(this.uniforms[property].value.type == "color")
+			if(this.uniforms[property].type == "color")
 			{
 				console.log("color")
 

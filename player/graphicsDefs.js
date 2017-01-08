@@ -27,7 +27,7 @@ window.Graphics = function(ud){
 
 	this.uniforms.seed.value = ud.blobSeed;
 
-	
+
 
 
 	this.reactions = {

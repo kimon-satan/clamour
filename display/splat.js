@@ -215,16 +215,10 @@ SplatManager = function(_resolution, _socket)
   this.addSplat = function(ud)
   {
 
-    //TODO surely OSC to supercollider here
-
     var id = ud._id;
 
     if(this.spots[id] == undefined)
     {
-
-      console.log("new player")
-
-
 
       var colArray = getColors(ud.colSeed, ud.colMode);
       console.log(colArray);
@@ -238,6 +232,7 @@ SplatManager = function(_resolution, _socket)
         scidx: scidx,
         energy: 0.1,
         isGlowing: false,
+        transform: false,
         freq: 0.05 + Math.random() * 0.25,
         phase: Math.random() * Math.PI * 2.0,
         pan: pan,
@@ -271,10 +266,13 @@ SplatManager = function(_resolution, _socket)
         var glowTarget = (this.playerInfo[id].energy - 0.3)/0.6;
 
         this.socket.emit('updateTone', {scidx: this.playerInfo[id].scidx, amp: glowTarget});
+
+
       }
 
 
     }
+
 
 
     var numParticles = 50 + this.playerInfo[id].energy * 150;
@@ -375,5 +373,26 @@ SplatManager = function(_resolution, _socket)
       }
     }
   }
+
+  this.getEnergy = function(uid)
+  {
+    if(this.playerInfo[uid] != undefined)
+    {
+      return this.playerInfo[uid].energy;
+    }
+
+    return 0;
+  }
+
+  this.transform = function(uid)
+  {
+    for(var i = 0; i < this.spots[uid].length; i++)
+    {
+      this.spots[uid][i].isDecaying = true;
+    }
+  }
+
+
+
 
 }
