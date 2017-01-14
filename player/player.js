@@ -135,6 +135,11 @@ function parseMsgParams(msg)
     {
       iface.setEnvTime(resp.envTime);
     }
+
+    if(resp.isMobile != undefined)
+    {
+      console.log("!!! isMobile !!!");
+    }
   }
 
 

@@ -467,6 +467,7 @@ SplatManager = function(_resolution, _socket)
 
     this.socket.emit('transTone', {
 
+        id: uid, //we need this to transform the player's device too
         scidx: this.playerInfo[uid].scidx ,
         pan: this.playerInfo[uid].pan
 

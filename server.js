@@ -44,6 +44,7 @@ const Threads = db.get('Threads'); //This might become a variable ?
 const allOptions = {
     state: 0,
     isSplat: false,
+    isMobile: false,
     maxState: 2,
     envTime: 8,
     blobSeed: 0.01,
@@ -593,6 +594,8 @@ display.on('connection', function(socket)
         args: args,
     }, "127.0.0.1", 57120);
 
+    players.to(msg.id).emit('cmd', {cmd: 'set_params', value: {isMobile: true, isSplat: false}});
+
   })
 
 
@@ -748,6 +751,7 @@ function listPlayers(args, cli, cb)
         str += ", isSplat: " + e.isSplat;
         str += ", maxState: " + e.maxState;
         str += ", envTime: " + e.envTime;
+        str += ", isMobile: " + e.isMobile;
       }
 
       results += str + "\n";
