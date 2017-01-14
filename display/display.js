@@ -41,6 +41,7 @@ socket.on('cmd', function(msg){
   else if (msg.type == "end" || msg.type == "clear_display")
   {
     display.splatManager.clearAll();
+    display.blobManager.clearAll(display.scene);
   }
   else if (msg.type == "instruct")
   {

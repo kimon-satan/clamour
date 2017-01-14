@@ -102,4 +102,15 @@ BlobManager = function(_resolution, _socket)
     return this.blobs[ud._id].mesh;
   }
 
+  this.clearAll = function(scene)
+  {
+
+    Object.keys(this.blobs).forEach(function(uid)
+    {
+      scene.remove(this.blobs[uid].mesh);
+      delete this.blobs[uid];
+    }.bind(this))
+
+  }
+
 }

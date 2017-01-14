@@ -467,6 +467,9 @@ SplatManager = function(_resolution, _socket)
 
     this.socket.emit('transTone', {
 
+        scidx: this.playerInfo[uid].scidx ,
+        pan: this.playerInfo[uid].pan
+
     });
 
   }
