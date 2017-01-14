@@ -225,7 +225,7 @@ blobFragmentShader = `
 
 		gl_FragColor = vec4( vec3(o_col * o_lum * (1.0 - c_lum) + c_lum * c_col),o_lum);
 
-
+  
 
   }
 `;

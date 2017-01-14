@@ -58,6 +58,10 @@ Interface = function(ud, callback){
   this.splatPos = Math.random();
 
 
+  this.transEnv = new Envelope2(0.1,2.0,60);
+  this.rotEnv = new Envelope(3.0, 60);
+
+
 
   this.reactionMaps =
   {
@@ -172,6 +176,7 @@ Interface = function(ud, callback){
     this.excitementEnv = new Envelope2(1.75, 25, 60);
     this.excitementEnv.targetVal = 1.0;
     this.isExcitable = false;
+    this.showGrid = false;
 
 
     this.reactEnvelopes = [
@@ -268,10 +273,29 @@ Interface = function(ud, callback){
     }.bind(this)
     , false);
 
-    this.canvas.addEventListener('mouseup', function()
+    this.canvas.addEventListener('mouseup', function(e)
     {
       this.isMouseDown = false;
       this.gestureEnd();
+
+
+      if(this.ud.isMobile)
+      {
+
+        var np = new THREE.Vector2(e.clientX/this.canvas.width, e.clientY/this.canvas.height);
+        var v = new THREE.Vector2().subVectors(np, this.mousePos);
+        var vl = v.length();
+
+        var rot = -(v.angle() - Math.PI/2.0);
+        if(rot > -Math.PI/2.0 && rot < Math.PI/2.0)
+        {
+            this.transEnv.targetVal = vl;
+            this.rotEnv.targetVal = camera.rotation._z + rot;
+        }
+
+      }
+
+
     }.bind(this)
     , false);
 
@@ -448,6 +472,13 @@ Interface = function(ud, callback){
 
     if(this.accumulator > 1.0/60)
     {
+
+      if(this.ud.isMobile)
+      {
+        transEnv.step();
+        rotEnv.step();
+      }
+
       this.accumulator = 0;
       if(this.isNewTouch)
       {
@@ -650,6 +681,10 @@ Interface = function(ud, callback){
 
   this.updateReactionMap = function(){
 
+    if(this.isMobile)
+    {
+      this.currentReactionMap = this.reactionMaps[0];
+    }
 
     var cz = 0;
 
@@ -678,6 +713,12 @@ Interface = function(ud, callback){
   this.setIsSplat = function(b)
   {
     this.isExcitable = b;
+  }
+
+  this.setIsMobile = function(b)
+  {
+    this.isMobile = b;
+    this.updateReactionMap();
   }
 
   this.setMaxState = function(n)

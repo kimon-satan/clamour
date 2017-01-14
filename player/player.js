@@ -138,7 +138,7 @@ function parseMsgParams(msg)
 
     if(resp.isMobile != undefined)
     {
-      console.log("!!! isMobile !!!");
+      iface.setIsMobile(resp.isMobile);
     }
   }
 

@@ -32,28 +32,53 @@ Graphics.prototype.init = function()
 	$('#playContainer').append( this.renderer.domElement );
 	this.canvas = this.renderer.domElement;
 
+	var p = this.renderer.domElement.width/this.renderer.domElement.height;
+	this.camera = new THREE.OrthographicCamera(-p, p, -1, 1, -1, 1);
 
-	this.camera = new THREE.Camera();
 	this.camera.position.z = 1;
 
 	this.scene = new THREE.Scene();
 	this.isExploding = false;
 
+//GRID
+
+	var gridGeometry = new THREE.Geometry();
+
+	var cn = 0.2;
+	var l = Math.sqrt(p*p + 1.0) + cn;
+	var num = l * 2.0/cn;
+
+	for(var i = 0; i < num; i++)
+	{
+	  var d = i * cn;
+	  gridGeometry.vertices.push( new THREE.Vector3(-l , -l + d, 0 ) );
+	  gridGeometry.vertices.push( new THREE.Vector3( l , -l + d, 0 ) );
+	  gridGeometry.vertices.push( new THREE.Vector3( -l + d, -l , 0 ) );
+	  gridGeometry.vertices.push( new THREE.Vector3( -l + d, l, 0 ) );
+	}
+
+	var g_material = new THREE.LineBasicMaterial( { color: 0xffffff } );
+	var line = new THREE.LineSegments( gridGeometry, g_material );
+	this.scene.add( line );
+
 	//////////////////////BLOB///////////////////////////////
 
-	var p = this.renderer.domElement.width/this.renderer.domElement.height;
-	var geometry = new THREE.PlaneBufferGeometry( 2 * p, 2); // we are about to rotate so x & y are reveresed
-	geometry.rotateZ(Math.PI/2); //quarter turn
+	var geometry = new THREE.PlaneBufferGeometry( l, l); // we are about to rotate so x & y are reveresed
+
+	geometry.rotateZ(-Math.PI/2); //quarter turn
 
 	var material = new THREE.ShaderMaterial( {
 		uniforms: this.uniforms,
 		vertexShader: blobVertexShader,
 		fragmentShader: blobFragmentShader,
 		transparent: true,
-		depthWrite: false
+		depthWrite: false,
+		side: THREE.DoubleSide
 
 	} );
 
+	//var material = new THREE.MeshBasicMaterial( { color: 0xffffff, side: THREE.DoubleSide} );
+	//var mesh = new THREE.Mesh( geometry, material );
 	var mesh = new THREE.Mesh( geometry, material );
 	this.scene.add( mesh );
 
