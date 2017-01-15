@@ -295,6 +295,12 @@ Interface = function(ud, callback){
 
         }
 
+        socket.emit('moveBlob', {
+          _id: userid,
+          rot: this.rotEnv.targetVal,
+          trans: this.transEnv.targetVal
+        });
+
       }
 
 

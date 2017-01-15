@@ -301,7 +301,7 @@ SplatManager = function(_resolution, _socket)
         col1: hslToRgb(colArray[0].x, colArray[0].y, colArray[0].z),
         col2: hslToRgb(colArray[1].x, colArray[1].y, colArray[1].z),
         col3: hslToRgb(colArray[2].x, colArray[2].y, colArray[2].z),
-        center: new THREE.Vector2( pan * prop * .75,  (2* Math.random() - 1.) * .75 )
+        center: new THREE.Vector2( pan * prop,  (2* Math.random() - 1.) * .85 )
        }
 
        this.glowWaveEnvs.push(new Envelope(0.05, 60));
@@ -343,14 +343,14 @@ SplatManager = function(_resolution, _socket)
     var splatter = 0.5 + (1.0 - this.playerInfo[id].energy) * 0.5;
     var maxSize = 50 + this.playerInfo[id].energy * 25;
 
-    var detune = new THREE.Vector2((2 * Math.random() - 1.) * prop * .1,  (2* Math.random() - 1.) * .1)
+    var detune = new THREE.Vector2((2 * Math.random() - 1.) * .1,  (2* Math.random() - 1.) * .1)
 
     for (var i = 0; i < numParticles; i++)
     {
       var theta = Math.random() * Math.PI * 2.0;
       var n = (noise.simplex3(Math.cos(theta) * .5, Math.sin(theta) * .5, seed) + 1.0)/2.0;
       var rho = (spread + n * spread) * Math.pow(Math.random(), splatter);
-      var x = Math.sin(theta) * rho * (this.resolution.y/this.resolution.x);
+      var x = Math.sin(theta) * rho;
       var y = Math.cos(theta) * rho;
       var l = Math.max( 0.01, 1.0 - rho * 2.0);
 

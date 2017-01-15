@@ -34,6 +34,10 @@ socket.on('cmd', function(msg){
     var mesh = display.blobManager.addBlob(new THREE.Vector2(Math.random() * 2.0 - 1.0,Math.random() * 2.0 -1), msg.val);
     display.scene.add(mesh);
   }
+  else if(msg.type == "moveBlob")
+  {
+    display.blobManager.blobs[msg.val._id].move(-msg.val.rot, msg.val.trans);
+  }
   else if(msg.type == "update")
   {
     display.splatManager.updateGlow(msg.id, msg.val);
@@ -57,7 +61,6 @@ socket.on('cmd', function(msg){
 $('document').ready(function(){
 
   setupInstructions();
-  console.log("setup");
 })
 
 function setupInstructions()

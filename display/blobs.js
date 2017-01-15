@@ -81,7 +81,7 @@ Blob = function(pos, ud, w_width)
     }
 
     this.mesh.setRotationFromAxisAngle(new THREE.Vector3(0,0,1),this.rotEnv.z);
-    this.mesh.translateOnAxis(new THREE.Vector3(0,-1,0), this.transEnv.z * 0.01);
+    this.mesh.translateOnAxis(new THREE.Vector3(0,-1,0), this.transEnv.z * 0.005);
 
     if(this.mesh.position.y < -1.1)
     {

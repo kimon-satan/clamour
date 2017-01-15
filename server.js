@@ -704,7 +704,16 @@ players.on('connection', function(socket)
 
     display.emit('cmd', {type: "splat", val: msg});
 
-  })
+  });
+
+  socket.on('moveBlob', function(msg){
+
+    //TODO OSC to supercollider here
+
+
+    display.emit('cmd', {type: "moveBlob", val: msg});
+
+  });
 
   socket.on('disconnect', function()
   {

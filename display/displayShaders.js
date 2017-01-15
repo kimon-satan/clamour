@@ -32,7 +32,11 @@ float TWO_PI = 6.283185307179586;
 
 void main()	{
 
-  gl_Position = vec4(position.x + decenter.x * spread, position.y + decenter.y * spread, 0.0, 1.0 );
+  vec3 np;
+  np.x = position.x + decenter.x * spread;
+  np.y = position.y + decenter.y * spread;
+  np.z = 0.0;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4( np, 1.0 );
   gl_PointSize = size;
 
   v_col1 = color1;
