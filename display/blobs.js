@@ -4,6 +4,8 @@ Blob = function(pos, ud, w_width)
   this.uniforms = {};
   this.position = new THREE.Vector3(pos.x, pos.y, 0.0);
 
+
+
   this.prevState;
   this.currState;
   this.currStateIdx;
@@ -31,6 +33,8 @@ Blob = function(pos, ud, w_width)
   this.col2 = convertRGB(colArray[1]);
   this.col3 = convertRGB(colArray[2]);
   this.black = new THREE.Vector3(0., 0. ,0.);
+
+  this.branch = new Branch(pos, this.col1, this.col2);
 
   this.uniforms.seed.value = this.ud.blobSeed;
 
@@ -83,21 +87,40 @@ Blob = function(pos, ud, w_width)
     this.mesh.setRotationFromAxisAngle(new THREE.Vector3(0,0,1),this.rotEnv.z);
     this.mesh.translateOnAxis(new THREE.Vector3(0,-1,0), this.transEnv.z * 0.005);
 
+    var isNewGroup = false;
+
     if(this.mesh.position.y < -1.1)
     {
       this.mesh.position.y = 1.1;
+      isNewGroup = true;
     }
     else if (this.mesh.position.y > 1.1) {
       this.mesh.position.y = -1.1;
+      isNewGroup = true;
     }
 
     if(this.mesh.position.x < -(this.w_width + 0.1) )
     {
       this.mesh.position.x = this.w_width + 0.1;
+      isNewGroup = true;
     }
     else if (this.mesh.position.x > this.w_width + 0.1)
     {
       this.mesh.position.x = -(this.w_width + 0.1);
+      isNewGroup = true;
+    }
+
+    var bd = this.branch.endPos.distanceTo(this.mesh.position); // how far the branch will have travelled
+
+    if(isNewGroup)
+    {
+      this.branch.newGroup();
+      this.branch.updateVertices(this.mesh.position);
+
+    }
+    else if(bd > 0.005)
+    {
+      this.branch.updateVertices(this.mesh.position);
     }
 
 

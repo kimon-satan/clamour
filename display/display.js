@@ -14,7 +14,7 @@ socket.on('cmd', function(msg){
   if(msg.type == "splat")
   {
     display.splatManager.addSplat(msg.val);
-    if(display.splatManager.getEnergy(msg.val._id) > 0.9)
+    if(display.splatManager.getEnergy(msg.val._id) > 0.3)
     {
       //TODO check if canTransform is turned on for this player
       //do the transform;
@@ -24,6 +24,7 @@ socket.on('cmd', function(msg){
 
       display.splatManager.transform(msg.val._id, function(){
             display.scene.add(mesh);
+            display.scene.add(display.blobManager.blobs[msg.val._id].branch.mesh);
       });
 
 
@@ -33,6 +34,7 @@ socket.on('cmd', function(msg){
   {
     var mesh = display.blobManager.addBlob(new THREE.Vector2(Math.random() * 2.0 - 1.0,Math.random() * 2.0 -1), msg.val);
     display.scene.add(mesh);
+    display.scene.add(display.blobManager.blobs[msg.val._id].branch.mesh);
   }
   else if(msg.type == "moveBlob")
   {
@@ -109,7 +111,7 @@ Display = function(socket)
   this.canvas = this.renderer.domElement;
 
   var p = this.renderer.domElement.width/this.renderer.domElement.height;
-  this.camera = new THREE.OrthographicCamera(-p, p, -1, 1, -1, 1);
+  this.camera = new THREE.OrthographicCamera(-p, p, -1, 1, -100, 100);
   this.camera.position.z = 1;
   this.startTime = new Date().getTime();
   this.accumulator = 0;
