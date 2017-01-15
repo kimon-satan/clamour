@@ -243,6 +243,7 @@ Interface = function(ud, callback){
         e.clientY/this.canvas.height
       );
 
+
       if(!this.sound.isUnlocked)
       {
         this.sound.isUnlocked = true;
@@ -283,14 +284,15 @@ Interface = function(ud, callback){
       {
 
         var np = new THREE.Vector2(e.clientX/this.canvas.width, e.clientY/this.canvas.height);
-        var v = new THREE.Vector2().subVectors(np, this.mousePos);
+        var v = new THREE.Vector2().subVectors(np, this.touchStartPos);
         var vl = v.length();
 
         var rot = -(v.angle() - Math.PI/2.0);
         if(rot > -Math.PI/2.0 && rot < Math.PI/2.0)
         {
             this.transEnv.targetVal = vl;
-            this.rotEnv.targetVal = camera.rotation._z + rot;
+            this.rotEnv.targetVal = this.rotEnv.z + rot;
+
         }
 
       }
@@ -475,8 +477,16 @@ Interface = function(ud, callback){
 
       if(this.ud.isMobile)
       {
-        transEnv.step();
-        rotEnv.step();
+        this.transEnv.step();
+        this.rotEnv.step();
+
+        if(this.transEnv.z > this.transEnv.targetVal * 0.95)
+        {
+          this.transEnv.targetVal = 0;
+        }
+
+        this.graphics.updateGrid(this.transEnv.z, this.rotEnv.z);
+
       }
 
       this.accumulator = 0;

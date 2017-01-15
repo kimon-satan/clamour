@@ -44,13 +44,13 @@ Graphics.prototype.init = function()
 
 	var gridGeometry = new THREE.Geometry();
 
-	var cn = 0.2;
-	var l = Math.sqrt(p*p + 1.0) + cn;
-	var num = l * 2.0/cn;
+	this.cellNorm = 0.2;
+	var l = Math.sqrt(p*p + 1.0) + this.cellNorm;
+	var num = l * 2.0/this.cellNorm;
 
 	for(var i = 0; i < num; i++)
 	{
-	  var d = i * cn;
+	  var d = i * this.cellNorm;
 	  gridGeometry.vertices.push( new THREE.Vector3(-l , -l + d, 0 ) );
 	  gridGeometry.vertices.push( new THREE.Vector3( l , -l + d, 0 ) );
 	  gridGeometry.vertices.push( new THREE.Vector3( -l + d, -l , 0 ) );
@@ -79,8 +79,8 @@ Graphics.prototype.init = function()
 
 	//var material = new THREE.MeshBasicMaterial( { color: 0xffffff, side: THREE.DoubleSide} );
 	//var mesh = new THREE.Mesh( geometry, material );
-	var mesh = new THREE.Mesh( geometry, material );
-	this.scene.add( mesh );
+	this.mesh = new THREE.Mesh( geometry, material );
+	this.scene.add( this.mesh );
 
 	///////////////////////EXPLOSION////////////////////////////////
 
@@ -255,6 +255,35 @@ Graphics.prototype.draw = function(ellapsedTime , mousePos, splatCB){
 	}
 
 	this.renderer.render( this.scene, this.camera );
+
+}
+
+Graphics.prototype.updateGrid = function(trans, rot)
+{
+
+
+	this.camera.setRotationFromAxisAngle(new THREE.Vector3(0,0,1),rot);//
+
+	//camera wrapping
+
+	if(this.camera.position.y < -this.cellNorm){
+		this.camera.position.y += this.cellNorm;
+	}
+	if(this.camera.position.y > this.cellNorm){
+		this.camera.position.y -= this.cellNorm;
+	}
+	if(this.camera.position.x < this.cellNorm){
+		this.camera.position.x += this.cellNorm;
+	}
+	if(this.camera.position.x > this.cellNorm){
+		this.camera.position.x -= this.cellNorm;
+	}
+
+	this.camera.translateOnAxis(new THREE.Vector3(0,-1,0), trans * 0.01);
+
+	//update the blob mesh to keep it stationary
+	this.mesh.position.set( this.camera.position.x, this.camera.position.y, this.camera.position.z);
+	this.mesh.rotation.set( 0,0 , this.camera.rotation._z)
 
 }
 
