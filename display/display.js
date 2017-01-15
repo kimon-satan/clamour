@@ -105,7 +105,8 @@ Display = function(socket)
   $('#displayscreen').append( this.renderer.domElement );
   this.canvas = this.renderer.domElement;
 
-  this.camera = new THREE.Camera();
+  var p = this.renderer.domElement.width/this.renderer.domElement.height;
+  this.camera = new THREE.OrthographicCamera(-p, p, -1, 1, -1, 1);
   this.camera.position.z = 1;
   this.startTime = new Date().getTime();
   this.accumulator = 0;
@@ -115,7 +116,7 @@ Display = function(socket)
 
   this.scene = new THREE.Scene();
   this.splatManager = new SplatManager(this.resolution, socket);
-  this.blobManager = new BlobManager(socket);
+  this.blobManager = new BlobManager(p);
   this.scene.add(this.splatManager.mesh);
 
   this.mousePos = new THREE.Vector2();
@@ -154,6 +155,10 @@ Display = function(socket)
   this.canvas.addEventListener('mouseup', function()
   {
     this.isMouseDown = false;
+
+    Object.keys(this.blobManager.blobs).forEach(function(b){
+      this.blobManager.blobs[b].move(Math.PI/2.0 - Math.random() * Math.PI, 0.25 + Math.random() * 0.25);
+    }.bind(this))
 
   }.bind(this)
   , false);

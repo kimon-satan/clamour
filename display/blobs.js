@@ -1,4 +1,4 @@
-Blob = function(pos, ud)
+Blob = function(pos, ud, w_width)
 {
   this.scene; // ?
   this.uniforms = {};
@@ -9,9 +9,12 @@ Blob = function(pos, ud)
   this.currStateIdx;
   this.stateDeltas;
 
+  this.w_width = w_width;
+
   this.ud = ud;
 
-  console.log(ud);
+  this.transEnv = new Envelope2(0.1,2.0,60);
+  this.rotEnv = new Envelope(3.0, 60);
 
   Object.keys(BlobUniforms).forEach(function(e)
   {
@@ -36,7 +39,7 @@ Blob = function(pos, ud)
   this.uniforms.hl_color = {value: new THREE.Vector3(1.0,1.0,1.0),  type: "color"};
 
   var p = window.innerWidth/ window.innerHeight;
-  this.geometry = new THREE.PlaneBufferGeometry( 0.1 * p, 0.1 ); //quarter turn
+  this.geometry = new THREE.PlaneBufferGeometry( 0.2, 0.2 ); //quarter turn
   this.geometry.rotateZ(Math.PI/2);
   //
   this.material = new THREE.ShaderMaterial( {
@@ -44,16 +47,14 @@ Blob = function(pos, ud)
 		vertexShader: blobVertexShader,
 		fragmentShader: blobFragmentShader,
 		transparent: true,
-		depthWrite: false
+		depthWrite: false,
+    side: THREE.DoubleSide
 	} );
 
 	this.mesh = new THREE.Mesh( this.geometry, this.material );
-  this.mesh.matrixAutoUpdate = false;
-  //this.mesh.position.set(pos.x, pos.y,0.0);
-  this.mesh.matrix.set( 1,0,0,this.position.x,
-                        0,1,0,this.position.y,
-                        0,0,1,0,
-                        0,0,0,1);
+
+  this.mesh.position.x = this.position.x;
+  this.mesh.position.y = this.position.y;
 
 
   this.currStateIdx = ud.state;
@@ -70,6 +71,43 @@ Blob = function(pos, ud)
     this.uniforms.r_time.value += (delta * this.uniforms.r_freq.value);
 
     this.uniforms.time.value = ellapsedTime;
+
+    this.transEnv.step();
+    this.rotEnv.step();
+
+    if(this.transEnv.z > this.transEnv.targetVal * 0.95)
+    {
+      this.transEnv.targetVal = 0;
+    }
+
+    this.mesh.setRotationFromAxisAngle(new THREE.Vector3(0,0,1),this.rotEnv.z);
+    this.mesh.translateOnAxis(new THREE.Vector3(0,-1,0), this.transEnv.z * 0.01);
+
+    if(this.mesh.position.y < -1.1)
+    {
+      this.mesh.position.y = 1.1;
+    }
+    else if (this.mesh.position.y > 1.1) {
+      this.mesh.position.y = -1.1;
+    }
+
+    if(this.mesh.position.x < -(this.w_width + 0.1) )
+    {
+      this.mesh.position.x = this.w_width + 0.1;
+    }
+    else if (this.mesh.position.x > this.w_width + 0.1)
+    {
+      this.mesh.position.x = -(this.w_width + 0.1);
+    }
+
+
+
+  }
+
+  this.move = function(rotTarget, transTarget)
+  {
+    this.rotEnv.targetVal = rotTarget;
+    this.transEnv.targetVal = transTarget;
   }
 
   this.changeState = changeState;
@@ -77,12 +115,14 @@ Blob = function(pos, ud)
 
   this.changeState(this.currStateIdx); //set to state zero
 
+
+
 }
 
-BlobManager = function(_resolution, _socket)
+BlobManager = function(_width)
 {
 
-  this.socket = _socket;
+  this.w_width = _width;
   this.blobs = {};
 
   this.update = function(ellapsedTime) //actually will be more like update
@@ -98,7 +138,7 @@ BlobManager = function(_resolution, _socket)
   this.addBlob = function(pos, ud)
   {
     //debug code
-    this.blobs[ud._id] = new Blob(pos, ud);
+    this.blobs[ud._id] = new Blob(pos, ud, this.w_width);
     return this.blobs[ud._id].mesh;
   }
 
