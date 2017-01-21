@@ -1,7 +1,10 @@
 Blob = function(pos, ud, w_width)
 {
+  var count = 0;
   this.scene; // ?
   this.uniforms = {};
+
+
 
   this.prevState;
   this.currState;
@@ -40,14 +43,13 @@ Blob = function(pos, ud, w_width)
 
   var p = window.innerWidth/ window.innerHeight;
   this.geometry = new THREE.PlaneBufferGeometry( 0.2, 0.2 ); //quarter turn
-  this.geometry.rotateZ(Math.PI/2);
+  this.geometry.rotateZ(Math.PI * 1.5);
   //
   this.material = new THREE.ShaderMaterial( {
 		uniforms: this.uniforms,
 		vertexShader: blobVertexShader,
 		fragmentShader: blobFragmentShader,
 		transparent: true,
-		depthWrite: false,
     side: THREE.DoubleSide
 	} );
 
@@ -55,8 +57,9 @@ Blob = function(pos, ud, w_width)
 
   this.mesh.position.x = pos.x;
   this.mesh.position.y = pos.y;
+  this.mesh.position.z = 5.0;
 
-
+  this.detune = noise.perlin2(this.uniforms.seed.value, count) * Math.PI;
   this.currStateIdx = ud.state;
 
 
@@ -80,7 +83,16 @@ Blob = function(pos, ud, w_width)
       this.transEnv.targetVal = 0;
     }
 
-    this.mesh.setRotationFromAxisAngle(new THREE.Vector3(0,0,1),this.rotEnv.z);
+
+
+    if(this.transEnv.z > 0)
+    {
+      count += 0.005;
+      this.detune = noise.perlin2(this.uniforms.seed.value, count) * Math.PI;
+    }
+
+
+    this.mesh.setRotationFromAxisAngle(new THREE.Vector3(0,0,1),this.rotEnv.z + this.detune);
     this.mesh.translateOnAxis(new THREE.Vector3(0,-1,0), this.transEnv.z * 0.005);
 
     if(this.mesh.position.y < -1.1)
@@ -114,8 +126,10 @@ Blob = function(pos, ud, w_width)
 
   this.move = function(rotTarget, transTarget)
   {
+
     this.rotEnv.targetVal = rotTarget;
     this.transEnv.targetVal = transTarget;
+
   }
 
   this.changeState = changeState;

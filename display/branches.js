@@ -1,12 +1,13 @@
 function Branch(parent, pos, col1, col2){
 
 	this.parent = parent;
-	this.maxPoints = 500;
+	this.maxPoints = 250;
 	this.numPoints = 0;
 	this.startPos = new THREE.Vector3().copy(pos);
   this.startPos.z = -10.0;
 	this.endPos = undefined;
 	this.direction = undefined;
+	this.tailOff = 0.5 + Math.random() * 0.35;
 
 	//attributes
 	this.vertices = new Float32Array( this.maxPoints * 6);
@@ -93,13 +94,15 @@ function Branch(parent, pos, col1, col2){
 	{
 
 
-    if(this.numPoints == this.maxPoints)return; //don't add any more if out of veritces
+    if(this.numPoints == this.maxPoints){
+			return; //don't add any more if out of veritces
+		}
 
     this.endPos.copy(pos);
 
 		this.numPoints = Math.min(this.numPoints + 1, this.maxPoints);
 
-		this.uniforms.thickness.value = Math.max(0.002 , (this.numPoints/this.maxPoints) * 0.04);
+		this.uniforms.thickness.value = Math.max(0.01 , (this.numPoints/this.maxPoints) * 0.02);
 
 		var i = this.numPoints - 1;
 
@@ -202,22 +205,11 @@ function Branch(parent, pos, col1, col2){
     this.direction.normalize();
     var norm = new THREE.Vector2(-this.direction.y , this.direction.x).multiplyScalar(n * 0.05);
     this.direction.add(norm);
-    this.direction.setLength(0.002);
+    this.direction.setLength(0.005);
 
     var np = new THREE.Vector2().copy(this.endPos).add(this.direction);
-    var isNewGroup = getModulo(np); //FIXME
 
-    if(isNewGroup){
-      this.newGroup();
-      this.updateVertices(np);
-
-    }
-    else
-    {
-      this.updateVertices(np);
-    }
-
-
+    this.updateVertices(np);
 
 	}
 
@@ -262,9 +254,10 @@ function Branch(parent, pos, col1, col2){
 }
 
 
-function BranchManager()
+function BranchManager(newBranchCB)
 {
   this.branches = [];
+	this.newBranchCB = newBranchCB;
 
   this.update = function(ellapsedTime)
   {
@@ -273,16 +266,37 @@ function BranchManager()
 
 			this.branches[i].uniforms.time.value = ellapsedTime;
 
-			if(this.branches[i].parent.needsNewGroup)
+			if(this.branches[i].parent != null)
 			{
-				this.branches[i].parent.needsNewGroup = false;
-				this.branches[i].newGroup();
-			}
 
-			var bd = this.branches[i].endPos.distanceTo(this.branches[i].parent.mesh.position);
-			if(bd > 0.005)
+				if(this.branches[i].parent.needsNewGroup)
+				{
+					this.branches[i].parent.needsNewGroup = false;
+					this.branches[i].newGroup();
+				}
+
+				var bd = this.branches[i].endPos.distanceTo(this.branches[i].parent.mesh.position);
+				if(bd > 0.005)
+				{
+					this.branches[i].updateVertices(this.branches[i].parent.mesh.position);
+					if(this.branches[i].numPoints > this.branches[i].maxPoints * this.branches[i].tailOff)
+					{
+
+						var rot = this.branches[i].parent.rotEnv.z;
+						this.branches[i].direction = new THREE.Vector2(0,-1);
+						this.branches[i].direction.rotateAround(new THREE.Vector2(0,0), this.branches[i].parent.rotEnv.z);
+
+						//detach and start a new branch
+						var parent = this.branches[i].parent;
+						this.branches[i].parent = null;
+						this.newBranchCB(parent);
+					}
+				}
+
+			}
+			else
 			{
-				this.branches[i].updateVertices(this.branches[i].parent.mesh.position);
+				this.branches[i].growOut();
 			}
 		}
   }
@@ -299,37 +313,3 @@ function BranchManager()
 }
 
 ///////////////////////////////////////////HELPERS/////////////////////////////////////
-
-//FIXME this will need some work
-function getModulo(p)
-{
-  var isMod = false;
-  //modulo the position to make a wrapped space
-  var w = width/height + 0.05;
-  var h = 1.05;
-
-  if(p.x < -w)
-  {
-    p.x += w * 2.0;
-    isMod = true;
-  }
-  else if(p.x > w)
-  {
-    p.x -= w * 2.0;
-    isMod = true;
-  }
-
-  if(p.y < -h)
-  {
-    p.y += h * 2.0;
-    isMod = true;
-
-  }
-  else if(p.y > h)
-  {
-    p.y -= h * 2.0;
-    isMod = true;
-  }
-
-  return isMod;
-}
