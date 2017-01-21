@@ -120,7 +120,7 @@ void main()
 veinVertexShader = `
 
 
-//uniform float time;
+uniform float time;
 uniform float col_freq;
 
 attribute vec2 miter;
@@ -140,7 +140,7 @@ float TWO_PI = 6.283185307179586;
 
 void main()
 {
-  float time = 0.0;
+
 	vec4 p = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 
 	float a = max(0.01,abs(thickness/miter_dims)); //NB. this number probably needs adjusting in respect of resolution
@@ -167,7 +167,6 @@ uniform vec3 color1;
 uniform vec3 color2;
 uniform float col_freq;
 
-
 varying float o_glob_line_prog;
 varying float m_prog;
 varying float inv_loc_prog;
@@ -185,6 +184,7 @@ void main()	{
 	vec3 m = mix(color1, color2, col_mix);
 	float alpha = (1.0 - pow(d,inv_loc_prog)) * smoothstep(0.01,0.05, o_glob_line_prog);
 	gl_FragColor = vec4(m * alpha,alpha);
-	//gl_FragColor = vec4(m ,1.0);
+  //gl_FragColor = vec4(1.0);
+
 }
 `

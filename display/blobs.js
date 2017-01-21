@@ -2,14 +2,12 @@ Blob = function(pos, ud, w_width)
 {
   this.scene; // ?
   this.uniforms = {};
-  this.position = new THREE.Vector3(pos.x, pos.y, 0.0);
-
-
 
   this.prevState;
   this.currState;
   this.currStateIdx;
   this.stateDeltas;
+  this.needsNewGroup = false;
 
   this.w_width = w_width;
 
@@ -34,8 +32,6 @@ Blob = function(pos, ud, w_width)
   this.col3 = convertRGB(colArray[2]);
   this.black = new THREE.Vector3(0., 0. ,0.);
 
-  this.branch = new Branch(pos, this.col1, this.col2);
-
   this.uniforms.seed.value = this.ud.blobSeed;
 
   this.uniforms.bg_color = {value: new THREE.Vector3(0.0),  type: "color"};
@@ -57,8 +53,8 @@ Blob = function(pos, ud, w_width)
 
 	this.mesh = new THREE.Mesh( this.geometry, this.material );
 
-  this.mesh.position.x = this.position.x;
-  this.mesh.position.y = this.position.y;
+  this.mesh.position.x = pos.x;
+  this.mesh.position.y = pos.y;
 
 
   this.currStateIdx = ud.state;
@@ -87,41 +83,30 @@ Blob = function(pos, ud, w_width)
     this.mesh.setRotationFromAxisAngle(new THREE.Vector3(0,0,1),this.rotEnv.z);
     this.mesh.translateOnAxis(new THREE.Vector3(0,-1,0), this.transEnv.z * 0.005);
 
-    var isNewGroup = false;
-
     if(this.mesh.position.y < -1.1)
     {
       this.mesh.position.y = 1.1;
-      isNewGroup = true;
+      this.needsNewGroup = true;
+
     }
     else if (this.mesh.position.y > 1.1) {
       this.mesh.position.y = -1.1;
-      isNewGroup = true;
+      this.needsNewGroup = true;
     }
 
     if(this.mesh.position.x < -(this.w_width + 0.1) )
     {
       this.mesh.position.x = this.w_width + 0.1;
-      isNewGroup = true;
+      this.needsNewGroup = true;
+
     }
     else if (this.mesh.position.x > this.w_width + 0.1)
     {
       this.mesh.position.x = -(this.w_width + 0.1);
-      isNewGroup = true;
+      this.needsNewGroup = true;
     }
 
-    var bd = this.branch.endPos.distanceTo(this.mesh.position); // how far the branch will have travelled
 
-    if(isNewGroup)
-    {
-      this.branch.newGroup();
-      this.branch.updateVertices(this.mesh.position);
-
-    }
-    else if(bd > 0.005)
-    {
-      this.branch.updateVertices(this.mesh.position);
-    }
 
 
 
@@ -162,7 +147,7 @@ BlobManager = function(_width)
   {
     //debug code
     this.blobs[ud._id] = new Blob(pos, ud, this.w_width);
-    return this.blobs[ud._id].mesh;
+    return this.blobs[ud._id];
   }
 
   this.clearAll = function(scene)

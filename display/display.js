@@ -20,10 +20,13 @@ socket.on('cmd', function(msg){
       //do the transform;
 
       var pos = new THREE.Vector2().copy(display.splatManager.playerInfo[msg.val._id].center);
-      var mesh = display.blobManager.addBlob(pos, msg.val);
+      var blob = display.blobManager.addBlob(pos, msg.val);
+      var branch = display.branchManager.addBranch(blob);
+      blob.branch = branch;
 
       display.splatManager.transform(msg.val._id, function(){
-            display.scene.add(mesh);
+            display.scene.add(blob.mesh);
+            display.scene.add(branch.mesh);
             display.scene.add(display.blobManager.blobs[msg.val._id].branch.mesh);
       });
 
@@ -32,9 +35,12 @@ socket.on('cmd', function(msg){
   }
   else if(msg.type == "blob")
   {
-    var mesh = display.blobManager.addBlob(new THREE.Vector2(Math.random() * 2.0 - 1.0,Math.random() * 2.0 -1), msg.val);
-    display.scene.add(mesh);
-    display.scene.add(display.blobManager.blobs[msg.val._id].branch.mesh);
+    var blob = display.blobManager.addBlob(new THREE.Vector2(Math.random() * 2.0 - 1.0,Math.random() * 2.0 -1), msg.val);
+    var branch = display.branchManager.addBranch(blob);
+    blob.branch = branch;
+
+    display.scene.add(blob.mesh);
+    display.scene.add(branch.mesh);
   }
   else if(msg.type == "moveBlob")
   {
@@ -122,6 +128,7 @@ Display = function(socket)
   this.scene = new THREE.Scene();
   this.splatManager = new SplatManager(this.resolution, socket);
   this.blobManager = new BlobManager(p);
+  this.branchManager = new BranchManager();
   this.scene.add(this.splatManager.mesh);
 
   this.mousePos = new THREE.Vector2();
@@ -184,6 +191,7 @@ Display = function(socket)
       this.splatManager.updateSpots(this.ellapsedTime);
       //debug code
       this.blobManager.update(this.ellapsedTime);
+      this.branchManager.update(this.ellapsedTime);
       this.renderer.render( this.scene, this.camera );
       lastFrameTime = this.ellapsedTime;
     }

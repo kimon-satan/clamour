@@ -1,6 +1,6 @@
-function Branch(pos, col1, col2){
+function Branch(parent, pos, col1, col2){
 
-
+	this.parent = parent;
 	this.maxPoints = 500;
 	this.numPoints = 0;
 	this.startPos = new THREE.Vector3().copy(pos);
@@ -21,6 +21,7 @@ function Branch(pos, col1, col2){
 	this.seed = Math.random();
 
 	this.uniforms = {
+		time: {value: 0.0},
 		thickness:  {value: 0.01},
 		col_freq: {value: 1.0  + Math.random() * 7.0 },
 		color1: {value: col1},
@@ -86,8 +87,11 @@ function Branch(pos, col1, col2){
 
 	}
 
-	this.updateVertices = function(pos)
+
+
+	this.updateVertices = function(pos, ellapsedTime)
 	{
+
 
     if(this.numPoints == this.maxPoints)return; //don't add any more if out of veritces
 
@@ -95,7 +99,7 @@ function Branch(pos, col1, col2){
 
 		this.numPoints = Math.min(this.numPoints + 1, this.maxPoints);
 
-		this.uniforms.thickness.value = Math.max(0.001 , (this.numPoints/this.maxPoints) * 0.02);
+		this.uniforms.thickness.value = Math.max(0.002 , (this.numPoints/this.maxPoints) * 0.04);
 
 		var i = this.numPoints - 1;
 
@@ -262,10 +266,36 @@ function BranchManager()
 {
   this.branches = [];
 
-  this.update = function()
+  this.update = function(ellapsedTime)
   {
+		for(var i = 0; i < this.branches.length; i++)
+		{
 
+			this.branches[i].uniforms.time.value = ellapsedTime;
+
+			if(this.branches[i].parent.needsNewGroup)
+			{
+				this.branches[i].parent.needsNewGroup = false;
+				this.branches[i].newGroup();
+			}
+
+			var bd = this.branches[i].endPos.distanceTo(this.branches[i].parent.mesh.position);
+			if(bd > 0.005)
+			{
+				this.branches[i].updateVertices(this.branches[i].parent.mesh.position);
+			}
+		}
   }
+
+	this.addBranch = function(parent)
+	{
+		var b = new Branch(parent, parent.mesh.position, parent.col1, parent.col2);
+		this.branches.push(b);
+		return b;
+	}
+
+
+
 }
 
 ///////////////////////////////////////////HELPERS/////////////////////////////////////
