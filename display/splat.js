@@ -61,7 +61,7 @@ Spot = function (owner)
 
 const MAX_PARTICLES = 20000; //could be higher wait and see
 
-SplatManager = function(_resolution, _socket)
+SplatManager = function(_prop, _socket)
 {
   this.spots = {};
   this.playerInfo = {};
@@ -99,12 +99,11 @@ SplatManager = function(_resolution, _socket)
   this.geo.addAttribute('fade', new THREE.BufferAttribute(this.fades, 1));
   this.geo.addAttribute('size', new THREE.BufferAttribute(this.sizes, 1));
 
-  this.resolution = _resolution;
+  this.prop = _prop;
 
   this.uniforms =
   {
     time: {value: 0.0},
-    resolution: { value: _resolution },
     mouse: {value: new THREE.Vector2(0,0) },
     scale: {value: 1.0,  min: 1.0, max: 10.0}
 
@@ -282,12 +281,10 @@ SplatManager = function(_resolution, _socket)
     {
 
       var colArray = getColors(ud.colSeed, ud.colMode);
-      console.log(colArray);
-      var prop = this.uniforms.resolution.value.x/this.uniforms.resolution.value.y;
       this.spots[id]= new Array();
 
       var scidx = Object.keys(this.playerInfo).length + 1;
-      var pan = ud.splatPan * 0.75;
+      var pan = ud.splatPan;
 
       this.playerInfo[id] = {
         scidx: scidx,
@@ -301,9 +298,10 @@ SplatManager = function(_resolution, _socket)
         col1: hslToRgb(colArray[0].x, colArray[0].y, colArray[0].z),
         col2: hslToRgb(colArray[1].x, colArray[1].y, colArray[1].z),
         col3: hslToRgb(colArray[2].x, colArray[2].y, colArray[2].z),
-        center: new THREE.Vector2( pan * prop,  (2* Math.random() - 1.) * .85 )
+        center: new THREE.Vector2( pan * this.prop,  (2* Math.random() - 1.) * .85 )
        }
 
+       console.log(this.prop , pan);
        this.glowWaveEnvs.push(new Envelope(0.05, 60));
 
 

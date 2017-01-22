@@ -53,7 +53,7 @@ Interface = function(ud, callback){
 
   this.maxState;
 
-  this.splatPan = -1.0 + Math.random() * 2.0;
+  this.splatPan = (-1.0 + Math.random() * 2.0) * 0.85;
   this.splatRate = Math.random();
   this.splatPos = Math.random();
 

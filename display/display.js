@@ -129,8 +129,8 @@ Display = function(socket)
   this.fps = 0;
 
   this.scene = new THREE.Scene();
-  this.splatManager = new SplatManager(this.resolution, socket);
-  this.blobManager = new BlobManager(p);
+  this.splatManager = new SplatManager(p, socket);
+  this.blobManager = new BlobManager(p, socket);
   this.branchManager = new BranchManager(newBranch);
   this.scene.add(this.splatManager.mesh);
 

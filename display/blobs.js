@@ -1,10 +1,11 @@
-Blob = function(pos, ud, w_width)
+Blob = function(pos, ud, w_width, _socket)
 {
   var count = 0;
+  var targetTime = 0;
   this.scene; // ?
   this.uniforms = {};
-
-
+  this.socket = _socket;
+  this.isCrawling = false;
 
   this.prevState;
   this.currState;
@@ -78,17 +79,32 @@ Blob = function(pos, ud, w_width)
     this.transEnv.step();
     this.rotEnv.step();
 
-    if(this.transEnv.z > this.transEnv.targetVal * 0.95)
+    if(this.transEnv.z > this.transEnv.targetVal * 0.95 && this.transEnv.targetVal > 0)
     {
       this.transEnv.targetVal = 0;
     }
 
-
-
-    if(this.transEnv.z > 0)
+    if(this.transEnv.z > 0.05)
     {
       count += 0.005;
       this.detune = noise.perlin2(this.uniforms.seed.value, count) * Math.PI;
+
+      if(ellapsedTime > targetTime) //approximately 10fps
+      {
+        targetTime = ellapsedTime + 0.1; //
+        this.socket.emit('updateCrawler', {
+          scidx: this.ud._id,
+          energy: this.transEnv.z
+        });
+      }
+
+    }
+    else if(this.isCrawling && this.transEnv.targetVal == 0)
+    {
+      this.socket.emit('endCrawler', {
+        scidx: this.ud._id
+      });
+      this.isCrawling = false;
     }
 
 
@@ -127,8 +143,20 @@ Blob = function(pos, ud, w_width)
   this.move = function(rotTarget, transTarget)
   {
 
+    var pan = this.mesh.position.x/this.w_width;
+
+
+    if(!this.isCrawling)
+    {
+      this.socket.emit('startCrawler', {
+        scidx: ud._id,
+        pan: pan
+      });
+    }
+
     this.rotEnv.targetVal = rotTarget;
     this.transEnv.targetVal = transTarget;
+    this.isCrawling = true;
 
   }
 
@@ -141,11 +169,12 @@ Blob = function(pos, ud, w_width)
 
 }
 
-BlobManager = function(_width)
+BlobManager = function(_width, _socket)
 {
 
   this.w_width = _width;
   this.blobs = {};
+  this.socket = _socket;
 
   this.update = function(ellapsedTime) //actually will be more like update
   {
@@ -160,7 +189,7 @@ BlobManager = function(_width)
   this.addBlob = function(pos, ud)
   {
     //debug code
-    this.blobs[ud._id] = new Blob(pos, ud, this.w_width);
+    this.blobs[ud._id] = new Blob(pos, ud, this.w_width, this.socket);
     return this.blobs[ud._id];
   }
 

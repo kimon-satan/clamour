@@ -481,7 +481,7 @@ admin.on('connection', function(socket){
         colSeed: allOptions.colSeed,
         colMode: allOptions.colMode,
         blobSeed: Math.random(),
-        splatPan: Math.random() * 2.0 - 1.0,
+        splatPan: (Math.random() * 2.0 - 1.0) * 0.85,
       }});
       admin.emit('server_report', {id: msg.cli_id}); //empty response
     }
@@ -572,6 +572,61 @@ display.on('connection', function(socket)
 
     udpPort.send({
         address: "/endTone",
+        args: args,
+    }, "127.0.0.1", 57120);
+
+  })
+
+  socket.on('startCrawler', function(msg){
+
+    console.log("startCrawler", msg);
+
+    var args = [];
+
+    Object.keys(msg).forEach(function(p)
+    {
+      args.push(p);
+      args.push(msg[p]);
+    })
+
+    udpPort.send({
+        address: "/startCrawler",
+        args: args,
+    }, "127.0.0.1", 57120);
+
+  })
+
+  socket.on('updateCrawler', function(msg){
+
+    console.log("updateCrawler", msg);
+    var args = [];
+
+    Object.keys(msg).forEach(function(p)
+    {
+      args.push(p);
+      args.push(msg[p]);
+    })
+
+    udpPort.send({
+        address: "/updateCrawler",
+        args: args,
+    }, "127.0.0.1", 57120);
+
+  })
+
+  socket.on('endCrawler', function(msg){
+
+    console.log("endCrawler", msg);
+    var args = [];
+
+    Object.keys(msg).forEach(function(p)
+    {
+      args.push(p);
+      args.push(msg[p]);
+    })
+
+    udpPort.send({
+        address: "/endCrawler",
         args: args,
     }, "127.0.0.1", 57120);
 
