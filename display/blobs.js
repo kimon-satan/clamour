@@ -19,6 +19,8 @@ Blob = function(pos, ud, w_width, _socket)
 
   this.transEnv = new Envelope2(0.1,2.0,60);
   this.rotEnv = new Envelope(3.0, 60);
+  this.deathEnv = new Envelope(2.0, 60);
+
 
   Object.keys(BlobUniforms).forEach(function(e)
   {
@@ -64,8 +66,6 @@ Blob = function(pos, ud, w_width, _socket)
   this.currStateIdx = ud.state;
 
 
-  ///
-
   this.update = function(ellapsedTime)
   {
     var delta = ellapsedTime - this.uniforms.time.value;
@@ -78,6 +78,11 @@ Blob = function(pos, ud, w_width, _socket)
 
     this.transEnv.step();
     this.rotEnv.step();
+
+
+      this.deathEnv.step();
+      this.ud.death = this.deathEnv.z;
+
 
     if(this.transEnv.z > this.transEnv.targetVal * 0.95 && this.transEnv.targetVal > 0)
     {
@@ -140,7 +145,7 @@ Blob = function(pos, ud, w_width, _socket)
 
   }
 
-  this.move = function(rotTarget, transTarget)
+  this.move = function(rotTarget, transTarget, death)
   {
 
     var pan = this.mesh.position.x/this.w_width;
@@ -157,6 +162,8 @@ Blob = function(pos, ud, w_width, _socket)
 
     this.rotEnv.targetVal = rotTarget;
     this.transEnv.targetVal = transTarget;
+    this.deathEnv.targetVal = death;
+
 
   }
 
@@ -192,10 +199,9 @@ BlobManager = function(_width, _socket)
     return this.blobs[ud._id];
   }
 
-  this.moveBlob = function(id, rot, trans)
+  this.moveBlob = function(id, rot, trans, death)
   {
-    this.blobs[id].move(rot, trans);
-
+    this.blobs[id].move(rot, trans, death);
   }
 
   this.clearAll = function(scene)

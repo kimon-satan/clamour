@@ -1,8 +1,22 @@
 TODO
 
-- noise from handset (try random value to rotEnv)
-- random start rotation + adjusted grid
-- fix instruction rendering
+- misty Sound
+- dying / disappearing blob
+- start death command from admin
+
+FIXES (in order of importance)
+
+- background grid off
+- instruction rendering
+- resinstate shake before explode
+- noise from handset not display (try random value to rotEnv)
+- adjusted grid for random start rotation
+- colours on display and screen matching (use primary color variables)
+- variable for state progress (check states match)
+- splats rendered on mobile screen
+- adjust states / more variation between blobs
+- poisson disk for splat distribution
+- render timeout fix (make more robust)
 
 /////////////////////////////////////////////
 
@@ -14,7 +28,3 @@ Post gig refactoring
 
 
 /////////////////////////////////////////////
-
-Include all the extras for the end of the piece
-
-////////////////////////////////////////////////

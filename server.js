@@ -45,6 +45,7 @@ const allOptions = {
     state: 0,
     isSplat: false,
     isMobile: false,
+    isDying: false,
     maxState: 2,
     envTime: 8,
     blobSeed: 0.01,

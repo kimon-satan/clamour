@@ -292,13 +292,18 @@ Interface = function(ud, callback){
         {
             this.transEnv.targetVal = vl;
             this.rotEnv.targetVal = this.rotEnv.z + rot;
+        }
 
+        if(this.ud.isDying)
+        {
+          this.ud.death = Math.min(1.0, this.ud.death + 0.01);
         }
 
         socket.emit('moveBlob', {
           _id: userid,
           rot: this.rotEnv.targetVal,
-          trans: this.transEnv.targetVal
+          trans: this.transEnv.targetVal,
+          death: this.ud.death
         });
 
       }
@@ -592,16 +597,22 @@ Interface = function(ud, callback){
         window.setTimeout(
           function()
           {
-            socket.emit('splat', {_id: userid,
+            var msgObj = {
+              _id: userid,
               splatPos: this.splatPos,
               splatPan: this.splatPan ,
               splatRate: this.splatRate,
-              colMode: this.ud.colMode, //passing these to display means no need for DB lookup
-              colSeed: this.ud.colSeed,
-              blobSeed: this.ud.blobSeed,
-              death: this.ud.death,
-              state: this.graphics.currStateIdx //bit messy
-            });
+              state: this.graphics.currStateIdx
+            };
+
+            Object.keys(this.ud).forEach(function(k, idx, array){
+              msgObj[k] = this.ud[k];
+
+              if(idx == array.length-1)
+              {
+                socket.emit('splat', msgObj);
+              }
+            }, this);
 
           }.bind(this),
         300);
