@@ -119,22 +119,20 @@ void main()
 
 veinVertexShader = `
 
-
 uniform float time;
 uniform float col_freq;
 
 attribute vec2 miter;
 attribute float miter_dims;
 
-attribute float loc_line_prog; //in relation to the currently rendered line
 attribute float glob_line_prog; //in relation to the whole line
 
 uniform float thickness;
 
+varying float o_glob_line_prog;
 varying float m_prog;
-varying float inv_loc_prog;
-varying float o_loc_line_prog;
 varying float col_mix;
+
 
 float TWO_PI = 6.283185307179586;
 
@@ -144,46 +142,47 @@ void main()
 	vec4 p = projectionMatrix * modelViewMatrix * vec4( position.xy, -5.0, 1.0 );
   vec4 m = projectionMatrix * modelViewMatrix * vec4( miter, 0.0, 1.0 );
 
-	float a = max(0.01,abs(thickness/miter_dims)); //NB. this number probably needs adjusting in respect of resolution
+  float a = max(0.01,abs(thickness/miter_dims)); //NB. this number probably needs adjusting in respect of resolution
 	a *= 0.75 + sin(time *2.0 - glob_line_prog * TWO_PI * 10.0) * 0.25; //blood flow !
-    p.xy += m.xy  *  a * sign(miter_dims);
+  p.xy += m.xy  * a * sign(miter_dims);
 
-    gl_Position = p;
-    m_prog = sign(miter_dims);
+  m_prog = sign(miter_dims);
+  o_glob_line_prog = glob_line_prog;
+  col_mix = 0.5 + sin(pow(1.0 - o_glob_line_prog,0.5) * TWO_PI * col_freq) * 0.5;
 
-    o_loc_line_prog = loc_line_prog;
-    inv_loc_prog = 1.0 - loc_line_prog;
+  gl_Position = vec4(p.xy, 0.0, 1.0);
 
-    col_mix = 0.5 + sin(pow(1.0 - glob_line_prog,0.5) * TWO_PI * col_freq) * 0.5;
 }
 `
 veinFragmentShader=
 `
 #ifdef GL_ES
-	precision highp float;
-#endif
+      precision highp float;
+    #endif
 
-uniform vec3 color1;
-uniform vec3 color2;
-uniform float col_freq;
+    uniform vec3 color1;
+    uniform vec3 color2;
+    uniform float death;
+    uniform float lineProg;
 
-varying float m_prog;
-varying float o_loc_line_prog;
-varying float inv_loc_prog;
-varying float col_mix;
+    varying float o_glob_line_prog;
+    varying float m_prog;
+    varying float col_mix;
 
-float PI  = 3.141592653589793;
-float TWO_PI = 6.283185307179586;
+    ///////////////////////////////////HELPERS///////////////////////////////////
 
-///////////////////////////////////HELPERS///////////////////////////////////
+    void main()
+    {
+      float width = min(
+        smoothstep(0.0, 0.05, o_glob_line_prog),
+        smoothstep(1.0 - lineProg , 1.05 - lineProg, 1.0 - o_glob_line_prog )
+      );
 
+      vec3 m = mix(color1, color2, col_mix);
+      vec3 m2 = mix(vec3(0.5), vec3(0.1,0.1,0.1), col_mix);
+      vec3 m3 = mix(m2, m, smoothstep( death, death + 0.025, o_glob_line_prog) );
+      float alpha = 1.- pow(m_prog , 2.5 * width);
+      gl_FragColor = vec4(m3 * alpha,alpha);
 
-void main()	{
-
-  float d = pow(m_prog, 2.5);
-  vec3 m = mix(color1, color2, col_mix);
-  float alpha = 1.0 - max(pow(d,o_loc_line_prog),pow(d, inv_loc_prog) );
-  gl_FragColor = vec4(m * alpha,alpha);
-
-}
+    }
 `

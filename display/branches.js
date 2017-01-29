@@ -1,6 +1,7 @@
 function Branch(parent, pos, col1, col2){
 
 	this.parent = parent;
+	this.isAttached = true;
 	this.maxPoints = 250;
 	this.numPoints = 0;
 	this.startPos = new THREE.Vector3().copy(pos);
@@ -15,7 +16,6 @@ function Branch(parent, pos, col1, col2){
 	this.miters = new Float32Array( this.maxPoints * 2 * 2);
 	this.miter_dims = new Float32Array( this.maxPoints * 2);
 
-	this.loc_line_prog = new Float32Array( this.maxPoints * 2);
 	this.glob_line_prog = new Float32Array( this.maxPoints * 2);
 
 	this.noise_mul = 0.01 + Math.random() * 0.04;
@@ -26,7 +26,9 @@ function Branch(parent, pos, col1, col2){
 		thickness:  {value: 0.01},
 		col_freq: {value: 1.0  + Math.random() * 7.0 },
 		color1: {value: col1},
-		color2: {value: col2}
+		color2: {value: col2},
+		death: {value: 0.0},
+		lineProg: {value: 0.0}
 	};
 
 
@@ -70,7 +72,6 @@ function Branch(parent, pos, col1, col2){
 		this.geometry.addAttribute('index', new THREE.BufferAttribute( this.indexes, 1));
 
 		//custom attributes
-		this.geometry.addAttribute( 'loc_line_prog', new THREE.BufferAttribute( this.loc_line_prog, 1 ) );
 		this.geometry.addAttribute( 'glob_line_prog', new THREE.BufferAttribute( this.glob_line_prog, 1 ) );
 		this.geometry.addAttribute( 'miter', new THREE.BufferAttribute( this.miters, 2 ) );
 		this.geometry.addAttribute( 'miter_dims', new THREE.BufferAttribute( this.miter_dims, 1 ) );
@@ -103,6 +104,7 @@ function Branch(parent, pos, col1, col2){
 		this.numPoints = Math.min(this.numPoints + 1, this.maxPoints);
 
 		this.uniforms.thickness.value = Math.max(0.01 , (this.numPoints/this.maxPoints) * 0.02);
+		this.uniforms.lineProg.value = this.numPoints / this.maxPoints;
 
 		var i = this.numPoints - 1;
 
@@ -183,11 +185,9 @@ function Branch(parent, pos, col1, col2){
 		this.miter_dims[pi * 2] = l;
 		this.miter_dims[pi * 2 + 1] = -l; //signed to flip the vertex
 
-		this.recalLPs();
 
 		this.geometry.groupsNeedUpdate = true;
 		this.geometry.attributes.position.needsUpdate = true;
-		this.geometry.attributes.loc_line_prog.needsUpdate = true;
     this.geometry.attributes.glob_line_prog.needsUpdate = true;
 		this.geometry.attributes.miter.needsUpdate = true;
 		this.geometry.attributes.miter_dims.needsUpdate = true;
@@ -214,25 +214,6 @@ function Branch(parent, pos, col1, col2){
 	}
 
 
-	this.recalLPs = function()
-	{
-
-		//calculate the line progression for all points
-		//NB. might be more useful in relation to maxPoints with a uniform for the progress
-		for(var i = 0; i < this.numPoints; i++)
-		{
-			this.loc_line_prog[i * 2] = i/this.numPoints;
-			this.loc_line_prog[i * 2 + 1] = i/this.numPoints;
-		}
-
-		for(var i = this.numPoints; i < this.maxPoints; i++)
-		{
-			this.loc_line_prog[i * 2] = 1.1;
-			this.loc_line_prog[i * 2 + 1] = 1.1;
-		}
-
-	}
-
 
 
 
@@ -247,7 +228,6 @@ function Branch(parent, pos, col1, col2){
 	this.material = new THREE.MultiMaterial(m);
 
 	this.createGeometry();
-	this.recalLPs();
 	this.mesh = new THREE.Mesh( this.geometry, this.material );
   //this.pmesh = new THREE.Points( this.geometry, this.material );
 
@@ -265,8 +245,9 @@ function BranchManager(newBranchCB)
 		{
 
 			this.branches[i].uniforms.time.value = ellapsedTime;
+			this.branches[i].uniforms.death.value = this.branches[i].parent.ud.death;
 
-			if(this.branches[i].parent != null)
+			if(this.branches[i].isAttached)
 			{
 
 				if(this.branches[i].parent.needsNewGroup)
@@ -288,7 +269,7 @@ function BranchManager(newBranchCB)
 
 						//detach and start a new branch
 						var parent = this.branches[i].parent;
-						this.branches[i].parent = null;
+						this.branches[i].isAttached = false;
 						this.newBranchCB(parent);
 					}
 				}

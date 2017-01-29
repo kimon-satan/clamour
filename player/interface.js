@@ -599,6 +599,7 @@ Interface = function(ud, callback){
               colMode: this.ud.colMode, //passing these to display means no need for DB lookup
               colSeed: this.ud.colSeed,
               blobSeed: this.ud.blobSeed,
+              death: this.ud.death,
               state: this.graphics.currStateIdx //bit messy
             });
 

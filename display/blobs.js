@@ -152,20 +152,19 @@ Blob = function(pos, ud, w_width, _socket)
         scidx: ud._id,
         pan: pan
       });
+      this.isCrawling = true;
     }
 
     this.rotEnv.targetVal = rotTarget;
     this.transEnv.targetVal = transTarget;
-    this.isCrawling = true;
 
   }
+
 
   this.changeState = changeState;
   this.getState = getState;
 
   this.changeState(this.currStateIdx); //set to state zero
-
-
 
 }
 
@@ -191,6 +190,12 @@ BlobManager = function(_width, _socket)
     //debug code
     this.blobs[ud._id] = new Blob(pos, ud, this.w_width, this.socket);
     return this.blobs[ud._id];
+  }
+
+  this.moveBlob = function(id, rot, trans)
+  {
+    this.blobs[id].move(rot, trans);
+
   }
 
   this.clearAll = function(scene)

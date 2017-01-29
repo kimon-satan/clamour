@@ -40,7 +40,7 @@ socket.on('cmd', function(msg){
   }
   else if(msg.type == "moveBlob")
   {
-    display.blobManager.blobs[msg.val._id].move(-msg.val.rot, msg.val.trans);
+    display.blobManager.moveBlob(msg.val._id, -msg.val.rot, msg.val.trans);
   }
   else if(msg.type == "update")
   {

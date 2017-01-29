@@ -49,7 +49,8 @@ const allOptions = {
     envTime: 8,
     blobSeed: 0.01,
     colSeed: 0.01,
-    colMode: 0 //0 -> 3 (int)
+    colMode: 0, //0 -> 3 (int),
+    death: 0
 }
 
 
