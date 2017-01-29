@@ -96,6 +96,7 @@ function informServer(msg)
 {
   msg._id = userid;
   socket.emit('update_user', msg); //tell the server that we have changed mode
+  console.log("informServer")
 
 }
 
@@ -140,6 +141,12 @@ function parseMsgParams(msg)
     {
       iface.setIsMobile(resp.isMobile);
     }
+
+    if(resp.isDying != undefined)
+    {
+      iface.setIsDying(resp.isDying);
+    }
+
   }
 
 

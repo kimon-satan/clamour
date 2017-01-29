@@ -152,36 +152,26 @@ window.GraphicStates = [
 
 	},
 
-	//5
+	//5 //dying
+
 	{
-		theta_warp: 1.6,
-		fg_pow: 2.0,
-		hl_mul: 1.0,
-		hl_pow: 0.7,
-		hl_freq: 7.0,
-		slices: 1.0,
-		c_scale: 1.0,
-		cell_detail: 0.0,
-		cell_detune: 0.5,
+		fg_pow: 0.2,
+		hl_pow: 0.6,
+		hl_mul: 0.6,
+		hl_freq: 6.5,
+		c_freq: 0.0,
+		o_freq: 0.0,
+		r_freq: 0.0,
+		cell_detail: 1.0,
+		fg_color: "BLACK",
+		bg_color: "GRAY1",
+		hl_color: "GRAY2"
 	},
 
 	//6
-
 	{
-		fg_pow: 0.5,
-		hl_pow: 0.25,
-		c_size: 0.5,
-		c_scale: 1.0,
-		fg_color: "COL1",
-		bg_color: "BLACK",
-		hl_color: "COL2",
-	},
-
-	//7
-	{
-		fg_pow: 0.5,
-		hl_pow: 0.5,
-		hl_mul: 2.0
+		hl_color: "BLACK",
+		hl_mul: 0.1,
 	}
 
 ]
@@ -233,6 +223,8 @@ function getState(idx)
 						case "COL2": this.uniforms[property].value.copy(this.col2) ;break;
 						case "COL3": this.uniforms[property].value.copy(this.col3) ;break;
 						case "BLACK": this.uniforms[property].value.copy(this.black) ;break;
+						case "GRAY1": this.uniforms[property].value.copy(this.gray1) ;break;
+						case "GRAY2": this.uniforms[property].value.copy(this.gray2) ;break;
 					}
 				}
 			}
@@ -308,7 +300,7 @@ function incrementState(idx)
 		}
 		else if(this.uniforms[property].value instanceof THREE.Vector3)
 		{
-			
+
 			this.prevState[property] = new THREE.Vector3().copy(this.currState[property]);
 
 			if(this.uniforms[property].type == "color")

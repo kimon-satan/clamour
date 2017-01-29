@@ -60,8 +60,6 @@ blobFragmentShader = `
 	uniform float c_fade;
 
 
-
-
 	float PI  = 3.141592653589793;
 	float TWO_PI = 6.283185307179586;
 
@@ -225,7 +223,7 @@ blobFragmentShader = `
 
 		gl_FragColor = vec4( vec3(o_col * o_lum * (1.0 - c_lum) + c_lum * c_col),o_lum);
 
-  
+
 
   }
 `;

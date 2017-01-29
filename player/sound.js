@@ -223,11 +223,11 @@ Sound.prototype.nextGrain = function()
   // Update time params
   this.realTime += this.parameters.grainSpacing.value;
 
-  if(Math.abs(this.parameters.speed) > 0)
+  if(Math.abs(this.parameters.speed.value) > 0)
   {
 
-    this.grainTime += this.parameters.speed.value * this.parameters.grainDuration.value;
 
+    this.grainTime += this.parameters.speed.value * this.parameters.grainDuration.value;
 
 
     //grain time wrapping
@@ -241,6 +241,7 @@ Sound.prototype.nextGrain = function()
     else if (this.grainTime < regionStart)
     {
       this.grainTime += Math.min( this.bufferDuration - regionStart, this.parameters.regionLength.value);
+
     }
 
   }else{
@@ -298,7 +299,18 @@ Sound.prototype.setReaction  = function(idx)
         this.parameters[property].max
       );
     }
+
+    if(this.parameters[property].map == "trand")
+    {
+      this.parameters[property].value = linlin(
+        Math.random(), 0, 1,
+        this.parameters[property].min,
+        this.parameters[property].max
+      );
+    }
   }
+
+
 
   var bobj = this.buffers[this.getFileId(this.parameters.file.value)];
   this.buffer =  bobj.buffer;

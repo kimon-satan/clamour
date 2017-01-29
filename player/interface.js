@@ -53,6 +53,9 @@ Interface = function(ud, callback){
 
   this.maxState;
 
+  this.isMobile = ud.isMobile; //ugh horrible
+  this.isDying = ud.isDying;
+
   this.splatPan = (-1.0 + Math.random() * 2.0) * 0.85;
   this.splatRate = Math.random();
   this.splatPos = Math.random();
@@ -141,7 +144,21 @@ Interface = function(ud, callback){
                     instruction: "hold",
                     inst_trig: 5
                   }
-              ]
+          ],
+
+    "isDying": [
+              { z: 0.0,
+                    map: [
+                    undefined,
+                    {graphics: "shudderThetaDown", sound: "misty" },
+                    undefined,
+                    {graphics: "shudderThetaDown", sound: "misty" },
+                    {graphics: "shudderThetaDown", sound: "misty" },
+                    undefined
+                    ],
+
+                  }
+    ]
   }
 
   this.init = function()
@@ -184,13 +201,12 @@ Interface = function(ud, callback){
       new Envelope2(1.0,0.2,60),
       new Envelope2(2.0,0.2,60),
       new Envelope(2.0, 60), //latched by default
-      new Envelope2(0.1, 0.3, 60)
+      new Envelope2(0.1, 0.3, 60),
+      new Envelope2(0.1,0.5,60)
     ];
 
 
     this.currentReactionMap = this.reactionMaps[0][0];
-
-
 
     ///////////////////////SETUP EVENTS////////////////////////////////////////
 
@@ -224,7 +240,16 @@ Interface = function(ud, callback){
         e.touches[0].clientX /this.canvas.width,
         e.touches[0].clientY / this.canvas.height
       );
-      this.gestureMove(p);
+
+      if(this.isMobile)
+      {
+        this.buildMove(p);
+      }
+      else
+      {
+        this.gestureMove(p);
+      }
+
     }.bind(this)
     , false);
 
@@ -232,6 +257,12 @@ Interface = function(ud, callback){
     {
       this.isMouseDown = false;
       this.gestureEnd();
+
+      if(this.isMobile)
+      {
+        this.triggerMove();
+      }
+
     }.bind(this)
     , false);
 
@@ -269,8 +300,18 @@ Interface = function(ud, callback){
 
       if(this.isMouseDown)
       {
-        this.gestureMove(pos);
+        if(this.isMobile)
+        {
+          this.buildMove(pos);
+        }
+        else
+        {
+          this.gestureMove(pos);
+        }
       }
+
+
+
     }.bind(this)
     , false);
 
@@ -280,32 +321,9 @@ Interface = function(ud, callback){
       this.gestureEnd();
 
 
-      if(this.ud.isMobile)
+      if(this.isMobile)
       {
-
-        var np = new THREE.Vector2(e.clientX/this.canvas.width, e.clientY/this.canvas.height);
-        var v = new THREE.Vector2().subVectors(np, this.touchStartPos);
-        var vl = v.length();
-
-        var rot = -(v.angle() - Math.PI/2.0);
-        if(rot > -Math.PI/2.0 && rot < Math.PI/2.0)
-        {
-            this.transEnv.targetVal = vl;
-            this.rotEnv.targetVal = this.rotEnv.z + rot;
-        }
-
-        if(this.ud.isDying)
-        {
-          this.ud.death = Math.min(1.0, this.ud.death + 0.01);
-        }
-
-        socket.emit('moveBlob', {
-          _id: userid,
-          rot: this.rotEnv.targetVal,
-          trans: this.transEnv.targetVal,
-          death: this.ud.death
-        });
-
+        this.triggerMove();
       }
 
 
@@ -319,6 +337,7 @@ Interface = function(ud, callback){
     this.setEnvTime(ud.envTime);
     this.setIsSplat(ud.isSplat); //might cause a loop !?
     this.setMaxState(ud.maxState);
+
   }
 
   this.gestureStart = function ()
@@ -430,6 +449,65 @@ Interface = function(ud, callback){
     }
   }
 
+  this.buildMove = function(pos)
+  {
+
+    this.numTouches++;
+    this.isNewTouch = true;
+
+    if(this.numTouches > 5){
+
+      var v = new THREE.Vector2().subVectors(pos, this.touchStartPos);
+      var vl = v.length();
+      this.mousePos.copy(pos);
+
+      this.isNewTouch = true;
+
+      var rot = -(v.angle() - Math.PI/2.0);
+      if(rot > -Math.PI/2.0 && rot < Math.PI/2.0)
+      {
+
+        if(this.currentGesture == 0)
+        {
+          this.currentGesture = 1;
+          this.sound.setReaction(this.currentReactionMap.map[this.currentGesture].sound);
+          this.graphics.setReaction(this.currentReactionMap.map[this.currentGesture].graphics);
+        }
+
+        this.isGesture = true;
+        this.setEnvTargets(1.);
+
+      }
+
+    }
+  }
+
+  this.triggerMove = function()
+  {
+
+    var v = new THREE.Vector2().subVectors(this.mousePos, this.touchStartPos);
+    var vl = v.length();
+
+    var rot = -(v.angle() - Math.PI/2.0);
+    if(rot > -Math.PI/2.0 && rot < Math.PI/2.0)
+    {
+        this.transEnv.targetVal = vl;
+        this.rotEnv.targetVal = this.rotEnv.z + rot;
+    }
+
+    if(this.isDying)
+    {
+      this.ud.death = Math.min(1.0, this.ud.death + 0.01);
+    }
+
+    socket.emit('moveBlob', {
+      _id: userid,
+      rot: this.rotEnv.targetVal,
+      trans: this.transEnv.targetVal,
+      death: this.ud.death
+    });
+  }
+
   this.setEnvTargets = function(target)
   {
     for(var i = 0; i < this.reactEnvelopes.length; i++)
@@ -486,7 +564,7 @@ Interface = function(ud, callback){
     if(this.accumulator > 1.0/60)
     {
 
-      if(this.ud.isMobile)
+      if(this.isMobile)
       {
         this.transEnv.step();
         this.rotEnv.step();
@@ -513,7 +591,7 @@ Interface = function(ud, callback){
           this.numHolds ++;
 
           //if it's a hold gesture
-          if(this.numHolds > 20 && this.currentGesture == 0 || this.currentGesture == 5)
+          if(this.numHolds > 20 && (this.currentGesture == 0 || this.currentGesture == 5))
           {
             this.updateGesture(5);
             if(this.numHolds > 175)
@@ -528,7 +606,7 @@ Interface = function(ud, callback){
 
 
         }else{
-          //console.log("reset gesture");
+
           this.numHolds = 0;
           this.numTouches = 0;
           this.setEnvTargets(0);
@@ -554,8 +632,11 @@ Interface = function(ud, callback){
         }
       }
 
-      if(!this.envsActive)
+
+
+      if(!this.envsActive && this.isGesture)
       {
+
         this.gestureEnd(); // just incase it was missed
         //check for latest reactionMap
         this.updateReactionMap();
@@ -629,9 +710,6 @@ Interface = function(ud, callback){
   this.updateState = function()
   {
 
-
-
-
     if(this.changingState){
 
       this.stateEnvelope.step();
@@ -673,6 +751,7 @@ Interface = function(ud, callback){
 
     //tell the server because the change came from here
     this.callback({state: this.stateIndex});
+  
 
   }
 
@@ -709,30 +788,36 @@ Interface = function(ud, callback){
 
   this.updateReactionMap = function(){
 
-    if(this.isMobile)
+    if(this.isDying)
     {
-      this.currentReactionMap = this.reactionMaps[0];
+      this.currentReactionMap = this.reactionMaps["isDying"][0];
     }
-
-    var cz = 0;
-
-    if(this.reactionMaps[this.stateIndex] != undefined)
+    else if(this.isMobile)
     {
+      this.currentReactionMap = this.reactionMaps[0][0];
+    }
+    else
+    {
+      var cz = 0;
 
-      for(i in this.reactionMaps[this.stateIndex])
+      if(this.reactionMaps[this.stateIndex] != undefined)
       {
-        var rm = this.reactionMaps[this.stateIndex][i];
 
-
-        var z = rm.z%1;
-        if(z >= cz &&
-           rm.z > this.currentReactionMap.z
-           && this.stateEnvelope.z >= z)
+        for(i in this.reactionMaps[this.stateIndex])
         {
-          cz = z;
-          if(rm.instruction != undefined)this.graphics.displayInstruction(rm.instruction);
-          this.currentReactionMap = rm;
-            //console.log("udate rm");
+          var rm = this.reactionMaps[this.stateIndex][i];
+
+
+          var z = rm.z%1;
+          if(z >= cz &&
+             rm.z > this.currentReactionMap.z
+             && this.stateEnvelope.z >= z)
+          {
+            cz = z;
+            if(rm.instruction != undefined)this.graphics.displayInstruction(rm.instruction);
+            this.currentReactionMap = rm;
+              //console.log("udate rm");
+          }
         }
       }
     }
@@ -746,6 +831,12 @@ Interface = function(ud, callback){
   this.setIsMobile = function(b)
   {
     this.isMobile = b;
+    this.updateReactionMap();
+  }
+
+  this.setIsDying = function(b)
+  {
+    this.isDying = b;
     this.updateReactionMap();
   }
 

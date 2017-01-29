@@ -16,12 +16,13 @@ window.Graphics = function(ud){
 	this.ud = ud;
 
 	var colArray = getColors(this.ud.colSeed, this.ud.colMode);
-	console.log(colArray);
 
 	this.col1 = convertRGB(colArray[0]);
 	this.col2 = convertRGB(colArray[1]);
 	this.col3 = convertRGB(colArray[2]);
 	this.black = new THREE.Vector3(0., 0. ,0.);
+	this.gray1 = new THREE.Vector3(0.1, 0.1 ,0.1);
+  this.gray2 = new THREE.Vector3(0.2, 0.2 ,0.2);
 
 	this.uniforms = BlobUniforms;
 

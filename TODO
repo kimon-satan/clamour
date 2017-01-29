@@ -1,15 +1,15 @@
 TODO
 
-- misty Sound
-- dying / disappearing blob
-- start death command from admin
+- update state changes to display on moveFunction
+- deal with mid-state issue
+- tweak SC dying audio
+- noise from handset not display (try random value to rotEnv)
 
 FIXES (in order of importance)
 
-- background grid off
+- background grid off at start
 - instruction rendering
-- resinstate shake before explode
-- noise from handset not display (try random value to rotEnv)
+- resinstate shake before expliode
 - adjusted grid for random start rotation
 - colours on display and screen matching (use primary color variables)
 - variable for state progress (check states match)
