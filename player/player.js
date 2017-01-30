@@ -118,7 +118,7 @@ function parseMsgParams(msg)
   {
     if(resp.state != undefined)
     {
-
+      console.log("cs: " + resp.state)
       iface.changeState(resp.state);
     }
 

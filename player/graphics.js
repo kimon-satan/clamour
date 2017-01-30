@@ -309,31 +309,7 @@ Graphics.prototype.updateUniforms = updateUniforms;
 
 Graphics.prototype.incrementState = incrementState;
 
-Graphics.prototype.updateState = function(stateEnvelope) //this needs to be changed to just the z val
-{
-
-	//increment the current state
-
-	for(property in this.prevState)
-	{
-		if(typeof(this.uniforms[property].value) == "number")
-		{
-			this.currState[property] = this.prevState[property] + this.stateDeltas[property] * stateEnvelope.z;
-		}
-		else if(this.uniforms[property].value instanceof THREE.Vector3)
-		{
-			this.currState[property].x = this.prevState[property].x + this.stateDeltas[property].x * stateEnvelope.z;
-			this.currState[property].y = this.prevState[property].y + this.stateDeltas[property].y * stateEnvelope.z;
-			this.currState[property].z = this.prevState[property].z + this.stateDeltas[property].z * stateEnvelope.z;
-		}
-		else if(this.uniforms[property].value instanceof THREE.Vector2)
-		{
-			this.currState[property].x = this.prevState[property].x + this.stateDeltas[property].x * stateEnvelope.z;
-			this.currState[property].y = this.prevState[property].y + this.stateDeltas[property].y * stateEnvelope.z;
-		}
-	}
-
-}
+Graphics.prototype.updateState = updateState;
 
 Graphics.prototype.setReaction = function(r){
 	if(r != undefined)

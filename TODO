@@ -1,15 +1,12 @@
 TODO
 
-- update state changes to display on moveFunction
-- deal with mid-state issue
-- tweak SC dying audio
-- noise from handset not display (try random value to rotEnv)
+- tweak SC dying audio mix
 
 FIXES (in order of importance)
 
 - background grid off at start
 - instruction rendering
-- resinstate shake before expliode
+- resinstate shake before explode
 - adjusted grid for random start rotation
 - colours on display and screen matching (use primary color variables)
 - variable for state progress (check states match)

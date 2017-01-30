@@ -334,3 +334,29 @@ function incrementState(idx)
 		}
 	}
 }
+
+function updateState (z) //this needs to be changed to just the z val
+{
+
+	//increment the current state
+
+	for(property in this.prevState)
+	{
+		if(typeof(this.uniforms[property].value) == "number")
+		{
+			this.currState[property] = this.prevState[property] + this.stateDeltas[property] * z;
+		}
+		else if(this.uniforms[property].value instanceof THREE.Vector3)
+		{
+			this.currState[property].x = this.prevState[property].x + this.stateDeltas[property].x * z;
+			this.currState[property].y = this.prevState[property].y + this.stateDeltas[property].y * z;
+			this.currState[property].z = this.prevState[property].z + this.stateDeltas[property].z * z;
+		}
+		else if(this.uniforms[property].value instanceof THREE.Vector2)
+		{
+			this.currState[property].x = this.prevState[property].x + this.stateDeltas[property].x * z;
+			this.currState[property].y = this.prevState[property].y + this.stateDeltas[property].y * z;
+		}
+	}
+
+}

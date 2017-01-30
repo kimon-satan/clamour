@@ -21,6 +21,9 @@ socket.on('cmd', function(msg){
 
       var pos = new THREE.Vector2().copy(display.splatManager.playerInfo[msg.val._id].center);
       var blob = display.blobManager.addBlob(pos, msg.val);
+      blob.updateState(msg.val.state_z);
+      blob.updateUniforms();
+
 
       display.splatManager.transform(msg.val._id, function(){
             newBranch(blob);
@@ -40,6 +43,8 @@ socket.on('cmd', function(msg){
   }
   else if(msg.type == "moveBlob")
   {
+    display.blobManager.blobs[msg.val._id].updateState(msg.val.state_z);
+    display.blobManager.blobs[msg.val._id].updateUniforms();
     display.blobManager.moveBlob(msg.val._id,  -msg.val.rot, msg.val.trans, msg.val.death);
   }
   else if(msg.type == "update")

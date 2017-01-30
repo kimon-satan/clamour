@@ -492,7 +492,7 @@ Interface = function(ud, callback){
     if(rot > -Math.PI/2.0 && rot < Math.PI/2.0)
     {
         this.transEnv.targetVal = vl;
-        this.rotEnv.targetVal = this.rotEnv.z + rot;
+        this.rotEnv.targetVal = this.rotEnv.z + rot + Math.random(-0.05, 0.05);
     }
 
     if(this.isDying)
@@ -504,7 +504,9 @@ Interface = function(ud, callback){
       _id: userid,
       rot: this.rotEnv.targetVal,
       trans: this.transEnv.targetVal,
-      death: this.ud.death
+      death: this.ud.death,
+      state: this.stateIndex,
+      state_z: this.stateEnvelope.z
     });
   }
 
@@ -650,7 +652,7 @@ Interface = function(ud, callback){
           this.excitementEnv.step();
         }
 
-        this.updateState(); //only updateState if a gesture is happening
+        this.updateState(this.stateEnvelope.z); //only updateState if a gesture is happening
 
       }else{
 
@@ -683,7 +685,8 @@ Interface = function(ud, callback){
               splatPos: this.splatPos,
               splatPan: this.splatPan ,
               splatRate: this.splatRate,
-              state: this.graphics.currStateIdx
+              state: this.graphics.currStateIdx,
+              state_z: this.stateEnvelope.z
             };
 
             Object.keys(this.ud).forEach(function(k, idx, array){
@@ -716,7 +719,7 @@ Interface = function(ud, callback){
 
       if(this.stateEnvelope.z < 0.99)
       {
-        this.graphics.updateState(this.stateEnvelope);
+        this.graphics.updateState(this.stateEnvelope.z);
       }
       else
       {
@@ -751,7 +754,7 @@ Interface = function(ud, callback){
 
     //tell the server because the change came from here
     this.callback({state: this.stateIndex});
-  
+
 
   }
 
@@ -770,7 +773,7 @@ Interface = function(ud, callback){
     }
     else
     {
-      this.graphics.changeState(idx - 1); //will have to deal with 0
+      this.graphics.changeState(idx -1);
       this.graphics.incrementState(this.stateIndex);
       this.updateReactionMap();
     }

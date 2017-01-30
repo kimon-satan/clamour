@@ -37,6 +37,8 @@ Blob = function(pos, ud, w_width, _socket)
   this.col2 = convertRGB(colArray[1]);
   this.col3 = convertRGB(colArray[2]);
   this.black = new THREE.Vector3(0., 0. ,0.);
+	this.gray1 = new THREE.Vector3(0.1, 0.1 ,0.1);
+  this.gray2 = new THREE.Vector3(0.2, 0.2 ,0.2);
 
   this.uniforms.seed.value = this.ud.blobSeed;
 
@@ -62,7 +64,6 @@ Blob = function(pos, ud, w_width, _socket)
   this.mesh.position.y = pos.y;
   this.mesh.position.z = 5.0;
 
-  this.detune = noise.perlin2(this.uniforms.seed.value, count) * Math.PI;
   this.currStateIdx = ud.state;
 
 
@@ -92,7 +93,6 @@ Blob = function(pos, ud, w_width, _socket)
     if(this.transEnv.z > 0.05)
     {
       count += 0.005;
-      this.detune = noise.perlin2(this.uniforms.seed.value, count) * Math.PI;
 
       if(ellapsedTime > targetTime) //approximately 10fps
       {
@@ -113,7 +113,7 @@ Blob = function(pos, ud, w_width, _socket)
     }
 
 
-    this.mesh.setRotationFromAxisAngle(new THREE.Vector3(0,0,1),this.rotEnv.z + this.detune);
+    this.mesh.setRotationFromAxisAngle(new THREE.Vector3(0,0,1),this.rotEnv.z);
     this.mesh.translateOnAxis(new THREE.Vector3(0,-1,0), this.transEnv.z * 0.005);
 
     if(this.mesh.position.y < -1.1)
@@ -170,8 +170,14 @@ Blob = function(pos, ud, w_width, _socket)
 
   this.changeState = changeState;
   this.getState = getState;
+  this.incrementState = incrementState;
+  this.updateState = updateState;
+  this.updateUniforms = updateUniforms;
 
-  this.changeState(this.currStateIdx); //set to state zero
+  var state = this.currStateIdx;
+
+  this.changeState(state -1); //set to current state
+  this.incrementState(state);
 
 }
 
