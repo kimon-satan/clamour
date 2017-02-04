@@ -58,8 +58,9 @@ Graphics.prototype.init = function()
 	}
 
 	var g_material = new THREE.LineBasicMaterial( { color: 0xffffff } );
-	var line = new THREE.LineSegments( gridGeometry, g_material );
-	this.scene.add( line );
+	this.grid = new THREE.LineSegments( gridGeometry, g_material );
+	this.grid.visible = false;
+  this.scene.add( this.grid);
 
 	//////////////////////BLOB///////////////////////////////
 
@@ -164,8 +165,10 @@ Graphics.prototype.init = function()
 
 	var prop = window.innerWidth/window.innerHeight;
 	var geo = new THREE.PlaneGeometry( 1.75, 1.75 * prop );
-	this.instruct_material = new THREE.MeshBasicMaterial( { map: this.images[0], transparent: true, visible: false, opacity: 0.0} );
-	var plane = new THREE.Mesh( geo, this.instruct_material );
+	geo.rotateZ(Math.PI); //get it the right way round
+	geo.rotateY(Math.PI);
+	this.instruct_material = new THREE.MeshBasicMaterial( { map: this.images[0], transparent: true, visible: false, opacity: 0.0, side: THREE.DoubleSide} );
+	var plane = new THREE.Mesh( geo, this.instruct_material);
 	this.scene.add( plane );
 
 	this.instruct_env = new Envelope(0.5,60);
@@ -229,6 +232,8 @@ Graphics.prototype.draw = function(ellapsedTime , mousePos, splatCB){
 
 		var swell = (Math.sin(Math.pow(this.swell_env.value,4.0) * Math.PI) * 0.5);
 		this.uniforms.scale.value = 1.0 + swell * 2.0;
+		this.mesh.scale.x = 1.0 + swell * 2.0;
+		this.mesh.scale.y = 1.0 + swell * 2.0;
 		this.uniforms.shake.value = (1.0 - Math.pow(this.swell_env.value, 4.0)) * 0.05;
 
 		if(this.swell_env.value > 0.95 && !this.exp_env.isTriggered) //hacked fix me
@@ -288,6 +293,8 @@ Graphics.prototype.updateGrid = function(trans, rot)
 }
 
 Graphics.prototype.displayInstruction = function(idx){
+
+	console.log("show:", idx);
 	this.instruct_material.map = this.images[idx];
 	this.instruct_material.visible = true;
 	this.instruct_material.opacity = 0.0;
@@ -296,6 +303,7 @@ Graphics.prototype.displayInstruction = function(idx){
 
 Graphics.prototype.hideInstruction = function(){
 
+	console.log("hide");
 	this.instruct_env.targetVal = 0.0;
 }
 
@@ -326,4 +334,11 @@ Graphics.prototype.explode = function()
 {
 	this.isExploding = false;
 	this.swell_env.trigger();
+}
+
+Graphics.prototype.setIsMobile = function(b)
+{
+	console.log(b);
+	this.grid.visible = b;
+	//deal with rotation here ?
 }

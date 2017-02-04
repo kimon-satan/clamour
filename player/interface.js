@@ -405,29 +405,29 @@ Interface = function(ud, callback){
 
   this.gestureEnd = function()
   {
-    this.setEnvTargets(0.)
+    this.setEnvTargets(0.);
+    //check for latest reactionMap
+    this.updateReactionMap();
     this.isGesture = false;
   }
 
   this.updateGesture = function(ng)
   {
 
-
     this.isGesture = false;
 
     if(this.currentGesture == 0 )
     {
-      this.isGesture = true;
-      this.currentGesture = ng;
-      if(this.currentGesture == this.currentReactionMap.inst_trig)
+
+      if(ng == this.currentReactionMap.inst_trig)
       {
         this.graphics.hideInstruction();
       }
       //console.log(this.currentGesture, this.currentReactionMap.map[this.currentGesture]);
 
-      if(this.currentReactionMap.map[this.currentGesture] != undefined)
+      if(this.currentReactionMap.map[ng] != undefined)
       {
-
+        this.currentGesture = ng;
         this.sound.setReaction(this.currentReactionMap.map[this.currentGesture].sound);
         this.graphics.setReaction(this.currentReactionMap.map[this.currentGesture].graphics);
       }
@@ -470,12 +470,16 @@ Interface = function(ud, callback){
         if(this.currentGesture == 0)
         {
           this.currentGesture = 1;
-          this.sound.setReaction(this.currentReactionMap.map[this.currentGesture].sound);
-          this.graphics.setReaction(this.currentReactionMap.map[this.currentGesture].graphics);
+          if(this.currentReactionMap.map[this.currentGesture] != undefined)
+          {
+            this.sound.setReaction(this.currentReactionMap.map[this.currentGesture].sound);
+            this.graphics.setReaction(this.currentReactionMap.map[this.currentGesture].graphics);
+          }
         }
 
         this.isGesture = true;
         this.setEnvTargets(1.);
+        if(this.ud.isDying)this.sound.parameters.amp.max = Math.pow(this.ud.death, 2); //will need tweaking
 
       }
 
@@ -638,10 +642,8 @@ Interface = function(ud, callback){
 
       if(!this.envsActive && this.isGesture)
       {
-
-        this.gestureEnd(); // just incase it was missed
-        //check for latest reactionMap
-        this.updateReactionMap();
+        console.log("fall back")
+        this.gestureEnd();
       }
 
       if(this.isGesture && this.envsActive)
@@ -791,6 +793,8 @@ Interface = function(ud, callback){
 
   this.updateReactionMap = function(){
 
+    console.log("update reaction map")
+
     if(this.isDying)
     {
       this.currentReactionMap = this.reactionMaps["isDying"][0];
@@ -806,6 +810,8 @@ Interface = function(ud, callback){
       if(this.reactionMaps[this.stateIndex] != undefined)
       {
 
+
+
         for(i in this.reactionMaps[this.stateIndex])
         {
           var rm = this.reactionMaps[this.stateIndex][i];
@@ -816,6 +822,7 @@ Interface = function(ud, callback){
              rm.z > this.currentReactionMap.z
              && this.stateEnvelope.z >= z)
           {
+
             cz = z;
             if(rm.instruction != undefined)this.graphics.displayInstruction(rm.instruction);
             this.currentReactionMap = rm;
@@ -834,6 +841,7 @@ Interface = function(ud, callback){
   this.setIsMobile = function(b)
   {
     this.isMobile = b;
+    this.graphics.setIsMobile(b);
     this.updateReactionMap();
   }
 

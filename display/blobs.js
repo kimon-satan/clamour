@@ -99,6 +99,7 @@ Blob = function(pos, ud, w_width, _socket)
         targetTime = ellapsedTime + 0.1; //
         this.socket.emit('updateCrawler', {
           scidx: this.ud._id,
+          death: this.ud.death,
           energy: this.transEnv.z
         });
       }

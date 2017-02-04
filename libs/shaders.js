@@ -1,11 +1,20 @@
 blobVertexShader = `
 
   varying vec2 o_uv;
+  uniform float shake;
+  uniform float time;
+
+  float hash(float x)
+	{
+		return fract(sin(x * 12341.3784)*43758.5453123);
+	}
 
   void main()
   {
     o_uv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+    float disp_x = shake * hash(time);
+    float disp_y = shake * hash(time + 1000.0);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4( position.x + disp_x, position.y + disp_y, position.z , 1.0 );
   }
 `;
 
