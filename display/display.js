@@ -14,7 +14,7 @@ socket.on('cmd', function(msg){
   if(msg.type == "splat")
   {
     display.splatManager.addSplat(msg.val);
-    if(display.splatManager.getEnergy(msg.val._id) > 0.3)
+    if(display.splatManager.getEnergy(msg.val._id) > 0.3) //THIS WILL NEED TO CHANGE LATER
     {
       //TODO check if canTransform is turned on for this player
       //do the transform;

@@ -140,7 +140,8 @@ SplatManager = function(_prop, _socket)
             //callback
 
             this.socket.emit('endTone', {
-              scidx: this.playerInfo[id].scidx
+              scidx: this.playerInfo[id].scidx,
+              id: id
             });
 
             this.playerInfo[id].transform = false;

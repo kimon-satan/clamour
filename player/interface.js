@@ -475,6 +475,10 @@ Interface = function(ud, callback){
             this.sound.setReaction(this.currentReactionMap.map[this.currentGesture].sound);
             this.graphics.setReaction(this.currentReactionMap.map[this.currentGesture].graphics);
           }
+          else {
+            this.sound.setReaction();
+            this.graphics.setReaction();
+          }
         }
 
         this.isGesture = true;
@@ -569,6 +573,7 @@ Interface = function(ud, callback){
 
     if(this.accumulator > 1.0/60)
     {
+      this.accumulator = 0;
 
       if(this.isMobile)
       {
@@ -584,7 +589,7 @@ Interface = function(ud, callback){
 
       }
 
-      this.accumulator = 0;
+
       if(this.isNewTouch)
       {
         this.isNewTouch = false;
@@ -594,20 +599,25 @@ Interface = function(ud, callback){
 
         if(this.isMouseDown){
 
-          this.numHolds ++;
 
-          //if it's a hold gesture
-          if(this.numHolds > 20 && (this.currentGesture == 0 || this.currentGesture == 5))
+          if(!this.isMobile)
           {
-            this.updateGesture(5);
-            if(this.numHolds > 175)
+            this.numHolds ++;
+
+            //if it's a hold gesture
+            if(this.numHolds > 20 && (this.currentGesture == 0 || this.currentGesture == 5))
             {
-              this.gestureEnd();
+              this.updateGesture(5);
+              if(this.numHolds > 175)
+              {
+                this.gestureEnd();
+              }
             }
-          }
-          else
-          {
-            this.setEnvTargets(0);
+            else
+            {
+              this.setEnvTargets(0);
+            }
+
           }
 
 
@@ -842,6 +852,11 @@ Interface = function(ud, callback){
   {
     this.isMobile = b;
     this.graphics.setIsMobile(b);
+    this.gestureEnd();
+    for(var i =0 ; i < this.reactEnvelopes.length; i++)
+    {
+      this.reactEnvelopes[i].z = 0;
+    }
     this.updateReactionMap();
   }
 

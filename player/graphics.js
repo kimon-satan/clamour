@@ -230,10 +230,10 @@ Graphics.prototype.draw = function(ellapsedTime , mousePos, splatCB){
 	if(this.swell_env.value > 0 && this.swell_env.isTriggered)
 	{
 
-		var swell = (Math.sin(Math.pow(this.swell_env.value,4.0) * Math.PI) * 0.5);
-		this.uniforms.scale.value = 1.0 + swell * 2.0;
-		this.mesh.scale.x = 1.0 + swell * 2.0;
-		this.mesh.scale.y = 1.0 + swell * 2.0;
+		var swell = Math.sin(Math.pow(this.swell_env.value,4.0) * Math.PI) * 0.25;
+		this.uniforms.scale.value = 1.0 - swell;
+		this.mesh.scale.x = 1.0 - swell;
+		this.mesh.scale.y = 1.0 - swell;
 		this.uniforms.shake.value = (1.0 - Math.pow(this.swell_env.value, 4.0)) * 0.05;
 
 		if(this.swell_env.value > 0.95 && !this.exp_env.isTriggered) //hacked fix me
@@ -340,5 +340,6 @@ Graphics.prototype.setIsMobile = function(b)
 {
 	console.log(b);
 	this.grid.visible = b;
+	
 	//deal with rotation here ?
 }

@@ -177,7 +177,7 @@ Blob = function(pos, ud, w_width, _socket)
 
   var state = this.currStateIdx;
 
-  this.changeState(state -1); //set to current state
+  this.changeState(Math.max(0,state - 1)); //set to current state
   this.incrementState(state);
 
 }

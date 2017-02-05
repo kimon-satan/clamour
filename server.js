@@ -577,6 +577,8 @@ display.on('connection', function(socket)
         args: args,
     }, "127.0.0.1", 57120);
 
+    players.to(msg.id).emit('cmd', {cmd: 'set_params', value: {isMobile: true, isSplat: false}});
+
   })
 
   socket.on('startCrawler', function(msg){
@@ -651,9 +653,11 @@ display.on('connection', function(socket)
         args: args,
     }, "127.0.0.1", 57120);
 
-    players.to(msg.id).emit('cmd', {cmd: 'set_params', value: {isMobile: true, isSplat: false}});
+
 
   })
+
+
 
 
 });
