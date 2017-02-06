@@ -147,6 +147,12 @@ SplatManager = function(_prop, _socket)
             this.playerInfo[id].transform = false;
 
             this.playerInfo[id].callback();
+
+            // for(var i = 0; i < this.spots[id].length; )
+            // {
+            //
+            // }
+
           }
         }
     }
@@ -162,18 +168,13 @@ SplatManager = function(_prop, _socket)
         if(this.spots[id][i].isTransforming)
         {
           this.spots[id][i].attributes.spread = this.playerInfo[id].transEnv.z;
-          this.spots[id][i].attributes.fade = Math.max(0.1, this.spots[id][i].attributes.fade * 0.95); // a bit of a hack
+          this.spots[id][i].attributes.fade = Math.max(0.05, this.spots[id][i].attributes.fade * 0.95); // a bit of a hack
+          if(this.spots[id][i].attributes.spread < 0.1e-5)this.spots[id][i].attributes.fade = 0;
 
           this.updateAttributes(this.spots[id][i]);
 
           if(this.spots[id][i].attributes.spread < 0.1e-5)
           {
-            if(this.spots[id][i].index == this.highestIndex)
-            {
-              this.highestIndex = this.findHighestIndex(this.spots[id][i].index);
-              this.geo.setDrawRange(0, this.highestIndex);
-
-            }
 
             delete this.spots[id][i];
             this.spots[id].splice(i,1);
@@ -182,6 +183,8 @@ SplatManager = function(_prop, _socket)
           {
             i++;
           }
+
+
         }
         else if(this.spots[id][i].isDecaying)
         {
@@ -191,13 +194,6 @@ SplatManager = function(_prop, _socket)
 
           if(this.spots[id][i].attributes.fade < 0.1e-5)
           {
-
-            if(this.spots[id][i].index == this.highestIndex)
-            {
-              this.highestIndex = this.findHighestIndex(this.spots[id][i].index);
-              this.geo.setDrawRange(0, this.highestIndex);
-
-            }
 
             delete this.spots[id][i];
             this.spots[id].splice(i,1);
@@ -221,6 +217,9 @@ SplatManager = function(_prop, _socket)
 
 
     }
+
+    this.highestIndex = this.findHighestIndex(this.highestIndex);
+    this.geo.setDrawRange(0, this.highestIndex);
 
   }
 

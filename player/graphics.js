@@ -57,7 +57,7 @@ Graphics.prototype.init = function()
 	  gridGeometry.vertices.push( new THREE.Vector3( -l + d, l, 0 ) );
 	}
 
-	var g_material = new THREE.LineBasicMaterial( { color: 0xffffff } );
+	var g_material = new THREE.LineBasicMaterial( { color: 0x666666} );
 	this.grid = new THREE.LineSegments( gridGeometry, g_material );
 	this.grid.visible = false;
   this.scene.add( this.grid);
@@ -163,13 +163,12 @@ Graphics.prototype.init = function()
 
 	//////////////////////INSTRUCTIONS///////////////////////////////
 
-	var prop = window.innerWidth/window.innerHeight;
-	var geo = new THREE.PlaneGeometry( 1.75, 1.75 * prop );
+	var geo = new THREE.PlaneGeometry( 1.75, 1.75 );
 	geo.rotateZ(Math.PI); //get it the right way round
 	geo.rotateY(Math.PI);
 	this.instruct_material = new THREE.MeshBasicMaterial( { map: this.images[0], transparent: true, visible: false, opacity: 0.0, side: THREE.DoubleSide} );
-	var plane = new THREE.Mesh( geo, this.instruct_material);
-	this.scene.add( plane );
+	this.instructPlane = new THREE.Mesh( geo, this.instruct_material);
+	this.scene.add( this.instructPlane );
 
 	this.instruct_env = new Envelope(0.5,60);
 
@@ -245,12 +244,18 @@ Graphics.prototype.draw = function(ellapsedTime , mousePos, splatCB){
 
 			splatCB();
 		}
+
+
 	}
+
 
 	this.uniforms.time.value = ellapsedTime;
 
 	if(this.instruct_material.visible)
 	{
+
+		this.instructPlane.position.set( this.camera.position.x, this.camera.position.y, this.camera.position.z);
+		this.instructPlane.rotation.set(0,0, this.camera.rotation._z);
 		this.instruct_env.step();
 		this.instruct_material.opacity = this.instruct_env.z;
 		if(this.instruct_env.z < 0.0001)
@@ -258,6 +263,11 @@ Graphics.prototype.draw = function(ellapsedTime , mousePos, splatCB){
 			this.instruct_material.visible = false;
 		}
 	}
+
+	//update the blob mesh to keep it stationary
+	this.mesh.position.set( this.camera.position.x, this.camera.position.y, this.camera.position.z);
+	this.mesh.rotation.set( 0,0 , this.camera.rotation._z)
+	//this.grid.rotation.set( 0,0 , this.camera.rotation._z);
 
 	this.renderer.render( this.scene, this.camera );
 
@@ -268,6 +278,8 @@ Graphics.prototype.updateGrid = function(trans, rot)
 
 
 	this.camera.setRotationFromAxisAngle(new THREE.Vector3(0,0,1),rot);//
+	//this.mesh.setRotationFromAxisAngle(new THREE.Vector3(0,0,1),-rot);
+	//var v = new THREE.Vector3 (0,-1,1);
 
 	//camera wrapping
 
@@ -284,11 +296,10 @@ Graphics.prototype.updateGrid = function(trans, rot)
 		this.camera.position.x -= this.cellNorm;
 	}
 
-	this.camera.translateOnAxis(new THREE.Vector3(0,-1,0), trans * 0.01);
+	this.camera.translateOnAxis(new THREE.Vector3(0,-1,0), trans * 0.05);
 
-	//update the blob mesh to keep it stationary
-	this.mesh.position.set( this.camera.position.x, this.camera.position.y, this.camera.position.z);
-	this.mesh.rotation.set( 0,0 , this.camera.rotation._z)
+
+
 
 }
 
@@ -299,6 +310,7 @@ Graphics.prototype.displayInstruction = function(idx){
 	this.instruct_material.visible = true;
 	this.instruct_material.opacity = 0.0;
 	this.instruct_env.targetVal = 1.0;
+
 }
 
 Graphics.prototype.hideInstruction = function(){
@@ -338,8 +350,17 @@ Graphics.prototype.explode = function()
 
 Graphics.prototype.setIsMobile = function(b)
 {
-	console.log(b);
+	//console.log(b);
+	if(!b)
+	{
+		this.camera.position.x = 0;
+		this.camera.position.y = 0;
+		this.camera.position.z = 1;
+		this.camera.lookAt(new THREE.Vector3(0,0,0));
+		this.camera.updateProjectionMatrix();
+
+
+	}
 	this.grid.visible = b;
-	
 	//deal with rotation here ?
 }

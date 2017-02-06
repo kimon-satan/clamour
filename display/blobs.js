@@ -117,26 +117,26 @@ Blob = function(pos, ud, w_width, _socket)
     this.mesh.setRotationFromAxisAngle(new THREE.Vector3(0,0,1),this.rotEnv.z);
     this.mesh.translateOnAxis(new THREE.Vector3(0,-1,0), this.transEnv.z * 0.005);
 
-    if(this.mesh.position.y < -1.1)
+    if(this.mesh.position.y < -1.01)
     {
-      this.mesh.position.y = 1.1;
+      this.mesh.position.y = 1.01;
       this.needsNewGroup = true;
 
     }
-    else if (this.mesh.position.y > 1.1) {
-      this.mesh.position.y = -1.1;
+    else if (this.mesh.position.y > 1.01) {
+      this.mesh.position.y = -1.01;
       this.needsNewGroup = true;
     }
 
-    if(this.mesh.position.x < -(this.w_width + 0.1) )
+    if(this.mesh.position.x < -(this.w_width + 0.01) )
     {
-      this.mesh.position.x = this.w_width + 0.1;
+      this.mesh.position.x = this.w_width + 0.01;
       this.needsNewGroup = true;
 
     }
-    else if (this.mesh.position.x > this.w_width + 0.1)
+    else if (this.mesh.position.x > this.w_width + 0.01)
     {
-      this.mesh.position.x = -(this.w_width + 0.1);
+      this.mesh.position.x = -(this.w_width + 0.01);
       this.needsNewGroup = true;
     }
 
@@ -177,7 +177,7 @@ Blob = function(pos, ud, w_width, _socket)
 
   var state = this.currStateIdx;
 
-  this.changeState(Math.max(0,state - 1)); //set to current state
+  this.changeState(Math.max(0,state - 1)); //set to current state // this ?! 
   this.incrementState(state);
 
 }

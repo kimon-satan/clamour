@@ -13,23 +13,28 @@ socket.on('cmd', function(msg){
 
   if(msg.type == "splat")
   {
+    //todo check for blob
     display.splatManager.addSplat(msg.val);
-    if(display.splatManager.getEnergy(msg.val._id) > 0.3) //THIS WILL NEED TO CHANGE LATER
+    console.log(msg);
+    if(msg.val.state >= 4 && msg.val.state_z > 0.9) // utilmately make these flexible
     {
-      //TODO check if canTransform is turned on for this player
-      //do the transform;
+      if(display.splatManager.getEnergy(msg.val._id) >= 0.9) //THIS WILL NEED TO CHANGE LATER
+      {
+        //TODO check if canTransform is turned on for this player
+        //do the transform;
 
-      var pos = new THREE.Vector2().copy(display.splatManager.playerInfo[msg.val._id].center);
-      var blob = display.blobManager.addBlob(pos, msg.val);
-      blob.updateState(msg.val.state_z);
-      blob.updateUniforms();
+        var pos = new THREE.Vector2().copy(display.splatManager.playerInfo[msg.val._id].center);
+        var blob = display.blobManager.addBlob(pos, msg.val);
+        blob.updateState(msg.val.state_z);
+        blob.updateUniforms();
 
 
-      display.splatManager.transform(msg.val._id, function(){
-            newBranch(blob);
-            display.scene.add(blob.mesh);
-      });
+        display.splatManager.transform(msg.val._id, function(){
+              newBranch(blob);
+              display.scene.add(blob.mesh);
+        });
 
+      }
     }
   }
   else if(msg.type == "blob")
@@ -45,7 +50,7 @@ socket.on('cmd', function(msg){
   {
     display.blobManager.blobs[msg.val._id].updateState(msg.val.state_z);
     display.blobManager.blobs[msg.val._id].updateUniforms();
-    display.blobManager.moveBlob(msg.val._id,  -msg.val.rot, msg.val.trans, msg.val.death);
+    display.blobManager.moveBlob(msg.val._id,  msg.val.rot, msg.val.trans * 0.5, msg.val.death);
   }
   else if(msg.type == "update")
   {
@@ -141,6 +146,26 @@ Display = function(socket)
 
   this.mousePos = new THREE.Vector2();
 
+  var gridGeometry = new THREE.Geometry();
+
+	this.cellNorm = 0.2;
+	var l = Math.sqrt(p*p + 1.0) + this.cellNorm;
+	var num = l * 2.0/this.cellNorm;
+
+	for(var i = 0; i < num; i++)
+	{
+	  var d = i * this.cellNorm;
+	  gridGeometry.vertices.push( new THREE.Vector3(-l , -l + d, -10 ) );
+	  gridGeometry.vertices.push( new THREE.Vector3( l , -l + d, -10 ) );
+	  gridGeometry.vertices.push( new THREE.Vector3( -l + d, -l , -10 ) );
+	  gridGeometry.vertices.push( new THREE.Vector3( -l + d, l, -10 ) );
+	}
+
+	var g_material = new THREE.LineBasicMaterial( { color: 0x666666 } );
+	this.grid = new THREE.LineSegments( gridGeometry, g_material );
+	this.grid.visible = true;
+  this.scene.add( this.grid);
+
 /////////////////////////////////////
 
 //  this.mousePos = new THREE.Vector2(0,0);
@@ -176,9 +201,6 @@ Display = function(socket)
   {
     this.isMouseDown = false;
 
-    Object.keys(this.blobManager.blobs).forEach(function(b){
-      this.blobManager.blobs[b].move(Math.PI/2.0 - Math.random() * Math.PI, 0.25 + Math.random() * 0.25);
-    }.bind(this))
 
   }.bind(this)
   , false);

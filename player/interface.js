@@ -62,7 +62,7 @@ Interface = function(ud, callback){
 
 
   this.transEnv = new Envelope2(0.1,2.0,60);
-  this.rotEnv = new Envelope(3.0, 60);
+  this.rotEnv = new Envelope(1.0, 60);
 
 
 
@@ -337,6 +337,7 @@ Interface = function(ud, callback){
     this.setEnvTime(ud.envTime);
     this.setIsSplat(ud.isSplat); //might cause a loop !?
     this.setMaxState(ud.maxState);
+    this.setIsMobile(ud.isMobile);
 
   }
 
@@ -463,29 +464,27 @@ Interface = function(ud, callback){
 
       this.isNewTouch = true;
 
-      var rot = -(v.angle() - Math.PI/2.0);
-      if(rot > -Math.PI/2.0 && rot < Math.PI/2.0)
+      //TODO add energy based on direction
+
+      if(this.currentGesture == 0)
       {
-
-        if(this.currentGesture == 0)
+        this.currentGesture = 1;
+        if(this.currentReactionMap.map[this.currentGesture] != undefined)
         {
-          this.currentGesture = 1;
-          if(this.currentReactionMap.map[this.currentGesture] != undefined)
-          {
-            this.sound.setReaction(this.currentReactionMap.map[this.currentGesture].sound);
-            this.graphics.setReaction(this.currentReactionMap.map[this.currentGesture].graphics);
-          }
-          else {
-            this.sound.setReaction();
-            this.graphics.setReaction();
-          }
+          this.sound.setReaction(this.currentReactionMap.map[this.currentGesture].sound);
+          this.graphics.setReaction(this.currentReactionMap.map[this.currentGesture].graphics);
         }
-
-        this.isGesture = true;
-        this.setEnvTargets(1.);
-        if(this.ud.isDying)this.sound.parameters.amp.max = Math.pow(this.ud.death, 2); //will need tweaking
-
+        else {
+          this.sound.setReaction();
+          this.graphics.setReaction();
+        }
       }
+
+      this.isGesture = true;
+      this.setEnvTargets(1.);
+      if(this.ud.isDying)this.sound.parameters.amp.max = Math.pow(this.ud.death, 2); //will need tweaking
+
+
 
     }
   }
@@ -494,14 +493,18 @@ Interface = function(ud, callback){
   {
 
     var v = new THREE.Vector2().subVectors(this.mousePos, this.touchStartPos);
-    var vl = v.length();
+    var vl = v.length() * (1.0 - Math.abs(v.dot(new THREE.Vector3(1,0,0))));
+    v.normalize();
 
-    var rot = -(v.angle() - Math.PI/2.0);
-    if(rot > -Math.PI/2.0 && rot < Math.PI/2.0)
-    {
+    //console.log(v.angle()-Math.PI/2);
+    //var mul = (v.angle() > Math.PI) ? 1: -1;
+    var rot = -(v.angle()-Math.PI/2); // (this.touchStartPos.x - 0.5) * mul;
+    //if(mul == 1){vl = 0} //no accel for reverse strokes
+
+
         this.transEnv.targetVal = vl;
-        this.rotEnv.targetVal = this.rotEnv.z + rot + Math.random(-0.05, 0.05);
-    }
+        this.rotEnv.targetVal = rot;
+
 
     if(this.isDying)
     {
@@ -697,7 +700,6 @@ Interface = function(ud, callback){
               splatPos: this.splatPos,
               splatPan: this.splatPan ,
               splatRate: this.splatRate,
-              state: this.graphics.currStateIdx,
               state_z: this.stateEnvelope.z
             };
 
@@ -736,15 +738,10 @@ Interface = function(ud, callback){
       else
       {
 
+        this.changingState = this.stateIndex <= this.maxState;
         if(this.stateIndex < this.maxState)
         {
-          this.changingState = true;
           this.incrementState(); // keep moving through states
-        }
-        else
-        {
-          console.log("maxState reached")
-          this.changingState = false;
         }
       }
 
@@ -755,6 +752,7 @@ Interface = function(ud, callback){
   this.incrementState = function()
   {
     this.stateIndex += 1;
+    this.ud.state = this.stateIndex;
 
     //modify the reactionMap here ?
 
@@ -776,15 +774,19 @@ Interface = function(ud, callback){
 
     this.stateIndex = idx;
     this.stateEnvelope.z = 0.0;
+    this.currentReactionMap = this.reactionMaps[0][0];
+    this.graphics.instruct_material.visible = false;
     //stop all other envelopes
 
-    if(idx == 0)
+    if(idx <= 0)
     {
       this.graphics.changeState(0);
       this.updateReactionMap();
     }
     else
     {
+
+
       this.graphics.changeState(idx -1);
       this.graphics.incrementState(this.stateIndex);
       this.updateReactionMap();
@@ -850,9 +852,16 @@ Interface = function(ud, callback){
 
   this.setIsMobile = function(b)
   {
+
+    this.rotEnv.z = 0;
+    this.rotEnv.targetVal = 0;
+    this.transEnv.z = 0;
+    this.transEnv.targetVal = 0;
+
     this.isMobile = b;
     this.graphics.setIsMobile(b);
     this.gestureEnd();
+
     for(var i =0 ; i < this.reactEnvelopes.length; i++)
     {
       this.reactEnvelopes[i].z = 0;
@@ -872,7 +881,7 @@ Interface = function(ud, callback){
 
     this.maxState = n;
 
-    if(this.stateIndex < this.maxState)
+    if(this.stateIndex <= this.maxState)
     {
       this.changingState = true;
     }
