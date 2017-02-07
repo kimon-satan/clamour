@@ -289,7 +289,16 @@ function BranchManager(newBranchCB)
 		return b;
 	}
 
+	this.clearAll = function(scene)
+	{
+		for(var i = this.branches.length -1 ; i >= 0; i--)
+    {
+      scene.remove(this.branches[i].mesh);
+      delete this.branches[i];
+    }
 
+	this.branches = [];
+	}
 
 }
 
