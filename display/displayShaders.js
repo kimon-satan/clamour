@@ -42,9 +42,9 @@ void main()	{
   v_col1 = color1;
   v_col2 = color2;
   v_noise_seed = noise_seed;
-  float l = size/200.0;
+  float l = size/100.0;
   v_noise_freq = 1.0 + l * 20.0;
-  v_noise_scale = 0.1 + l * 0.4;
+  v_noise_scale = 0.1 + l * 0.6;
   v_fade = fade;
   v_darken = 1.0 - noise_seed * 0.25;
   float flicker = 0.9 + sin(time * 60. * v_darken) * 0.1;
@@ -112,7 +112,8 @@ void main()
 
   //ilum = smoothstep(1.0, 0.0, ilum);
 
-  gl_FragColor = vec4(lum * v_col2 * v_darken,lum * v_fade) + vec4(v_col1 * ilum * v_glow, ilum * v_fade * v_glow);
+  gl_FragColor = max(vec4(lum * v_col1,lum * v_fade), vec4(v_col1 * ilum * v_glow, ilum * v_fade * v_glow));
+
 }
 
 `

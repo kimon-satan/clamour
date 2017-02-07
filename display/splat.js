@@ -26,7 +26,7 @@ Spot = function (owner)
   this.index = 0;
 
   this.isGlowing = false;
-  this.isDecaying = true;
+  this.isDecaying = false;
   this.isTransforming = false;
 
   this.decayEnv = new Envelope(5,45);
@@ -51,11 +51,6 @@ Spot = function (owner)
     }
 
   }
-
-
-
-
-
 
 }
 
@@ -335,9 +330,9 @@ SplatManager = function(_prop, _socket)
 
 
 
-    var numParticles = 50 + this.playerInfo[id].energy * 150;
+    var numParticles = 25 + this.playerInfo[id].energy * 50;
     var seed  = Math.random();
-    var spread = 0.25 + this.playerInfo[id].energy * 0.25;
+    var spread = 0.15 + this.playerInfo[id].energy * 0.15;
     var splatter = 0.5 + (1.0 - this.playerInfo[id].energy) * 0.5;
     var maxSize = 50 + this.playerInfo[id].energy * 25;
 
@@ -347,26 +342,26 @@ SplatManager = function(_prop, _socket)
     {
       var theta = Math.random() * Math.PI * 2.0;
       var n = (noise.simplex3(Math.cos(theta) * .5, Math.sin(theta) * .5, seed) + 1.0)/2.0;
-      var rho = (spread + n * spread) * Math.pow(Math.random(), splatter);
+      var rho = (spread + n * spread) * Math.pow(Math.random(), 0.5);
       var x = Math.sin(theta) * rho;
       var y = Math.cos(theta) * rho;
       var l = Math.max( 0.01, 1.0 - rho * 2.0);
 
       var spot = new Spot(id);
 
-      spot.attributes.size = 2. + Math.pow(l,2.0) * maxSize;
+      spot.attributes.size = 5 + Math.random() * 25.0;
       spot.attributes.center.copy(this.playerInfo[id].center);
       spot.attributes.decenter.set(x,y);
       spot.attributes.spread = 1.0;
       spot.attributes.freq = this.playerInfo[id].freq;
       spot.attributes.phase = this.playerInfo[id].phase + Math.random() * 0.05;
       spot.attributes.fade = 1.0;
-      spot.attributes.col1 = this.playerInfo[id].col1;
+      spot.attributes.col1 = (Math.random() > 0.5) ? this.playerInfo[id].col1 : this.playerInfo[id].col2;
       spot.attributes.col2 = this.playerInfo[id].col2;
 
       if(spot.attributes.size < Math.min(75, maxSize * this.playerInfo[id].energy))
       {
-        spot.isDecaying = Math.random() > 0.5;
+        //spot.isDecaying = Math.random() > 0.5;
       }
 
       if(!spot.isDecaying)spot.isGlowing = this.playerInfo[id].isGlowing;
