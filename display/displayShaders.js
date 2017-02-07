@@ -121,6 +121,7 @@ veinVertexShader = `
 
 uniform float time;
 uniform float col_freq;
+uniform float death;
 
 attribute vec2 miter;
 attribute float miter_dims;
@@ -143,7 +144,8 @@ void main()
   vec4 m = projectionMatrix * modelViewMatrix * vec4( miter, 0.0, 1.0 );
 
   float a = max(0.01,abs(thickness/miter_dims)); //NB. this number probably needs adjusting in respect of resolution
-	a *= 0.75 + sin(time *2.0 - glob_line_prog * TWO_PI * 10.0) * 0.25; //blood flow !
+  float flux = mix(sin(time * 2.0 - glob_line_prog * TWO_PI * 10.0), sin(glob_line_prog * TWO_PI * 10.0), death);
+  a *= 0.75 + flux * 0.25;
   p.xy += m.xy  * a * sign(miter_dims);
 
   m_prog = sign(miter_dims);
@@ -179,7 +181,7 @@ veinFragmentShader=
       );
 
       vec3 m = mix(color1, color2, col_mix);
-      vec3 m2 = mix(vec3(0.5), vec3(0.1,0.1,0.1), col_mix);
+      vec3 m2 = mix(vec3(0.25), vec3(0.1,0.1,0.1), col_mix);
       vec3 m3 = mix(m2, m, smoothstep( death, death + 0.025, o_glob_line_prog) );
       float alpha = 1.- pow(m_prog , 2.5 * width);
       gl_FragColor = vec4(m3 * alpha,alpha);

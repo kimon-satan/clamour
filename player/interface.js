@@ -496,29 +496,31 @@ Interface = function(ud, callback){
     var vl = v.length() * (1.0 - Math.abs(v.dot(new THREE.Vector3(1,0,0))));
     v.normalize();
 
-    //console.log(v.angle()-Math.PI/2);
-    //var mul = (v.angle() > Math.PI) ? 1: -1;
-    var rot = -(v.angle()-Math.PI/2); // (this.touchStartPos.x - 0.5) * mul;
-    //if(mul == 1){vl = 0} //no accel for reverse strokes
+    var rot = -(v.angle() - Math.PI * 1.5);
 
-
-        this.transEnv.targetVal = vl;
-        this.rotEnv.targetVal = rot;
-
-
-    if(this.isDying)
+    console.log(rot)
+    if(rot < Math.PI/2 && rot > -Math.PI/2)
     {
-      this.ud.death = Math.min(1.0, this.ud.death + 0.01);
-    }
+      this.transEnv.targetVal = vl;
+      this.rotEnv.targetVal += rot;
 
-    socket.emit('moveBlob', {
-      _id: userid,
-      rot: this.rotEnv.targetVal,
-      trans: this.transEnv.targetVal,
-      death: this.ud.death,
-      state: this.stateIndex,
-      state_z: this.stateEnvelope.z
-    });
+      if(this.isDying)
+      {
+        this.ud.death = Math.min(1.0, this.ud.death + 0.01);
+        this.stateEnvelope.targetVal = this.ud.death;
+        this.transEnv.targetVal *= 1.0 - this.ud.death;
+      }
+
+      socket.emit('moveBlob', {
+        _id: userid,
+        rot: this.rotEnv.targetVal,
+        trans: this.transEnv.targetVal,
+        death: this.ud.death,
+        state: this.stateIndex,
+        state_z: this.stateEnvelope.z
+      });
+
+    }
   }
 
   this.setEnvTargets = function(target)
@@ -872,7 +874,20 @@ Interface = function(ud, callback){
   this.setIsDying = function(b)
   {
     this.isDying = b;
-    this.updateReactionMap();
+    this.ud.isDying = b;
+
+    if(b)
+    {
+      this.updateReactionMap();
+      this.changeState(5);
+      this.setMaxState(5); //FIXME a hack would be better to make something which works from any state
+    }
+    else
+    {
+      this.ud.death = 0;
+      this.changeState(4);
+      this.setMaxState(4); //FIXME a hack would be better to make something which works from any state
+    }
   }
 
   this.setMaxState = function(n)
