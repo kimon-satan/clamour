@@ -153,7 +153,7 @@ Graphics.prototype.init = function()
 	this.exp_material.visible = false;
 
 	//adapt for multiple images
-	var images = ["stroke_down.png", "stroke_up.png", "stroke_left.png", "stroke_right.png", "hold.png"];
+	var images = ["stroke_down.png", "stroke_up.png", "stroke_left.png", "stroke_right.png", "hold.png", "swipe.png"];
 	this.images = {};
 	for(i in images)
 	{

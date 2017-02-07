@@ -146,6 +146,22 @@ Interface = function(ud, callback){
                   }
           ],
 
+    "mobile": [
+              { z: 0.0,
+                    map: [
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined,
+                    undefined
+                    ],
+                    instruction: "swipe",
+                    inst_trig: 2
+
+                  }
+    ],
+
     "isDying": [
               { z: 0.0,
                     map: [
@@ -503,6 +519,7 @@ Interface = function(ud, callback){
     {
       this.transEnv.targetVal = vl;
       this.rotEnv.targetVal += rot;
+      this.graphics.hideInstruction();
 
       if(this.isDying)
       {
@@ -815,7 +832,8 @@ Interface = function(ud, callback){
     }
     else if(this.isMobile)
     {
-      this.currentReactionMap = this.reactionMaps[0][0];
+      this.currentReactionMap = this.reactionMaps["mobile"][0];
+      this.graphics.displayInstruction(this.currentReactionMap.instruction);
     }
     else
     {
@@ -868,6 +886,7 @@ Interface = function(ud, callback){
     {
       this.reactEnvelopes[i].z = 0;
     }
+
     this.updateReactionMap();
   }
 
