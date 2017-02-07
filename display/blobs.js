@@ -177,8 +177,8 @@ Blob = function(pos, ud, w_width, _socket)
 
   var state = this.currStateIdx;
 
-  this.changeState(Math.max(0,state - 1)); //set to current state // this ?! 
-  this.incrementState(state);
+  this.changeState(Math.max(0,state - 1)); //change to the state before
+  this.incrementState(state); // increment so that there is a previous state
 
 }
 
@@ -220,6 +220,12 @@ BlobManager = function(_width, _socket)
       delete this.blobs[uid];
     }.bind(this))
 
+  }
+
+  this.changeState = function(id, stateIdx)
+  {
+    this.blobs[id].changeState(Math.max(0,stateIdx - 1)); //change to the state before
+    this.blobs[id].incrementState(stateIdx); // increment so that there is a previous state
   }
 
 }

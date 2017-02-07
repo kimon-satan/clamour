@@ -48,6 +48,11 @@ socket.on('cmd', function(msg){
   }
   else if(msg.type == "moveBlob")
   {
+    if(display.blobManager.blobs[msg.val._id].currStateIdx != msg.val.state)
+    {
+      display.blobManager.changeState(msg.val._id, msg.val.state);
+    }
+
     display.blobManager.blobs[msg.val._id].updateState(msg.val.state_z);
     display.blobManager.blobs[msg.val._id].updateUniforms();
     display.blobManager.moveBlob(msg.val._id,  msg.val.rot, msg.val.trans * 0.5, msg.val.death);
