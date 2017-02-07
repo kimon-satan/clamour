@@ -498,7 +498,11 @@ Interface = function(ud, callback){
 
       this.isGesture = true;
       this.setEnvTargets(1.);
-      if(this.ud.isDying)this.sound.parameters.amp.max = Math.pow(this.ud.death, 2); //will need tweaking
+      if(this.ud.isDying)
+      {
+        this.sound.parameters.amp.max = Math.pow(this.ud.death, 2); //will need tweaking
+        this.sound.parameters.grainSpacing.min = 0.04 + Math.pow(this.ud.death, 4) * 0.2; //will need tweaking
+      }
 
 
 

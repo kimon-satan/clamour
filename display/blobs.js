@@ -90,7 +90,7 @@ Blob = function(pos, ud, w_width, _socket)
       this.transEnv.targetVal = 0;
     }
 
-    if(this.transEnv.z > 0.05)
+    if(this.transEnv.z > 0.02)
     {
       count += 0.005;
 
@@ -100,7 +100,11 @@ Blob = function(pos, ud, w_width, _socket)
         this.socket.emit('updateCrawler', {
           scidx: this.ud._id,
           death: this.ud.death,
-          energy: this.transEnv.z
+          energy: this.transEnv.z,
+          rot: this.rotEnv.z,
+          blobSeed: this.ud.blobSeed,
+          colSeed: this.ud.colSeed,
+          pan: this.mesh.position.x/this.w_width
         });
       }
 
@@ -156,6 +160,7 @@ Blob = function(pos, ud, w_width, _socket)
     {
       this.socket.emit('startCrawler', {
         scidx: ud._id,
+        blobSeed: ud.blobSeed,
         pan: pan
       });
       this.isCrawling = true;
