@@ -348,13 +348,16 @@ Interface = function(ud, callback){
 
     //start rendering
     //this.render(); // no longer using this as we do loading at the start to spread server load
-
-    this.changeState(ud.state);
+    var state_z = ud.state_z;
+    this.changeState(ud.state); //changes state z
     this.setEnvTime(ud.envTime);
     this.setIsSplat(ud.isSplat); //might cause a loop !?
     this.setMaxState(ud.maxState);
     this.setIsMobile(ud.isMobile);
-    this.setIsDying(ud.isDying);
+    this.setIsDying(ud.isDying); //changes state z
+    this.stateEnvelope.z = state_z;
+    this.ud.state_z = state_z;
+    this.updateState(this.stateEnvelope.z);
 
   }
 
@@ -427,6 +430,8 @@ Interface = function(ud, callback){
     //check for latest reactionMap
     this.updateReactionMap();
     this.isGesture = false;
+    this.ud.state_z = this.stateEnvelope.z;
+    socket.emit('update_user', {_id: this.ud._id, state_z: this.ud.state_z}); //tell the server that we have changed mode
   }
 
   this.updateGesture = function(ng)
@@ -530,7 +535,9 @@ Interface = function(ud, callback){
       {
         this.ud.death = Math.min(1.0, this.ud.death + 0.005);
         this.stateEnvelope.targetVal = this.ud.death;
+        this.ud.state_z = this.stateEnvelope.z;
         this.transEnv.targetVal *= 1.0 - this.ud.death;
+        socket.emit('update_user', {_id: this.ud._id, state_z: this.ud.state_z, death: this.ud.death});
       }
 
       socket.emit('moveBlob', {
@@ -542,7 +549,10 @@ Interface = function(ud, callback){
         state_z: this.stateEnvelope.z
       });
 
+
     }
+
+
   }
 
   this.setEnvTargets = function(target)
@@ -798,6 +808,8 @@ Interface = function(ud, callback){
 
     this.stateIndex = idx;
     this.stateEnvelope.z = 0.0;
+    this.ud.state_z = 0.0;
+    this.ud.state = idx;
     this.currentReactionMap = this.reactionMaps[0][0];
     this.graphics.instruct_material.visible = false;
     //stop all other envelopes
@@ -902,7 +914,7 @@ Interface = function(ud, callback){
 
     if(b)
     {
-      this.ud.death = 0;
+      //this.ud.death = 0; //we don't wanrt this incase it's just a reset
       this.stateEnvelope.z = 0;
       this.stateEnvelope.targetVal = 0;
       this.updateReactionMap();
@@ -914,15 +926,13 @@ Interface = function(ud, callback){
       this.ud.death = 0;
       this.changeState(Math.min(this.ud.state, 4));
       this.setMaxState(Math.min(this.ud.maxState, 4)); //FIXME a hack would be better to make something which works from any state
-      console.log("state: " + this.ud.state);
     }
   }
 
   this.setMaxState = function(n)
   {
-
-
     this.maxState = n;
+    this.ud.maxState = n;
 
     if(this.stateIndex <= this.maxState)
     {

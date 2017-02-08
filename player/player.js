@@ -52,7 +52,7 @@ socket.on("whoareyou", function(msg){
 
 socket.on('welcome', function (msg) {
 
-  console.log("welcome: " , msg);
+  //console.log("welcome: " , msg);
   document.cookie = "userid=" + msg._id;
   userid = msg._id;
 
@@ -116,22 +116,33 @@ function parseMsgParams(msg)
 {
   var resp = {_id: userid};
 
+
   Object.keys(msg).forEach(function(k){
 
     if(msg[k] != undefined && k != "_id" && k != "mode" && k != "groups" && k != "threads")
     {
-      UserData[k] = msg[k];
-      resp[k] = msg[k];
+      if(typeof(msg[k]) == "object")
+      {
+        UserData[k] = msg[k].min + Math.random() * (msg[k].max - msg[k].min);
+        resp[k] = UserData[k];
+      }
+      else
+      {
+        UserData[k] = msg[k];
+        resp[k] = UserData[k];
+      }
+
     }
 
   });
+
 
   if(iface)
   {
     if(resp.state != undefined)
     {
       console.log("cs: " + resp.state)
-      iface.changeState(resp.state);
+      iface.changeState(resp.state); //changes state_z
     }
 
     if (resp.isSplat != undefined)
@@ -156,15 +167,22 @@ function parseMsgParams(msg)
 
     if(resp.isDying != undefined)
     {
-      iface.setIsDying(resp.isDying);
+      iface.setIsDying(resp.isDying); //changes state_z
+    }
+
+    if(resp.state_z != undefined)
+    {
+      iface.stateEnvelope.z = resp.state_z;
+      UserData.state_z = resp.state_z;
+
     }
 
   }
 
 
   socket.emit('update_user', UserData); //tell the server that we have changed
-
   console.log(UserData);
+
 }
 
 function changeMode(mode)

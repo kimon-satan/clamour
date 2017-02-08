@@ -41,8 +41,10 @@ const Presets = db.get('Presets'); //not using so far - probably should just be 
 const Threads = db.get('Threads'); //This might become a variable ?
 
 
-const allOptions = {
+const allOptions =
+{
     state: 0,
+    state_z: 0,
     isSplat: false,
     isMobile: false,
     isDying: false,
@@ -817,13 +819,13 @@ function listPlayers(args, cli, cb)
 
       if(e.mode == "play")
       {
-        str += ", state: " + e.state;
-        str += ", isSplat: " + e.isSplat;
+        str += ", state: " + Math.round((e.state + e.state_z)*100)/100;
         str += ", maxState: " + e.maxState;
-        str += ", envTime: " + e.envTime;
+        str += ", isSplat: " + e.isSplat;
         str += ", isMobile: " + e.isMobile;
         str += ", isDying: " + e.isDying;
-        str += ", death: " + e.death;
+        str += ", death: " + Math.round(e.death * 100)/100;
+        str += ", envTime: " + e.envTime;
       }
 
       results += str + "\n";
