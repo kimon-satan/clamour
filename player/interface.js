@@ -354,6 +354,7 @@ Interface = function(ud, callback){
     this.setIsSplat(ud.isSplat); //might cause a loop !?
     this.setMaxState(ud.maxState);
     this.setIsMobile(ud.isMobile);
+    this.setIsDying(ud.isDying);
 
   }
 
@@ -501,7 +502,7 @@ Interface = function(ud, callback){
       if(this.ud.isDying)
       {
         this.sound.parameters.amp.max = Math.pow(this.ud.death, 2); //will need tweaking
-        this.sound.parameters.grainSpacing.min = 0.04 + Math.pow(this.ud.death, 4) * 0.2; //will need tweaking
+        this.sound.parameters.grainSpacing.min = 0.04 + Math.pow(this.ud.death, 3) * 0.2; //will need tweaking
       }
 
 
@@ -516,7 +517,7 @@ Interface = function(ud, callback){
     var vl = v.length() * (1.0 - Math.abs(v.dot(new THREE.Vector3(1,0,0))));
     v.normalize();
 
-    var rot = -(v.angle() - Math.PI * 1.5);
+    var rot = v.angle() - Math.PI * 1.5;
 
     console.log(rot)
     if(rot < Math.PI/2 && rot > -Math.PI/2)
@@ -527,7 +528,7 @@ Interface = function(ud, callback){
 
       if(this.isDying)
       {
-        this.ud.death = Math.min(1.0, this.ud.death + 0.01);
+        this.ud.death = Math.min(1.0, this.ud.death + 0.005);
         this.stateEnvelope.targetVal = this.ud.death;
         this.transEnv.targetVal *= 1.0 - this.ud.death;
       }
@@ -580,7 +581,7 @@ Interface = function(ud, callback){
     {
 
       this.panicCount += 1;
-      if(this.panicCount > 4)
+      if(this.panicCount > 8)
       {
 
 
@@ -901,6 +902,9 @@ Interface = function(ud, callback){
 
     if(b)
     {
+      this.ud.death = 0;
+      this.stateEnvelope.z = 0;
+      this.stateEnvelope.targetVal = 0;
       this.updateReactionMap();
       this.changeState(5);
       this.setMaxState(5); //FIXME a hack would be better to make something which works from any state
@@ -908,8 +912,9 @@ Interface = function(ud, callback){
     else
     {
       this.ud.death = 0;
-      this.changeState(4);
-      this.setMaxState(4); //FIXME a hack would be better to make something which works from any state
+      this.changeState(Math.min(this.ud.state, 4));
+      this.setMaxState(Math.min(this.ud.maxState, 4)); //FIXME a hack would be better to make something which works from any state
+      console.log("state: " + this.ud.state);
     }
   }
 

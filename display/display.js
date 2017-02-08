@@ -66,6 +66,7 @@ socket.on('cmd', function(msg){
     display.splatManager.clearAll();
     display.blobManager.clearAll(display.scene);
     display.branchManager.clearAll(display.scene);
+    display.grid.visible = false;
   }
   else if (msg.type == "instruct")
   {

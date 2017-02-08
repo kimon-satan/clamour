@@ -822,6 +822,8 @@ function listPlayers(args, cli, cb)
         str += ", maxState: " + e.maxState;
         str += ", envTime: " + e.envTime;
         str += ", isMobile: " + e.isMobile;
+        str += ", isDying: " + e.isDying;
+        str += ", death: " + e.death;
       }
 
       results += str + "\n";

@@ -21,15 +21,19 @@ function whoami(){
 
   var cookies = document.cookies;
 
+
   if(document.cookie != undefined)
   {
     userid = getCook('userid');
   }
 
+  UserData = {};
+
   if(userid.length > 0 && userid != "undefined")
   {
     console.log("uid: " + userid)
     socket.emit('hello', userid); //request a database update
+    UserData._id = userid;
   }
   else
   {
@@ -51,6 +55,14 @@ socket.on('welcome', function (msg) {
   console.log("welcome: " , msg);
   document.cookie = "userid=" + msg._id;
   userid = msg._id;
+
+
+  UserData = {_id: msg._id};
+
+  if(iface)
+  {
+    iface.ud = UserData;
+  }
 
   parseMsgParams(msg);
   setup(UserData, informServer); //sets up canvas
@@ -150,8 +162,9 @@ function parseMsgParams(msg)
   }
 
 
-      console.log(resp)
-  socket.emit('update_user', resp); //tell the server that we have changed
+  socket.emit('update_user', UserData); //tell the server that we have changed
+
+  console.log(UserData);
 }
 
 function changeMode(mode)
