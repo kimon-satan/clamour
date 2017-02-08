@@ -78,13 +78,20 @@ generateSearchObj = function(args){
 			searchObj.mode = filter.not ? {$ne: filter.mode} : filter.mode;
 		break;
     case "connected":
-      searchObj.connected = !filter.not;
+      searchObj[filter.mode]= !filter.not;
+    break;
+    case "isMobile":
+    case "isDying":
+    case "isSplat":
+      searchObj[filter.mode] = filter.not ? !filter[filter.mode] : filter[filter.mode];
     break;
 		case "thread":
 			searchObj.threads = filter.not  ? {$nin: [filter.thread]} : {$in: [filter.thread]}
 		break;
 		case "state":
-			searchObj.state = filter.not ? {$ne: parseInt(filter.state)} : parseInt(filter.state);
+    case "envTime":
+    case "death":
+			searchObj[filter.mode] = filter.not ? {$ne: parseInt(filter[filter.mode])} : parseInt(filter[filter.mode]);
 		break;
 		case "group":
 			if(typeof(searchObj.groups) == "undefined"){

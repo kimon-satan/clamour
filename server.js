@@ -1027,10 +1027,21 @@ function parseFilters(args, cli){
           break;
 
           case "state":
-            filter.mode = "state";
+          case "envTime":
+          case "death":
+            filter.mode = args[i];
             args.splice(i, 1);
-            filter.state = args[i];
+            filter[filter.mode] = args[i];
           break;
+
+          case "isMobile":
+          case "isDying":
+          case "isSplat":
+            filter.mode = args[i];
+            args.splice(i, 1);
+            filter[filter.mode] = (args[i] == "T") ? true : false;
+          break;
+
 
           case undefined:
           break;

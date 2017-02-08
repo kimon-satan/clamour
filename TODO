@@ -3,14 +3,10 @@ TODO
 
 FIXES (in order of importance)
 
-- grid appears at the correct time
-- adjusted grid for random start rotation
-- colours on display and screen matching (use primary color variables)
 - variable for state progress (check states match) (90%)
 - splats rendered on mobile screen
 - adjust states / more variation between blobs
 - poisson disk for splat distribution
-- render timeout fix (make more robust)
 
 /////////////////////////////////////////////
 
