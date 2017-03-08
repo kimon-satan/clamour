@@ -321,6 +321,57 @@ admin.on('connection', function(socket){
       });
 
     }
+    else if(msg.cmd == "transform")
+    {
+      var selector = parseFilters(msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread});
+
+      admin.emit('server_report', {id: msg.cli_id, msg: ""});
+
+      if(selector)
+      {
+
+        var so = generateSearchObj(selector);
+
+        UserData.find(so).then((docs)=>
+        {
+          docs.forEach(function(e)
+          {
+            if(!e.isMobile) //only if not transformed
+            {
+              display.emit("cmd", {type: "transform", val: e});
+            }
+          });
+        })
+
+      }
+      else
+      {
+
+        if(msg.thread != undefined)
+        {
+          Threads.find({thread: msg.thread}, 'population').then((docs)=>{
+
+            if(docs == null)return;
+            if(docs[0] != undefined)
+            {
+
+              docs[0].population.forEach(function(e){
+                //FIXME !!!
+                UserData.find({_id: e}).then((docs2)=>
+                {
+                  docs2.forEach(function(e2)
+                  {
+                    display.emit("cmd", {type: "transform", val: e2});
+                  });
+                })
+              });
+
+            }
+
+          });
+        }
+      }
+    }
     else if(msg.cmd == "set_params")
     {
       parseOptions(msg.args, function(options)
@@ -341,7 +392,9 @@ admin.on('connection', function(socket){
             });
           })
 
-        }else{
+        }
+        else
+        {
 
           if(msg.thread != undefined)
           {

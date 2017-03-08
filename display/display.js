@@ -37,6 +37,19 @@ socket.on('cmd', function(msg){
       }
     }
   }
+  else if(msg.type == "transform")
+  {
+    var pos = new THREE.Vector2().copy(display.splatManager.playerInfo[msg.val._id].center);
+    var blob = display.blobManager.addBlob(pos, msg.val);
+    blob.updateState(msg.val.state_z);
+    blob.updateUniforms();
+
+
+    display.splatManager.transform(msg.val._id, function(){
+          newBranch(blob);
+          display.scene.add(blob.mesh);
+    });
+  }
   else if(msg.type == "blob")
   {
     var blob = display.blobManager.addBlob(new THREE.Vector2(Math.random() * 2.0 - 1.0,Math.random() * 2.0 -1), msg.val);

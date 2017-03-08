@@ -611,6 +611,16 @@ CLMR_CMDS["_set"] = function(args,  cli)
 
 }
 
+CLMR_CMDS["_transform"] = function(args,  cli)
+{
+
+  var msgobj = {cmd: "transform", args: args, cli_id: cli.idx, thread: cli.thread, mode: cli.cli_mode}
+  socket.emit('cmd', msgobj);
+
+    //if(!addStep(args, cb, cli, true))tempThread("_i", args, cb, cli);
+
+}
+
 
 
 

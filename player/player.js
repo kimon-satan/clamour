@@ -167,6 +167,7 @@ function parseMsgParams(msg)
 
     if(resp.isDying != undefined)
     {
+      console.log("isDying: " + resp.isDying)
       iface.setIsDying(resp.isDying); //changes state_z
     }
 
