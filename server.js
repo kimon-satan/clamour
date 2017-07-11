@@ -116,10 +116,27 @@ admin.on('connection', function(socket){
 
 			parseOptions(msg.args, function(options)
 			{
-				getThread(msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(threadid)
+				options.mode = msg.mode;
+				getThread(msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(isNew, threadid)
 				{
-					options.mode = msg.mode;
-					threads[threadid].emit('cmd', {cmd: 'change_mode', value: options});
+					if(isNew)
+					{
+						Threads.find({thread: msg.thread}, 'population').then((docs)=>{
+
+							if(docs == null)return;
+							if(docs[0] != undefined)
+							{
+								docs[0].population.forEach(function(e){
+									players.to(e).emit('cmd', {cmd: 'change_mode', value: options});
+								});
+							}
+
+						});
+					}
+					else
+					{
+						threads[threadid].emit('cmd', {cmd: 'change_mode', value: options});
+					}
 				});
 
 			})
@@ -935,6 +952,13 @@ function addThreadToPlayers(args, cb)
 			});
 
 			threads[args.thread] = io.of("/" + args.thread);
+			threads[args.thread].on('connection', function(socket)
+			{
+				console.log("a user connected to thread " + args.thread);
+				//now it's safe to send the command but only for that user
+			});
+
+
 			Threads.insert({thread: args.thread, population: uids},{}, function(){
 
 				if(typeof(args.group) != "undefined")
@@ -950,6 +974,7 @@ function addThreadToPlayers(args, cb)
 
 };
 
+//this will need to change - groups are just threads with names ?
 function createGroup(name, args, cli, cb)
 {
 	var selector = parseFilters(args, {thread: cli.thread});
@@ -983,8 +1008,9 @@ function createGroup(name, args, cli, cb)
 
 }
 
-function getThread(args, cli, send)
+function getThread(args, cli, send) //add an optional cmd
 {
+	//attempt
 	var selector = parseFilters(args, cli);
 	if(selector)
 	{
@@ -995,16 +1021,14 @@ function getThread(args, cli, send)
 		addThreadToPlayers(selector, function(msg)
 		{
 			admin.emit('server_report', {msg: msg, id: cli.id, thread: selector.thread });
-			send(selector.thread);
-
+			send(true, selector.thread);
 		});
-
-	}else{
-
+	}
+	else
+	{
 		//use the existing thread
 		admin.emit('server_report', {id: cli.id, thread: cli.thread}); //same thread response
-		send(cli.thread);
-
+		send(false, cli.thread);
 	}
 }
 

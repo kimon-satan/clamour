@@ -77,7 +77,7 @@ socket.on('new_thread', function(msg)
 	threads[msg.value].on('cmd', interpret);
 });
 
-//socket.on('cmd', interpret);
+socket.on('cmd', interpret);
 
 function interpret(msg)
 {
