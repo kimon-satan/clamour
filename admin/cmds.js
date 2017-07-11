@@ -169,7 +169,7 @@ CLMR_CMDS["_ithreads"] = function(args, cli){
 CLMR_CMDS["_killthreads"] = function(args,  cli)
 {
   cli.thread = "";
-  var msgobj = {cmd: "kill_threads", cli_id: cli.idx}
+  var msgobj = {cmd: "killthreads", cli_id: cli.idx}
   socket.emit('cmd', msgobj);
 
   Object.keys(gClis).forEach(function(e){

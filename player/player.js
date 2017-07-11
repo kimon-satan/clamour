@@ -4,6 +4,7 @@ var socket = io('/player');
 var currMode = "";
 var userid = getCook('userid');
 UserData = {};
+var threads = {};
 
 
 $(document).ready(function(){
@@ -56,7 +57,6 @@ socket.on('welcome', function (msg) {
   document.cookie = "userid=" + msg._id;
   userid = msg._id;
 
-
   UserData = {_id: msg._id};
 
   if(iface)
@@ -68,14 +68,20 @@ socket.on('welcome', function (msg) {
   setup(UserData, informServer); //sets up canvas
   changeMode(msg.mode);
 
-
-
 });
 
-socket.on('cmd', function(msg)
+socket.on('new_thread', function(msg)
 {
+	console.log("new_thread", msg);
+	threads[msg.value] = io('/' + msg.value);
+	threads[msg.value].on('cmd', interpret);
+});
 
-  if(msg.cmd == "change_mode")
+//socket.on('cmd', interpret);
+
+function interpret(msg)
+{
+	if(msg.cmd == "change_mode")
   {
     parseMsgParams(msg.value);
     changeMode(msg.value.mode);
@@ -97,10 +103,7 @@ socket.on('cmd', function(msg)
   {
     parseMsgParams(msg.value);
   }
-
-});
-
-
+}
 
 /////////////////////////////////HELPERS///////////////////////////
 
