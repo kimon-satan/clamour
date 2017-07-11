@@ -331,8 +331,10 @@ Sound.prototype.unlock = function()
   var source = this.audioContext.createBufferSource();
 
   source.buffer = buffer;
+  console.log(source);
   source.connect(this.audioContext.destination);
-  source.noteOn(0);
+  //source.noteOn(0);
+  source.start();
 
 
   var host = this;

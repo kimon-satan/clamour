@@ -533,7 +533,7 @@ Interface = function(ud, callback){
 
       if(this.isDying)
       {
-        this.ud.death = Math.min(1.0, this.ud.death + 0.005);
+        this.ud.death = Math.min(1.0, this.ud.death + 0.02);
         this.stateEnvelope.targetVal = this.ud.death;
         this.ud.state_z = this.stateEnvelope.z;
         this.transEnv.targetVal *= 1.0 - this.ud.death;
