@@ -178,7 +178,7 @@ admin.on('connection', function(socket){
 
       });
     }
-    else if(msg.cmd == "list_players")
+    else if(msg.cmd == "lplayers")
     {
       listPlayers( msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(r){
 
@@ -186,7 +186,7 @@ admin.on('connection', function(socket){
 
       })
     }
-    else if(msg.cmd == "list_threads")
+    else if(msg.cmd == "lthreads")
     {
       listThreads( msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(r){
 
@@ -194,7 +194,7 @@ admin.on('connection', function(socket){
 
       })
     }
-    else if(msg.cmd == "kill_thread")
+    else if(msg.cmd == "killthread")
     {
       Threads.remove({thread: msg.thread},{},function(e,r){
           if(e == null)
@@ -209,7 +209,7 @@ admin.on('connection', function(socket){
 
       UserData.update({},{$pull: {threads: msg.thread}},{multi: true} );
     }
-    else if(msg.cmd == "kill_threads")
+    else if(msg.cmd == "killthreads")
     {
       Threads.remove({},{},function(){
         admin.emit('server_report', {id: msg.cli_id , msg: "all threads removed" });
@@ -297,7 +297,7 @@ admin.on('connection', function(socket){
 
       }
     }
-    else if(msg.cmd == "list_groups")
+    else if(msg.cmd == "lgroups")
     {
       var results = "";
 
@@ -372,7 +372,7 @@ admin.on('connection', function(socket){
         }
       }
     }
-    else if(msg.cmd == "set_params")
+    else if(msg.cmd == "set")
     {
       parseOptions(msg.args, function(options)
       {
@@ -438,7 +438,7 @@ admin.on('connection', function(socket){
         });
 
     }
-    else if(msg.cmd == "reset_all")
+    else if(msg.cmd == "resetall")
     {
       //clear the Databases
       UserData.remove({});
@@ -448,7 +448,7 @@ admin.on('connection', function(socket){
       players.emit('whoareyou'); //causes any connected players to reset
       //TODO display reset
     }
-    else if(msg.cmd == "get_stats")
+    else if(msg.cmd == "stats")
     {
 
       UserData.find({},'connected').then((docs)=>{
@@ -470,7 +470,7 @@ admin.on('connection', function(socket){
 
 
     }
-    else if(msg.cmd == "start_misty")
+    else if(msg.cmd == "startmisty")
     {
       udpPort.send({
           address: "/startMisty",
@@ -478,7 +478,7 @@ admin.on('connection', function(socket){
       }, "127.0.0.1", 57120);
       admin.emit('server_report', {id: msg.cli_id});
     }
-    else if(msg.cmd == "kill_sound")
+    else if(msg.cmd == "killsound")
     {
       udpPort.send({
           address: "/allOff",
@@ -508,17 +508,17 @@ admin.on('connection', function(socket){
 
     //console.log(msg);
 
-    if(msg.cmd == "instruct")
+    if(msg.cmd == "shinstruct")
     {
       display.emit("cmd", {type: "instruct"});
       admin.emit('server_report', {id: msg.cli_id}); //empty response
     }
-    else if(msg.cmd == "display")
+    else if(msg.cmd == "shdisplay")
     {
       display.emit("cmd", {type: "display"});
       admin.emit('server_report', {id: msg.cli_id}); //empty response
     }
-    else if(msg.cmd == "clear_display")
+    else if(msg.cmd == "cldisplay")
     {
       display.emit("cmd", {type: "clear_display"});
       admin.emit('server_report', {id: msg.cli_id}); //empty response

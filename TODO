@@ -3,7 +3,6 @@ TODO
 
 FIXES (in order of importance)
 
-- variable for state progress (check states match) (90%)
 - splats rendered on mobile screen
 - adjust states / more variation between blobs
 - poisson disk for splat distribution

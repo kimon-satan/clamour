@@ -1,7 +1,4 @@
 
-
-
-
 var CLMR_CMDS = {}
 
 var gPrevComms = [];
@@ -10,13 +7,11 @@ var gCli_idx = 0;
 
 var gCurrentOptions = {};
 var gProcs = {};
-
 var idxs = [];
-
 var socket = io('/admin');
 
-socket.on('server_report', function(msg){
-
+socket.on('server_report', function(msg)
+{
 
   if(msg.thread != undefined)
   {
@@ -45,10 +40,7 @@ socket.on('server_report', function(msg){
     gClis[msg.id].newCursor(true);
   }
 
-
-
 });
-
 
 $(document).ready(function(){
 
@@ -62,9 +54,8 @@ $(document).ready(function(){
 
 })
 
-
-
-function CLI(idx, mode, thread){
+function CLI(idx, mode, thread)
+{
 
   this.idx = idx;
   this.cli_mode = mode;
@@ -152,7 +143,8 @@ function CLI(idx, mode, thread){
 
   }
 
-  this.handleChatKeys = function(e, cmd){
+  this.handleChatKeys = function(e, cmd)
+	{
 
     if(e.keyCode == 13){
       this.newCursor();
@@ -175,8 +167,9 @@ function CLI(idx, mode, thread){
 
   /////////////////////////////////KEY HANDLERS//////////////////////////
 
-  this.domElement.keydown(function(e){
-
+  this.domElement.keydown(function(e)
+	{
+		//cmd + k  = clear
     if(typeof(this.proc) != "undefined" && e.keyCode == 75 && e.metaKey){
       clearInterval(this.proc.loop);
       this.newCursor();
@@ -209,7 +202,8 @@ function CLI(idx, mode, thread){
 
   }.bind(this));
 
-  this.domElement.keyup(function(e){
+  this.domElement.keyup(function(e)
+	{
 
 
     if(this.sus_mode == "thread"){
@@ -256,7 +250,7 @@ function CLI(idx, mode, thread){
 
 }
 
-evaluateCommand = function(cmd,  cli){
+function evaluateCommand(cmd,  cli){
 
   var result_str;
   var args;
@@ -274,90 +268,13 @@ evaluateCommand = function(cmd,  cli){
   cmd = args[0];
   args = args.slice(1);
 
-  if(typeof(CLMR_CMDS[cmd]) != 'undefined'){
+	if(typeof(CLMR_CMDS[cmd]) != 'undefined')
+	{
     CLMR_CMDS[cmd](args,  cli);
   }else{
     cli.println("command not found");
     cli.newCursor();
   }
-
-}
-
-
-CLMR_CMDS["_splat"] = function(args, cli){
-
-  var msgobj = {cmd: "splat", args: args, cli_id: cli.idx}
-  socket.emit('disp_cmd', msgobj);
-
-}
-
-CLMR_CMDS["_dispBlob"] = function(args, cli){
-
-  var msgobj = {cmd: "dispBlob", args: args, cli_id: cli.idx}
-  socket.emit('disp_cmd', msgobj);
-
-}
-
-CLMR_CMDS["_instruct"] = function(args, cli){
-
-  var msgobj = {cmd: "instruct", args: args, cli_id: cli.idx}
-  socket.emit('disp_cmd', msgobj);
-
-}
-
-CLMR_CMDS["_display"] = function(args, cli){
-
-  var msgobj = {cmd: "display", args: args, cli_id: cli.idx}
-  socket.emit('disp_cmd', msgobj);
-
-}
-
-CLMR_CMDS["_clearDisplay"] = function(args, cli){
-
-  var msgobj = {cmd: "clear_display", args: args, cli_id: cli.idx}
-  socket.emit('disp_cmd', msgobj);
-
-}
-
-CLMR_CMDS["_end"] = function(args, cli){
-  var msgobj = {cmd: "end", args: args, cli_id: cli.idx}
-  socket.emit('cmd', msgobj);
-}
-
-CLMR_CMDS["_killSound"]  = function(args, cli){
-  var msgobj = {cmd: "kill_sound", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
-  socket.emit('cmd', msgobj);
-},
-
-CLMR_CMDS["_startMisty"]  = function(args, cli){
-
-  var msgobj = {cmd: "start_misty", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
-  socket.emit('cmd', msgobj);
-},
-
-CLMR_CMDS["_killProcs"] = function(args, cli){
-
-  Object.keys(gProcs).forEach(function(e){
-    clearInterval(gProcs[e].loop);
-  })
-
-   gProcs = {};
-
-  Object.keys(gClis).forEach(function(e){
-    if(typeof(gClis[e].proc) != "undefined"){
-      gClis[e].proc = undefined;
-      gClis[e].newCursor();
-    }
-  });
-
-  cli.newCursor();
-}
-
-CLMR_CMDS["_new"] = function(args, cli){
-
-  newCli();
-
-  cli.newCursor(true);
 
 }
 
@@ -376,326 +293,3 @@ function newCli(){
 
 
 }
-
-CLMR_CMDS["_exit"] = function(args, cli){
-
-  if(gClis.length < 2)return;
-
-  gClis[cli.idx].destroy();
-  delete gClis[cli.idx];
-  idxs = [];
-
-  for(var  i in gClis){
-    idxs.push(gClis[i].idx);
-  }
-
-}
-
-CLMR_CMDS["_wait"] = function(args,  cli){
-
-  cli.cli_mode = "wait";
-
-  var msgobj = {cmd: "change_mode", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
-
-  socket.emit('cmd', msgobj);
-
-}
-
-
-
-CLMR_CMDS["_chat"] = function(args,  cli){
-
-  cli.cli_mode = "chat";
-
-  var msgobj = {cmd: "change_mode", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
-
-  socket.emit('cmd', msgobj);
-
-}
-
-
-
-CLMR_CMDS["_blank"] = function(args, cli){
-
-  cli.cli_mode = "blank";
-
-  var msgobj = {cmd: "change_mode", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
-
-  socket.emit('cmd', msgobj);
-
-}
-
-
-
-CLMR_CMDS["_play"] = function(args,  cli){
-
-  cli.cli_mode = "play";
-
-  var msgobj = {cmd: "change_mode", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
-
-  socket.emit('cmd', msgobj);
-
-}
-
-
-
-CLMR_CMDS["_group"] = function(args,  cli){
-
-  console.log(args);
-  var msgobj = {cmd: "group", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
-  socket.emit('cmd', msgobj);
-
-}
-
-
-CLMR_CMDS["_lplayers"] = function(args, cli)
-{
-  var msgobj = {cmd: "list_players", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
-  socket.emit('cmd', msgobj);
-
-}
-
-CLMR_CMDS["_stats"] = function(args, cli)
-{
-  var msgobj = {cmd: "get_stats", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
-  socket.emit('cmd', msgobj);
-}
-
-
-CLMR_CMDS["_iplayers"] =  function(args, cli){
-
-  if(cli.proc != undefined){
-    cli.println("busy");
-    return;
-  }
-
-  var proc = {};
-  proc.id = generateTempId(8);
-  proc.loop = setInterval(function(){
-
-    var msgobj = {cmd: "list_players", args: args, cli_id: cli.idx, mode: cli.cli_mode, isproc: true, thread: cli.thread}
-    socket.emit('cmd', msgobj);
-
-  }, 2000);
-
-  gProcs[proc.id] = proc;
-  cli.proc = proc;
-
-
-}
-
-
-
-CLMR_CMDS["_lthreads"] = function(args, cli){
-
-  var msgobj = {cmd: "list_threads", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
-  socket.emit('cmd', msgobj);
-
-}
-
-
-CLMR_CMDS["_ithreads"] = function(args, cli){
-
-  if(cli.proc != undefined){
-    cli.println("busy");
-    return;
-  }
-
-  var proc = {};
-  proc.id = generateTempId(8);
-  proc.loop = setInterval(function(){
-
-    var msgobj = {cmd: "list_threads", args: args, cli_id: cli.idx, mode: cli.cli_mode, isproc: true, thread: cli.thread}
-    socket.emit('cmd', msgobj);
-
-  }, 2000);
-
-  gProcs[proc.id] = proc;
-  cli.proc = proc;
-
-}
-
-CLMR_CMDS["_lgroups"] = function(args, cli){
-
-  var msgobj = {cmd: "list_groups", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
-  socket.emit('cmd', msgobj);
-
-}
-
-CLMR_CMDS["_lcmds"] = function(args,  cli){
-
-  for(var i in CLMR_CMDS){
-    cli.println(i);
-  }
-
-  cli.newCursor();
-}
-
-CLMR_CMDS["_q"] = function(args,  cli){ //need to think about what these commands can usefully do
-    cli.cli_mode = "clmr";
-    cli.newCursor();
-}
-
-CLMR_CMDS["_kill"] = function(args,  cli){
-
-  var msgobj = {cmd: "kill_thread", args: args, cli_id: cli.idx, thread: cli.thread}
-  socket.emit('cmd', msgobj);
-  cli.thread = "";
-
-}
-
-CLMR_CMDS["_killAll"] = function(args,  cli){
-
-  cli.thread = "";
-  var msgobj = {cmd: "kill_threads", cli_id: cli.idx}
-  socket.emit('cmd', msgobj);
-
-  Object.keys(gClis).forEach(function(e){
-    if(gClis[e].thread != "")
-    {
-      gClis[e].thread = "";
-      if(gClis[e].proc == undefined)gClis[e].newCursor(true);
-    }
-  })
-
-}
-
-CLMR_CMDS["_thread"] = function(args,  cli){
-
-
-  if(args.length == 0){
-
-    var msgobj = {cmd: "get_threads", cli_id: cli.idx, thread: cli.thread}
-    socket.emit('cmd', msgobj);
-
-  }else{
-
-    var msgobj = {cmd: "create_thread", args: args, cli_id: cli.idx, thread: cli.thread}
-    socket.emit('cmd', msgobj);
-  }
-
-}
-
-CLMR_CMDS["_cleanUp"] = function(args,  cli){
-    var msgobj = {cmd: "cleanup", args: args, cli_id: cli.idx, thread: cli.thread}
-    socket.emit('cmd', msgobj);
-}
-
-CLMR_CMDS["_resetAll"] = function(args,  cli){
-    var msgobj = {cmd: "reset_all", args: args, cli_id: cli.idx, thread: cli.thread}
-    socket.emit('cmd', msgobj);
-}
-
-/*-----------------------------------------------MORE SPECIFIC-------------------------------------------*/
-
-
-
-CLMR_CMDS["_c"] = function(args,  cli){
-
-    if(cli.cli_mode == "chat"){
-      socket.emit('cmd', { cmd: 'chat_clear', value: "" , thread: cli.thread});
-    }
-
-    cli.newCursor();
-}
-
-//CHANGE OPTIONS WITHIN A MODE !!!!!!!!!!!!
-
-CLMR_CMDS["_set"] = function(args,  cli)
-{
-
-  var msgobj = {cmd: "set_params", args: args, cli_id: cli.idx, thread: cli.thread, mode: cli.cli_mode}
-  socket.emit('cmd', msgobj);
-
-    //if(!addStep(args, cb, cli, true))tempThread("_i", args, cb, cli);
-
-}
-
-CLMR_CMDS["_transform"] = function(args,  cli)
-{
-
-  var msgobj = {cmd: "transform", args: args, cli_id: cli.idx, thread: cli.thread, mode: cli.cli_mode}
-  socket.emit('cmd', msgobj);
-
-    //if(!addStep(args, cb, cli, true))tempThread("_i", args, cb, cli);
-
-}
-
-
-
-
-// function addStep(args, callback, cli, istemp){
-//
-//   //looks like this function is for executing a change in a stepped fashion
-//
-//   var i = args.indexOf("-step");
-//
-//   if(i < 0)return false;
-//
-//   var proc = {};
-//
-//   args.splice(i,1);
-//   var totalTime = args[i];
-//   args.splice(i, 1);
-//
-//   proc.id = generateTempId(5);
-//   var selector = parseFilters(args);
-//   if(!selector){
-//     selector = {filters: [{thread: cli.thread}]};
-//   }else{
-//     if(!istemp){
-//       cli.thread = generateTempId(8);
-//       selector.thread = cli.thread;
-//       selector.mode = cli.cli_mode;
-//       Meteor.call("addThreadToPlayers", Meteor.user()._id, selector);
-//     }
-//   }
-//
-//
-//
-//   proc.players = selectPlayers(selector);
-//   proc.options = parseSuOptions(args, cli.cli_mode, cli);
-//   var interval = (totalTime/proc.players.length) * 1000;
-//   proc.threads = [];
-//
-//   proc.loop = setInterval(function(){
-//
-//     if(proc.players.length == 0){
-//       clearInterval(proc.loop);
-//       //remove each of the threads
-//       for(i in proc.threads){
-//         Meteor.call("killThread", Meteor.user()._id, proc.threads[i]);
-//       }
-//       delete gProcs[proc.id];
-//
-//       cli.proc = undefined;
-//       cli.newCursor();
-//       return;
-//
-//     }
-//
-//     cli.println(proc.players[0]);
-//     var t = generateTempId(8);
-//     proc.threads.push(t);
-//     var p_args = {uid: proc.players[0], thread: t};
-//     proc.players.splice(0,1);
-//
-//     Meteor.call("addThreadToPlayer", Meteor.user()._id, p_args, function(e,r){
-//       callback(proc.options , r);
-//     });
-//
-//     var id_str = "#cmdText_" + cli.idx;
-//     var psconsole = $(id_str);
-//     psconsole.scrollTop(psconsole.prop('scrollHeight'));
-//
-//
-//
-//
-//   }, interval);
-//
-//   gProcs[proc.id] = proc;
-//   cli.proc = proc;
-//
-//   return true;
-//
-// }
