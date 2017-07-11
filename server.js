@@ -117,29 +117,9 @@ admin.on('connection', function(socket){
 			parseOptions(msg.args, function(options)
 			{
 				options.mode = msg.mode;
-				getThread(msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(isNew, threadid)
-				{
-					if(isNew)
-					{
-						Threads.find({thread: msg.thread}, 'population').then((docs)=>{
-
-							if(docs == null)return;
-							if(docs[0] != undefined)
-							{
-								docs[0].population.forEach(function(e){
-									players.to(e).emit('cmd', {cmd: 'change_mode', value: options});
-								});
-							}
-
-						});
-					}
-					else
-					{
-						threads[threadid].emit('cmd', {cmd: 'change_mode', value: options});
-					}
-				});
-
-			})
+				cmdobj = {cmd: 'change_mode', value: options};
+				useThread(msg, cmdobj);
+			});
 
 		}
 		else if(msg.cmd == "chat_update")
@@ -215,7 +195,7 @@ admin.on('connection', function(socket){
 		}
 		else if(msg.cmd == "create_thread")
 		{
-			getThread(msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(population){});
+			useThread(msg, null);
 		}
 		else if(msg.cmd == "group")
 		{
@@ -918,7 +898,7 @@ function selectPlayers(args, cb){
 
 }
 
-function addThreadToPlayers(args, cb)
+function addThreadToPlayers(args, cmdobj, cb)
 {
 
 		if(typeof(args) == "undefined")return false;
@@ -931,13 +911,11 @@ function addThreadToPlayers(args, cb)
 			//this is all a bit messy but it sort of works
 			UserData.update({},{$pull:{groups: args.group}},{multi: true}, function()
 			{
-
 				uids.forEach(function(e)
 				{
-
 						//instruct each player to open a new socket
 						players.to(e).emit('new_thread', {value: args.thread});
-
+						if(cmdobj != null)players.to(e).emit('cmd', cmdobj);
 						//update the database
 						UserData.update({_id: e},{$push: {threads: args.thread}});
 
@@ -955,7 +933,6 @@ function addThreadToPlayers(args, cb)
 			threads[args.thread].on('connection', function(socket)
 			{
 				console.log("a user connected to thread " + args.thread);
-				//now it's safe to send the command but only for that user
 			});
 
 
@@ -1008,27 +985,31 @@ function createGroup(name, args, cli, cb)
 
 }
 
-function getThread(args, cli, send) //add an optional cmd
+
+function useThread(msg, cmdobj) //add an optional cmd
 {
-	//attempt
-	var selector = parseFilters(args, cli);
+	//attempt to get a selection object
+	var selector = parseFilters(msg.args, msg.cli_id);
+
 	if(selector)
 	{
 		//we are making a new thread
 		selector.thread = generateTempId(5);
-		selector.mode = cli.mode;
+		selector.mode = msg.mode;
 
-		addThreadToPlayers(selector, function(msg)
+		addThreadToPlayers(selector, cmdobj, function(resp)
 		{
-			admin.emit('server_report', {msg: msg, id: cli.id, thread: selector.thread });
-			send(true, selector.thread);
+			admin.emit('server_report', {msg: resp, id: msg.cli_id, thread: selector.thread });
 		});
 	}
 	else
 	{
 		//use the existing thread
-		admin.emit('server_report', {id: cli.id, thread: cli.thread}); //same thread response
-		send(false, cli.thread);
+		if(cmdobj != null)
+		{
+			threads[msg.thread].emit('cmd', cmdobj);
+		}
+		admin.emit('server_report', {id: msg.cli_id, thread: msg.thread}); //same thread response
 	}
 }
 

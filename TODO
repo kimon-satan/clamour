@@ -1,5 +1,11 @@
 TODO
 
+- lets rename threads channels
+- deal with threads on refresh page / restart server
+- deal with groups ... these simply become named threads
+- check the options, filters, etc. is there any redundancy there ?
+
+
 
 FIXES (in order of importance)
 
@@ -12,7 +18,6 @@ FIXES (in order of importance)
 Post gig refactoring
 
 - Logicise command parsing and player selection functions
-- Do we need threads anymore ? Perhaps just relabel them tempGroups and get them to self delete
 - Standardise organisation of response nodes ... combine where possible
 
 
