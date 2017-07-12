@@ -1,8 +1,7 @@
 TODO
 
-- lets rename threads channels
-- deal with threads on refresh page / restart server
-- deal with groups ... these simply become named threads
+- deal with rooms on refresh page / restart server
+- deal with groups ... these simply become named rooms
 - check the options, filters, etc. is there any redundancy there ?
 
 

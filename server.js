@@ -5,7 +5,7 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var osc = require("osc");
-var threads = {}
+var sockets = {};
 
 var udpPort = new osc.UDPPort({
 		localAddress: "127.0.0.1",
@@ -39,7 +39,7 @@ db.then(() => {
 const UserData = db.get('UserData');
 const UserGroups = db.get('UserGroups'); //not used so far
 const Presets = db.get('Presets'); //not using so far - probably should just be json
-const Threads = db.get('Threads'); //This might become a variable ?
+const Rooms = db.get('Rooms'); //This might become a variable ?
 
 
 const allOptions =
@@ -74,6 +74,8 @@ Presets.findOne({type: "play", name: "default"}).then((doc)=> {
 
 
 
+
+
 //We define a route handler / that gets called when we hit our website home.
 
 app.use("/admin",express.static(__dirname + "/admin"));
@@ -101,10 +103,9 @@ app.use("/images",express.static(__dirname + "/images"));
 
 var admin = io.of('/admin');
 
-admin.on('connection', function(socket){
-
+admin.on('connection', function(socket)
+{
 	console.log('an admin connected');
-
 
 	socket.on('cmd', function(msg)
 	{
@@ -113,89 +114,89 @@ admin.on('connection', function(socket){
 
 		if(msg.cmd == "change_mode")
 		{
-
 			parseOptions(msg.args, function(options)
 			{
 				options.mode = msg.mode;
-				cmdobj = {cmd: 'change_mode', value: options};
-				useThread(msg, cmdobj);
-			});
+				useRoom(msg, function(ch)
+				{
+					players.to(ch).emit('cmd', {cmd: 'change_mode', value: options});
+				});
 
+			});
 		}
 		else if(msg.cmd == "chat_update")
 		{
-			threads[msg.thread].emit('cmd', {cmd: 'chat_update', value: msg.value});
+			players.to(msg.room).emit('cmd', {cmd: 'chat_update', value: msg.value});
 		}
 		else if(msg.cmd == "chat_clear")
 		{
-			threads[msg.thread].emit('cmd', {cmd: 'chat_clear'});
+			players.to(msg.room).emit('cmd', {cmd: 'chat_clear'});
 		}
 		else if(msg.cmd == "chat_newline")
 		{
-			threads[msg.thread].emit('cmd', {cmd: 'chat_newline'});
+			players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
 		}
 		else if(msg.cmd == "lplayers")
 		{
-			listPlayers( msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(r){
-
-					admin.emit('server_report', {id: msg.cli_id, thread: msg.thread, isproc: msg.isproc , msg: r}); //same thread response
-
+			listPlayers( msg.args, {id: msg.cli_id, mode: msg.mode, room: msg.room}, function(r)
+			{
+					admin.emit('server_report', {id: msg.cli_id, room: msg.room, isproc: msg.isproc , msg: r}); //same room response
 			})
 		}
-		else if(msg.cmd == "lthreads")
+		else if(msg.cmd == "lrooms")
 		{
-			listThreads( msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread}, function(r){
-
-					admin.emit('server_report', {id: msg.cli_id, thread: msg.thread, isproc: msg.isproc , msg: r}); //same thread response
-
+			listRooms( msg.args, {id: msg.cli_id, mode: msg.mode, room: msg.room}, function(r)
+			{
+					admin.emit('server_report', {id: msg.cli_id, room: msg.room, isproc: msg.isproc , msg: r}); //same room response
 			})
 		}
-		else if(msg.cmd == "killthread")
+		else if(msg.cmd == "killroom")
 		{
-			Threads.remove({thread: msg.thread},{},function(e,r){
+			Rooms.remove({room: msg.room},{},function(e,r)
+			{
 					if(e == null)
 					{
-						admin.emit('server_report', {id: msg.cli_id , msg: "thread: " +  msg.thread + " removed" });
+						admin.emit('server_report', {id: msg.cli_id , msg: "room: " +  msg.room + " removed" });
 					}
 					else
 					{
-						admin.emit('server_report', {id: msg.cli_id , msg: "thread: " +  msg.thread + " can't be found" });
+						admin.emit('server_report', {id: msg.cli_id , msg: "room: " +  msg.room + " can't be found" });
 					}
 			});
 
-			UserData.update({},{$pull: {threads: msg.thread}},{multi: true} );
+			UserData.update({},{$pull: {rooms: msg.room}},{multi: true} );
 		}
-		else if(msg.cmd == "killthreads")
+		else if(msg.cmd == "killrooms")
 		{
-			Threads.remove({},{},function(){
-				admin.emit('server_report', {id: msg.cli_id , msg: "all threads removed" });
+			Rooms.remove({},{},function(){
+				admin.emit('server_report', {id: msg.cli_id , msg: "all rooms removed" });
 			});
 
-			UserData.update({},{$set: {threads: []}},{multi: true} );
+			UserData.update({},{$set: {rooms: []}},{multi: true} );
 		}
-		else if(msg.cmd == "get_threads")
+		else if(msg.cmd == "get_rooms")
 		{
-			Threads.find({}).then((docs)=>
+			Rooms.find({}).then((docs)=>
 			{
 				if(docs.length < 1)
 				{
-					admin.emit('server_report', {id: msg.cli_id, msg: "there are no threads"});
+					admin.emit('server_report', {id: msg.cli_id, msg: "there are no rooms"});
 				}
 				else
 				{
 					var res = [];
 					for(var i = 0; i < docs.length; i++)
 					{
-						res.push(docs[i].thread);
+						res.push(docs[i].room);
 					}
-					admin.emit('server_report', {id: msg.cli_id, suslist: res, susmode: "thread", selected: msg.thread});
+					admin.emit('server_report', {id: msg.cli_id, suslist: res, susmode: "room", selected: msg.room});
 				}
 
 			});
 		}
-		else if(msg.cmd == "create_thread")
+		else if(msg.cmd == "create_room")
 		{
-			useThread(msg, null);
+			useRoom(msg, null);
 		}
 		else if(msg.cmd == "group")
 		{
@@ -244,7 +245,7 @@ admin.on('connection', function(socket){
 				//remove references to the group in any other players
 				UserData.update({},{$pull:{groups: name}},{multi: true}, function(){
 
-					createGroup(name, msg.args, {thread: msg.thread}, function(rsp)
+					createGroup(name, msg.args, {room: msg.room}, function(rsp)
 					{
 							admin.emit('server_report', {id: msg.cli_id, msg: rsp});
 					});
@@ -279,7 +280,7 @@ admin.on('connection', function(socket){
 		}
 		else if(msg.cmd == "transform")
 		{
-			var selector = parseFilters(msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread});
+			var selector = parseFilters(msg.args, {id: msg.cli_id, mode: msg.mode, room: msg.room});
 
 			admin.emit('server_report', {id: msg.cli_id, msg: ""});
 
@@ -303,9 +304,9 @@ admin.on('connection', function(socket){
 			else
 			{
 
-				if(msg.thread != undefined)
+				if(msg.room != undefined)
 				{
-					Threads.find({thread: msg.thread}, 'population').then((docs)=>{
+					Rooms.find({room: msg.room}, 'population').then((docs)=>{
 
 						if(docs == null)return;
 						if(docs[0] != undefined)
@@ -332,7 +333,7 @@ admin.on('connection', function(socket){
 		{
 			parseOptions(msg.args, function(options)
 			{
-				var selector = parseFilters(msg.args, {id: msg.cli_id, mode: msg.mode, thread: msg.thread});
+				var selector = parseFilters(msg.args, {id: msg.cli_id, mode: msg.mode, room: msg.room});
 
 				admin.emit('server_report', {id: msg.cli_id, msg: ""});
 
@@ -352,9 +353,9 @@ admin.on('connection', function(socket){
 				else
 				{
 
-					if(msg.thread != undefined)
+					if(msg.room != undefined)
 					{
-						Threads.find({thread: msg.thread}, 'population').then((docs)=>{
+						Rooms.find({room: msg.room}, 'population').then((docs)=>{
 
 							if(docs == null)return;
 							if(docs[0] != undefined)
@@ -388,7 +389,7 @@ admin.on('connection', function(socket){
 						users.push(e._id);
 
 					});
-					Threads.update({},{$pull: {population: {$in: users }}}); //remove these users from any threads
+					Rooms.update({},{$pull: {population: {$in: users }}}); //remove these users from any rooms
 																																		//TODO remove users from groups too
 					admin.emit('server_report', {id: msg.cli_id, msg: docs.length + " disconnected users removed "});
 				});
@@ -398,7 +399,7 @@ admin.on('connection', function(socket){
 		{
 			//clear the Databases
 			UserData.remove({});
-			Threads.remove({});
+			Rooms.remove({});
 			UserGroups.remove({});
 			admin.emit('server_report', {id: msg.cli_id, msg: "all databases reset"});
 			players.emit('whoareyou'); //causes any connected players to reset
@@ -691,7 +692,7 @@ players.on('connection', function(socket)
 		var usrobj = {
 				mode: "wait",
 				connected: true,
-				threads: [],
+				rooms: [],
 				groups: []
 		}
 
@@ -750,7 +751,7 @@ players.on('connection', function(socket)
 
 
 				}
-
+				sockets[res._id] = socket; //store the socket for later use
 			});
 		}
 
@@ -760,7 +761,6 @@ players.on('connection', function(socket)
 	{
 		UserData.update({_id: msg._id},{$set: msg});
 	});
-
 
 	socket.on('splat', function(msg){
 
@@ -786,6 +786,8 @@ players.on('connection', function(socket)
 		display.emit('cmd', {type: "moveBlob", val: msg});
 
 	});
+
+
 
 	socket.on('disconnect', function()
 	{
@@ -846,20 +848,20 @@ function listPlayers(args, cli, cb)
 	});
 }
 
-function listThreads(args, cli, cb)
+function listRooms(args, cli, cb)
 {
 
 	var results = "";
 
-	Threads.find({}).then((docs)=>
+	Rooms.find({}).then((docs)=>
 	{
 
 		docs.forEach(function(e)
 		{
 
-			var str = e.thread + " :: " + e.population.length;
-			if(e.thread == cli.thread)str += " *";
-			if(e.thread == cli.temp_thread)str += " -";
+			var str = e.room + " :: " + e.population.length;
+			if(e.room == cli.room)str += " *";
+			if(e.room == cli.temp_room)str += " -";
 
 			results += str + "\n";
 
@@ -870,21 +872,42 @@ function listThreads(args, cli, cb)
 	});
 }
 
-function selectPlayers(args, cb){
-
-	console.log("selecting players ... ");
-
-	var searchObj = generateSearchObj(args);
-
-	UserData.find(searchObj, '_id').then((docs) => {
-	// only the name field will be selected
-
-		var uids = [];
+function reloadRooms()
+{
+	rooms = {};
+	Rooms.find({}).then((docs)=>
+	{
 
 		docs.forEach(function(e)
 		{
-			uids.push(e._id);
+
+			var str = e.room + " :: " + e.population.length;
+			if(e.room == cli.room)str += " *";
+			if(e.room == cli.temp_room)str += " -";
+
+			results += str + "\n";
+
 		});
+
+		cb(results);
+
+	});
+}
+
+function selectPlayers(args, cb)
+{
+
+	var searchObj = generateSearchObj(args);
+
+	UserData.find(searchObj, '_id').then((docs) =>
+	{
+		//only the name field will be returned
+		//repackage into a simple array
+		var uids = [];
+		for(var i = 0; i < docs.length; i++)
+		{
+			uids.push(docs[i]._id);
+		}
 
 		if(typeof(args.numPlayers) != "undefined"){
 			shuffleArray(uids);
@@ -898,7 +921,7 @@ function selectPlayers(args, cb){
 
 }
 
-function addThreadToPlayers(args, cmdobj, cb)
+function addRoomToPlayers(args, cb)
 {
 
 		if(typeof(args) == "undefined")return false;
@@ -906,58 +929,55 @@ function addThreadToPlayers(args, cmdobj, cb)
 		selectPlayers(args, function(uids)
 		{
 
-			var msg =  args.mode + " with " + uids.length + " players with thread: " + args.thread;
+			var msg =  args.mode + " with " + uids.length + " players with room: " + args.room;
 
-			//this is all a bit messy but it sort of works
-			UserData.update({},{$pull:{groups: args.group}},{multi: true}, function()
+			//get each player to join the room
+			for(var i = 0; i < uids.length; i++)
 			{
-				uids.forEach(function(e)
+				if(typeof(sockets[uids[i]]) != "undefined")
 				{
-						//instruct each player to open a new socket
-						players.to(e).emit('new_thread', {value: args.thread});
-						if(cmdobj != null)players.to(e).emit('cmd', cmdobj);
-						//update the database
-						UserData.update({_id: e},{$push: {threads: args.thread}});
-
-						if(typeof(args.group) != "undefined")
-						{
-							//add a group if necessary
-							UserData.update({_id: e},{$push: {groups: args.group}});
-						}
-
-				})
-
-			});
-
-			threads[args.thread] = io.of("/" + args.thread);
-			threads[args.thread].on('connection', function(socket)
-			{
-				console.log("a user connected to thread " + args.thread);
-			});
-
-
-			Threads.insert({thread: args.thread, population: uids},{}, function(){
-
-				if(typeof(args.group) != "undefined")
-				{
-						UserGroups.update({name: args.group}, {$set: {members: uids}}, {upsert: true});
-						msg += "\n these players will now be called " + args.group;
+					console.log("player " + uids[i] + " joining " + args.room)
+					sockets[uids[i]].join(args.room);
 				}
-				cb(msg);
+			}
 
-			});
+			//callback here
+			cb(msg); // it is safe to send a command to the room
+
+			//now update the databases - this can be asynchronous
+
+			//add the room to the userdata
+			UserData.update({_id: { $in: uids} },{multi: true},{ $push : {rooms: args.room}});
+
+			//add a group if necessary
+			if(typeof(args.group) != "undefined")
+			{
+				msg += "\n these players will now be called " + args.group;
+
+				//replace the previous group
+				UserGroups.update({name: args.group}, {$set: {members: uids}}, {upsert: true});
+
+				//remove any old version of the group from players
+				UserData.update({},{multi: true},{ $pull: {groups: args.group} }, function()
+				{
+					//add the new group
+					UserData.update({ _id: { $in : uids } },{multi: true},{ $push: {groups: args.group}});
+				});
+			}
+
+			Rooms.insert({room: args.room, population: uids});
 
 		});
 
-};
+}
 
-//this will need to change - groups are just threads with names ?
+//this will need to change - groups are just rooms with names ?
 function createGroup(name, args, cli, cb)
 {
-	var selector = parseFilters(args, {thread: cli.thread});
+	var selector = parseFilters(args, {room: cli.room});
 
-	if(!selector && cli.thread){
-		selector = { filters: [ { not: false, mode: 'thread', thread: cli.thread } ] } //search for players on the current thread
+	if(!selector && cli.room){
+		selector = { filters: [ { not: false, mode: 'room', room: cli.room } ] } //search for players on the current room
 	}
 
 	selector.group = name;
@@ -986,31 +1006,31 @@ function createGroup(name, args, cli, cb)
 }
 
 
-function useThread(msg, cmdobj) //add an optional cmd
+function useRoom(msg, cb) //add an optional cmd
 {
 	//attempt to get a selection object
 	var selector = parseFilters(msg.args, msg.cli_id);
 
 	if(selector)
 	{
-		//we are making a new thread
-		selector.thread = generateTempId(5);
+		//we are making a new room
+		selector.room = generateTempId(5);
 		selector.mode = msg.mode;
 
-		addThreadToPlayers(selector, cmdobj, function(resp)
+		addRoomToPlayers(selector, function(resp)
 		{
-			admin.emit('server_report', {msg: resp, id: msg.cli_id, thread: selector.thread });
+			admin.emit('server_report', {msg: resp, id: msg.cli_id, room: selector.room });
+			if(typeof(cb) != "undefined")cb(selector.room);
+
 		});
 	}
 	else
 	{
-		//use the existing thread
-		if(cmdobj != null)
-		{
-			threads[msg.thread].emit('cmd', cmdobj);
-		}
-		admin.emit('server_report', {id: msg.cli_id, thread: msg.thread}); //same thread response
+		//use the existing room
+		admin.emit('server_report', {id: msg.cli_id, room: msg.room}); //same room response
+		if(typeof(cb) != "undefined")cb(msg.room);
 	}
+
 }
 
 
@@ -1034,9 +1054,9 @@ function parseFilters(args, cli){
 
 				switch(args[i]){
 
-					case "thread":
-						filter.mode = "thread";
-						filter.thread = cli.thread;
+					case "room":
+						filter.mode = "room";
+						filter.room = cli.room;
 					break;
 
 					case "play":

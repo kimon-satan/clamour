@@ -85,8 +85,8 @@ generateSearchObj = function(args){
     case "isSplat":
       searchObj[filter.mode] = filter.not ? !filter[filter.mode] : filter[filter.mode];
     break;
-		case "thread":
-			searchObj.threads = filter.not  ? {$nin: [filter.thread]} : {$in: [filter.thread]}
+		case "room":
+			searchObj.rooms = filter.not  ? {$nin: [filter.room]} : {$in: [filter.room]}
 		break;
 		case "state":
     case "envTime":

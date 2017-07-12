@@ -4,7 +4,7 @@ var socket = io('/player');
 var currMode = "";
 var userid = getCook('userid');
 UserData = {};
-var threads = {};
+var rooms = {};
 
 
 $(document).ready(function(){
@@ -46,6 +46,7 @@ function whoami(){
 ////////////////////////////SOCKET STUFF//////////////////////////
 
 
+
 socket.on("whoareyou", function(msg){
   //location.reload(true);
   whoami();
@@ -68,13 +69,6 @@ socket.on('welcome', function (msg) {
   setup(UserData, informServer); //sets up canvas
   changeMode(msg.mode);
 
-});
-
-socket.on('new_thread', function(msg)
-{
-	console.log("new_thread", msg);
-	threads[msg.value] = io('/' + msg.value);
-	threads[msg.value].on('cmd', interpret);
 });
 
 socket.on('cmd', interpret);
@@ -122,7 +116,7 @@ function parseMsgParams(msg)
 
   Object.keys(msg).forEach(function(k){
 
-    if(msg[k] != undefined && k != "_id" && k != "mode" && k != "groups" && k != "threads")
+    if(msg[k] != undefined && k != "_id" && k != "mode" && k != "groups" && k != "rooms")
     {
       if(typeof(msg[k]) == "object")
       {

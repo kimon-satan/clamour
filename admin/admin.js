@@ -13,9 +13,9 @@ var socket = io('/admin');
 socket.on('server_report', function(msg)
 {
 
-  if(msg.thread != undefined)
+  if(msg.room != undefined)
   {
-    gClis[msg.id].thread = msg.thread;
+    gClis[msg.id].room = msg.room;
   }
 
   if(msg.suslist)
@@ -54,7 +54,7 @@ $(document).ready(function(){
 
 })
 
-function CLI(idx, mode, thread)
+function CLI(idx, mode, room)
 {
 
   this.idx = idx;
@@ -63,8 +63,8 @@ function CLI(idx, mode, thread)
   this.sus_list;
   this.sus_idx;
   this.com_idx;
-  this.thread = thread;
-  this.temp_thread;
+  this.room = room;
+  this.temp_room;
   this.cursor_prefix;
   this.proc = undefined;
   this.domElement;
@@ -76,7 +76,7 @@ function CLI(idx, mode, thread)
 
 
     this.cursor_prefix = this.cli_mode;
-    if(typeof(this.thread )!= "undefined" && this.thread.length > 0)this.cursor_prefix += "_" + this.thread;
+    if(typeof(this.room )!= "undefined" && this.room.length > 0)this.cursor_prefix += "_" + this.room;
     this.cursor_prefix += ">"
     if(typeof(isNewLine) == "undefined" || isNewLine){
       this.println(this.cursor_prefix);
@@ -135,7 +135,7 @@ function CLI(idx, mode, thread)
       this.replaceln(this.sus_list[this.sus_idx]);
 
     }else if(e.keyCode == 13){
-      this.thread = this.sus_list[this.sus_idx];
+      this.room = this.sus_list[this.sus_idx];
       this.newCursor();
       this.sus_mode = undefined;
     }
@@ -148,9 +148,9 @@ function CLI(idx, mode, thread)
 
     if(e.keyCode == 13){
       this.newCursor();
-      socket.emit('cmd', { cmd: 'chat_newline', value:  "", thread: this.thread});
+      socket.emit('cmd', { cmd: 'chat_newline', value:  "", room: this.room});
     }else{
-      socket.emit('cmd', { cmd: 'chat_update', value:  cmd, thread: this.thread});
+      socket.emit('cmd', { cmd: 'chat_update', value:  cmd, room: this.room});
     }
 
   }
@@ -177,7 +177,7 @@ function CLI(idx, mode, thread)
       return false;
     }
 
-    if(this.sus_mode == "thread" || e.keyCode == 38 || e.keyCode == 40){
+    if(this.sus_mode == "room" || e.keyCode == 38 || e.keyCode == 40){
       return false;
     }
 
@@ -206,7 +206,7 @@ function CLI(idx, mode, thread)
 	{
 
 
-    if(this.sus_mode == "thread"){
+    if(this.sus_mode == "room"){
 
       return this.handleSus(e);
 

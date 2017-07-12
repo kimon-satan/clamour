@@ -4,7 +4,7 @@
 
 function basicCmd(cmd, args, cli)
 {
-	var msgobj = {cmd: cmd, args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
+	var msgobj = {cmd: cmd, args: args, cli_id: cli.idx, mode: cli.cli_mode, room: cli.room}
   socket.emit('cmd', msgobj);
 }
 
@@ -12,8 +12,8 @@ var cmdList = [
 	"group",
 	"lplayers",
 	"stats",
-	"killthread",
-	"lthreads",
+	"killroom",
+	"lrooms",
 	"lgroups",
 	"cleanup",
 	"resetall",
@@ -35,7 +35,7 @@ for(var i = 0; i < cmdList.length; i++)
 function changeMode(mode, args, cli)
 {
 	cli.cli_mode = mode;
-	var msgobj = {cmd: "change_mode", args: args, cli_id: cli.idx, mode: cli.cli_mode, thread: cli.thread}
+	var msgobj = {cmd: "change_mode", args: args, cli_id: cli.idx, mode: cli.cli_mode, room: cli.room}
 	socket.emit('cmd', msgobj);
 }
 
@@ -134,7 +134,7 @@ CLMR_CMDS["_iplayers"] =  function(args, cli){
   proc.id = generateTempId(8);
   proc.loop = setInterval(function(){
 
-    var msgobj = {cmd: "lplayers", args: args, cli_id: cli.idx, mode: cli.cli_mode, isproc: true, thread: cli.thread}
+    var msgobj = {cmd: "lplayers", args: args, cli_id: cli.idx, mode: cli.cli_mode, isproc: true, room: cli.room}
     socket.emit('cmd', msgobj);
 
   }, 2000);
@@ -144,7 +144,7 @@ CLMR_CMDS["_iplayers"] =  function(args, cli){
 
 }
 
-CLMR_CMDS["_ithreads"] = function(args, cli){
+CLMR_CMDS["_irooms"] = function(args, cli){
 
   if(cli.proc != undefined){
     cli.println("busy");
@@ -155,7 +155,7 @@ CLMR_CMDS["_ithreads"] = function(args, cli){
   proc.id = generateTempId(8);
   proc.loop = setInterval(function(){
 
-    var msgobj = {cmd: "lthreads", args: args, cli_id: cli.idx, mode: cli.cli_mode, isproc: true, thread: cli.thread}
+    var msgobj = {cmd: "lrooms", args: args, cli_id: cli.idx, mode: cli.cli_mode, isproc: true, room: cli.room}
     socket.emit('cmd', msgobj);
 
   }, 2000);
@@ -166,31 +166,31 @@ CLMR_CMDS["_ithreads"] = function(args, cli){
 }
 
 
-CLMR_CMDS["_killthreads"] = function(args,  cli)
+CLMR_CMDS["_killrooms"] = function(args,  cli)
 {
-  cli.thread = "";
-  var msgobj = {cmd: "killthreads", cli_id: cli.idx}
+  cli.room = "";
+  var msgobj = {cmd: "killrooms", cli_id: cli.idx}
   socket.emit('cmd', msgobj);
 
   Object.keys(gClis).forEach(function(e){
-    if(gClis[e].thread != "")
+    if(gClis[e].room != "")
     {
-      gClis[e].thread = "";
+      gClis[e].room = "";
       if(gClis[e].proc == undefined)gClis[e].newCursor(true);
     }
   })
 }
 
-CLMR_CMDS["_thread"] = function(args,  cli){
+CLMR_CMDS["_room"] = function(args,  cli){
 
   if(args.length == 0)
 	{
-    var msgobj = {cmd: "get_threads", cli_id: cli.idx, thread: cli.thread}
+    var msgobj = {cmd: "get_rooms", cli_id: cli.idx, room: cli.room}
     socket.emit('cmd', msgobj);
   }
 	else
 	{
-    var msgobj = {cmd: "create_thread", args: args, cli_id: cli.idx, thread: cli.thread}
+    var msgobj = {cmd: "create_room", args: args, cli_id: cli.idx, room: cli.room}
     socket.emit('cmd', msgobj);
   }
 
@@ -200,7 +200,7 @@ CLMR_CMDS["_c"] = function(args,  cli)
 {
     if(cli.cli_mode == "chat")
 		{
-      socket.emit('cmd', { cmd: 'chat_clear', value: "" , thread: cli.thread});
+      socket.emit('cmd', { cmd: 'chat_clear', value: "" , room: cli.room});
     }
     cli.newCursor();
 }
