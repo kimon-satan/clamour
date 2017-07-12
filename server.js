@@ -847,6 +847,7 @@ function selectPlayers(args, cb)
 {
 
 	var searchObj = generateSearchObj(args);
+	console.log(searchObj);
 
 	UserData.find(searchObj, '_id').then((docs) =>
 	{
@@ -882,18 +883,36 @@ function addRoomToPlayers(args, cb)
 
 		if(typeof(args) == "undefined")return false;
 
+		var subRooms;
+
 		selectPlayers(args, function(uids)
 		{
 
-			var msg =  args.mode + " with " + uids.length + " players with room: " + args.room;
+			var msg =  args.mode + " with " + uids.length + " players with room: " + args.roomName;
+
+			subRooms = [];
+			if(args.subRooms != undefined && args.subRooms > 1)
+			{
+				for(var i = 0; i < args.subRooms; i++ )
+				{
+					subRooms.push([]);
+				}
+			}
 
 			//get each player to join the room
 			for(var i = 0; i < uids.length; i++)
 			{
 				if(typeof(sockets[uids[i]]) != "undefined")
 				{
-					console.log("player " + uids[i] + " joining " + args.room)
-					sockets[uids[i]].join(args.room);
+					console.log("player " + uids[i] + " joining " + args.roomName)
+					sockets[uids[i]].join(args.roomName);
+					if(subRooms.length > 0)
+					{
+						var idx = i%subRooms.length;
+						var subRoom = args.roomName + "_" + idx;
+						sockets[uids[i]].join(subRoom);
+						subRooms[i].push(uids[i]);
+					}
 				}
 			}
 
@@ -903,81 +922,48 @@ function addRoomToPlayers(args, cb)
 			//now update the databases - this can be asynchronous
 
 			//add the room to the userdata
-			UserData.update({_id: { $in: uids} },{ $push : {rooms: args.room}}, {multi: true});
+			//remove old versions first
+			UserData.update({_id: { $in: uids} }, {$pull : {rooms: args.roomName}}, {multi: true}, function(){
+				UserData.update({_id: { $in: uids} },{ $push : {rooms: args.roomName}}, {multi: true});
+			})
 
-			//add a group if necessary
-			//TODO remove groups replace with named rooms
-			if(typeof(args.group) != "undefined")
+			Rooms.update({room: args.roomName},{room: args.roomName, population: uids}, {upsert: true});
+
+			//add any subrooms too
+
+			for(var i = 0; i < subRooms.length; i++)
 			{
-				msg += "\n these players will now be called " + args.group;
+				var subRoomName = args.roomName + "_" + i;
+				var subRoom = subRooms[i];
+				Rooms.update({room: subRoomName},{room: subRoomName, population: subRoom},{upsert: true});
+				//remove old versions first
 
-				//replace the previous group
-				UserGroups.update({name: args.group}, {$set: {members: uids}}, {upsert: true});
-
-				//remove any old version of the group from players
-				UserData.update({},{ $pull: {groups: args.group} },{multi: true}, function()
-				{
-					//add the new group
-					UserData.update({ _id: { $in : uids } },{ $push: {groups: args.group}},{multi: true});
+				UserData.update({_id: { $in: subRoom}},{ $pull : {rooms: subRoomName}}, {multi: true}, function(){
+					console.log(subRoom) // TODO FIX ME
+					UserData.update({_id: { $in: subRoom}},{ $push : {rooms: subRoomName}}, {multi: true});
 				});
 			}
-
-			Rooms.insert({room: args.room, population: uids});
 
 		});
 
 }
-
-//this will need to change - groups are just rooms with names ?
-// function createGroup(name, args, cli, cb)
-// {
-// 	var selector = parseFilters(args, {room: cli.room});
-//
-// 	if(!selector && cli.room){
-// 		selector = { filters: [ { not: false, mode: 'room', room: cli.room } ] } //search for players on the current room
-// 	}
-//
-// 	selector.group = name;
-//
-// 	if(selector && selector.group){
-//
-// 		selectPlayers(selector, function(uids){
-//
-// 			uids.forEach(function(e)
-// 			{
-// 				UserData.update({_id: e},{$push: {groups: selector.group}});
-// 			});
-//
-// 			UserGroups.update({name: selector.group}, {$set: {members: uids}}, {upsert: true});
-//
-// 			var rsp = uids.length + " players will now be called " + selector.group;
-// 			cb(rsp);
-//
-// 		});
-//
-//
-// 	}else{
-// 		cb("");
-// 	}
-//
-// }
 
 
 function useRoom(msg, cb) //add an optional cmd
 {
 	//attempt to get a selection object
 	var selector = parseFilters(msg.args, msg.room);
-
+	console.log(selector)
 	if(selector)
 	{
 		//we are making a new room
-		selector.room = generateTempId(5);
+		if(selector.roomName == undefined)selector.roomName = generateTempId(5);
 		selector.mode = msg.mode;
 
 		addRoomToPlayers(selector, function(resp)
 		{
-			admin.emit('server_report', {msg: resp, id: msg.cli_id, room: selector.room });
-			if(typeof(cb) != "undefined")cb(selector.room);
+			admin.emit('server_report', {msg: resp, id: msg.cli_id, room: selector.roomName });
+			if(typeof(cb) != "undefined")cb(selector.roomName);
 
 		});
 	}
@@ -991,90 +977,105 @@ function useRoom(msg, cb) //add an optional cmd
 }
 
 
-function parseFilters(args, currentRoom){
+function parseFilters(args, currentRoom)
+{
 
 	if(!args)return false;
 
 	//parses an array arguments and finds the filter arguments assempling them into an object
 
-	var selector = {};
+	var selector = {filters: []};
 
 	for(var i = 0; i < args.length; i++)
 	{
 		if(args[i][0] == "f" || args[i][0] == "n")
 		{
 
-			if(typeof(selector.filters) == "undefined")selector.filters = [];
+			var filter = {};
+			filter.not = args[i][0] == "n";
 
-			(function(){
-				var filter = {};
-				filter.not = args[i][0] == "n";
+			switch(args[i][1])
+			{
+				case "room":
+					filter.mode = "room";
+					if(args[i][2] == "")
+					{
+						filter.room = currentRoom;
+					}
+					else
+					{
+						filter.room = args[i][2];
+					}
+				break;
 
-				switch(args[i][1])
-				{
-					case "room":
-						filter.mode = "room";
-						if(args[i][2] == "")
-						{
-							filter.room = currentRoom;
-						}
-						else
-						{
-							filter.room = args[i][2];
-						}
-					break;
+				case "play":
+				case "chat":
+				case "wait":
+				case "broken":
+				case "connected":
+					filter.mode = args[i][1];
+				break;
 
-					case "play":
-					case "chat":
-					case "wait":
-					case "broken":
-					case "connected":
-						filter.mode = args[i][1];
-					break;
+				case "state":
+				case "envTime":
+				case "death":
+					filter.mode = args[i][1];
+					filter[filter.mode] = args[i][2];
+				break;
 
-					case "state":
-					case "envTime":
-					case "death":
-						filter.mode = args[i][1];
-						filter[filter.mode] = args[i][2];
-					break;
+				case "isMobile":
+				case "isDying":
+				case "isSplat":
+					filter.mode = args[i][1];
+					filter[filter.mode] = (args[i][2] == "T") ? true : false;
+				break;
 
-					case "isMobile":
-					case "isDying":
-					case "isSplat":
-						filter.mode = args[i][1];
-						filter[filter.mode] = (args[i][2] == "T") ? true : false;
-					break;
+				case "":
+				break;
 
-					case "":
-					break;
+				default:
 
-					default:
+					if(!isNaN(args[i][1]))
+					{
+						selector.numPlayers = parseInt(args[i][1]);
+						if(filter.not)selector.numPlayers *= -1; //means select all but that number
+						filter = null;
+					}
+					else
+					{
+						filter.mode = "room"; //assume it's a room name
+						filter.room = args[i][1];
+					}
+			}
 
-						if(!isNaN(args[i][1]))
-						{
-							selector.numPlayers = parseInt(args[i][1]);
-							if(filter.not)selector.numPlayers *= -1; //means select all but that number
-							filter = null;
-						}
-						else
-						{
-							filter.mode = "room"; //assume it's a room name
-							filter.room = args[i][1];
-						}
-				}
-
-				if(filter != null)selector.filters.push(filter);
-
-			})();
+			if(filter != null)selector.filters.push(filter);
 
 		}
-
+		else if(args[i][0] == "name")
+		{
+			if(args[i][1] != "")selector.roomName = args[i][1];
+		}
+		else if(args[i][0] == "sub")
+		{
+			if(args[i][1] != "")selector.subRooms = parseInt(args[i][1]);
+		}
 	}
 
-	if(typeof(selector.filters) == "undefined")
+	if(selector.filters.length == 0 &&
+		selector.roomName == undefined &&
+		selector.subRooms == undefined &&
+		selector.numPlayers == undefined)
 	{
-			selector = false; //there are no selectors
+			selector = false; //there are no filter actions
+	}
+	else if(
+		selector.filters.length == 0 &&
+		currentRoom != undefined &&
+		selector.numPlayers == undefined &&
+		(selector.roomName != undefined || selector.subRooms != undefined)
+	)
+	{
+		selector.filters.push({not: false, mode: "room", room: currentRoom}); //add the current room
 	}
 
 	return selector;
