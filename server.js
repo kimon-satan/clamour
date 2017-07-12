@@ -714,6 +714,7 @@ players.on('connection', function(socket)
 				socket.join(res._id);
 				id = res._id;
 				socket.emit('welcome', res);
+				sockets[res._id] = socket; //store the socket for later use
 			});
 
 		}
@@ -725,8 +726,6 @@ players.on('connection', function(socket)
 				if(err) throw err;
 				if(!res)
 				{
-
-
 					//insert a new user instead
 					UserData.insert(usrobj, {}, function(err,res)
 					{
@@ -744,14 +743,21 @@ players.on('connection', function(socket)
 					id = res._id;
 					console.log('welcome back user: ' + id);
 					res.connected = true;
+					//join any exitsting rooms
+					console.log(res)
+					for(var i = 0; i < res.rooms.length; i++)
+					{
+						console.log("joining " + res.rooms[i]);
+						socket.join(res.rooms[i]);
+					}
+
 					UserData.update( id,{$set: {connected: true}},{},function(){
 							socket.emit('welcome', res);
 					});
 
-
-
 				}
 				sockets[res._id] = socket; //store the socket for later use
+
 			});
 		}
 
@@ -947,9 +953,10 @@ function addRoomToPlayers(args, cb)
 			//now update the databases - this can be asynchronous
 
 			//add the room to the userdata
-			UserData.update({_id: { $in: uids} },{multi: true},{ $push : {rooms: args.room}});
+			UserData.update({_id: { $in: uids} },{ $push : {rooms: args.room}}, {multi: true});
 
 			//add a group if necessary
+			//TODO remove groups replace with named rooms
 			if(typeof(args.group) != "undefined")
 			{
 				msg += "\n these players will now be called " + args.group;
@@ -958,10 +965,10 @@ function addRoomToPlayers(args, cb)
 				UserGroups.update({name: args.group}, {$set: {members: uids}}, {upsert: true});
 
 				//remove any old version of the group from players
-				UserData.update({},{multi: true},{ $pull: {groups: args.group} }, function()
+				UserData.update({},{ $pull: {groups: args.group} },{multi: true}, function()
 				{
 					//add the new group
-					UserData.update({ _id: { $in : uids } },{multi: true},{ $push: {groups: args.group}});
+					UserData.update({ _id: { $in : uids } },{ $push: {groups: args.group}},{multi: true});
 				});
 			}
 

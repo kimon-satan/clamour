@@ -1,9 +1,8 @@
 TODO
 
-- deal with rooms on refresh page / restart server
 - deal with groups ... these simply become named rooms
 - check the options, filters, etc. is there any redundancy there ?
-
+- reorder refactor server code ... make readable
 
 
 FIXES (in order of importance)
