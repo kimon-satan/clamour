@@ -113,12 +113,18 @@ function parseMsgParams(msg)
 {
   var resp = {_id: userid};
 
-
+	console.log(msg);
   Object.keys(msg).forEach(function(k){
 
     if(msg[k] != undefined && k != "_id" && k != "mode" && k != "groups" && k != "rooms")
     {
-      if(typeof(msg[k]) == "object")
+			if(Object.prototype.toString.call( msg[k] ) === '[object Array]')
+			{
+				var idx = Math.floor(Math.random() * msg[k].length);
+				UserData[k] = msg[k][idx];
+				resp[k] = UserData[k];
+			}
+      else if(typeof(msg[k]) == "object")
       {
         UserData[k] = msg[k].min + Math.random() * (msg[k].max - msg[k].min);
         resp[k] = UserData[k];

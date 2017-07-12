@@ -116,10 +116,11 @@ admin.on('connection', function(socket)
 		{
 			parseOptions(msg.args, function(options)
 			{
+				options = {};
 				options.mode = msg.mode;
-				useRoom(msg, function(ch)
+				useRoom(msg, function(rm)
 				{
-					players.to(ch).emit('cmd', {cmd: 'change_mode', value: options});
+					players.to(rm).emit('cmd', {cmd: 'change_mode', value: options});
 				});
 
 			});
@@ -138,19 +139,19 @@ admin.on('connection', function(socket)
 		}
 		else if(msg.cmd == "lplayers")
 		{
-			listPlayers( msg.args, {id: msg.cli_id, mode: msg.mode, room: msg.room}, function(r)
+			listPlayers( msg.args, msg.room, function(r)
 			{
 					admin.emit('server_report', {id: msg.cli_id, room: msg.room, isproc: msg.isproc , msg: r}); //same room response
 			})
 		}
 		else if(msg.cmd == "lrooms")
 		{
-			listRooms( msg.args, {id: msg.cli_id, mode: msg.mode, room: msg.room}, function(r)
+			listRooms( msg.args, msg.room, function(r)
 			{
 					admin.emit('server_report', {id: msg.cli_id, room: msg.room, isproc: msg.isproc , msg: r}); //same room response
 			})
 		}
-		else if(msg.cmd == "killroom")
+		else if(msg.cmd == "close")
 		{
 			Rooms.remove({room: msg.room},{},function(e,r)
 			{
@@ -166,7 +167,7 @@ admin.on('connection', function(socket)
 
 			UserData.update({},{$pull: {rooms: msg.room}},{multi: true} );
 		}
-		else if(msg.cmd == "killrooms")
+		else if(msg.cmd == "closeall")
 		{
 			Rooms.remove({},{},function(){
 				admin.emit('server_report', {id: msg.cli_id , msg: "all rooms removed" });
@@ -198,7 +199,7 @@ admin.on('connection', function(socket)
 		{
 			useRoom(msg, null);
 		}
-		else if(msg.cmd == "group")
+		/*else if(msg.cmd == "group")
 		{
 
 			if(!msg.args)
@@ -253,7 +254,7 @@ admin.on('connection', function(socket)
 
 
 			}
-		}
+		}*/
 		else if(msg.cmd == "lgroups")
 		{
 			var results = "";
@@ -280,7 +281,7 @@ admin.on('connection', function(socket)
 		}
 		else if(msg.cmd == "transform")
 		{
-			var selector = parseFilters(msg.args, {id: msg.cli_id, mode: msg.mode, room: msg.room});
+			var selector = parseFilters(msg.args, msg.room);
 
 			admin.emit('server_report', {id: msg.cli_id, msg: ""});
 
@@ -333,46 +334,11 @@ admin.on('connection', function(socket)
 		{
 			parseOptions(msg.args, function(options)
 			{
-				var selector = parseFilters(msg.args, {id: msg.cli_id, mode: msg.mode, room: msg.room});
-
-				admin.emit('server_report', {id: msg.cli_id, msg: ""});
-
-				if(selector)
+				useRoom(msg, function(rm)
 				{
-
-					var searchObj = generateSearchObj(selector);
-					selectPlayers(searchObj, function(uids)
-					{
-						uids.forEach(function(e)
-						{
-							players.to(e).emit('cmd', {cmd: 'set_params', value: options});
-						});
-					})
-
-				}
-				else
-				{
-
-					if(msg.room != undefined)
-					{
-						Rooms.find({room: msg.room}, 'population').then((docs)=>{
-
-							if(docs == null)return;
-							if(docs[0] != undefined)
-							{
-
-								docs[0].population.forEach(function(e){
-									players.to(e).emit('cmd', {cmd: 'set_params', value: options});
-								});
-
-							}
-
-						});
-					}
-				}
+					players.to(rm).emit('cmd', {cmd: 'set_params', value: options});
+				});
 			});
-
-
 		}
 		else if(msg.cmd == "cleanup")
 		{
@@ -744,7 +710,6 @@ players.on('connection', function(socket)
 					console.log('welcome back user: ' + id);
 					res.connected = true;
 					//join any exitsting rooms
-					console.log(res)
 					for(var i = 0; i < res.rooms.length; i++)
 					{
 						console.log("joining " + res.rooms[i]);
@@ -813,10 +778,10 @@ http.listen(3000, function(){
 //////////////////////HELPER FUNCTIONS/////////////////////////
 
 
-function listPlayers(args, cli, cb)
+function listPlayers(args, room, cb)
 {
 
-	var selector = parseFilters(args, cli);
+	var selector = parseFilters(args, room);
 	if(!selector)selector = {};
 	var so = generateSearchObj(selector);
 
@@ -854,7 +819,7 @@ function listPlayers(args, cli, cb)
 	});
 }
 
-function listRooms(args, cli, cb)
+function listRooms(args, room, cb)
 {
 
 	var results = "";
@@ -866,8 +831,7 @@ function listRooms(args, cli, cb)
 		{
 
 			var str = e.room + " :: " + e.population.length;
-			if(e.room == cli.room)str += " *";
-			if(e.room == cli.temp_room)str += " -";
+			if(e.room == room)str += " *";
 
 			results += str + "\n";
 
@@ -878,27 +842,6 @@ function listRooms(args, cli, cb)
 	});
 }
 
-function reloadRooms()
-{
-	rooms = {};
-	Rooms.find({}).then((docs)=>
-	{
-
-		docs.forEach(function(e)
-		{
-
-			var str = e.room + " :: " + e.population.length;
-			if(e.room == cli.room)str += " *";
-			if(e.room == cli.temp_room)str += " -";
-
-			results += str + "\n";
-
-		});
-
-		cb(results);
-
-	});
-}
 
 function selectPlayers(args, cb)
 {
@@ -917,7 +860,14 @@ function selectPlayers(args, cb)
 
 		if(typeof(args.numPlayers) != "undefined"){
 			shuffleArray(uids);
-			var numPlayers = Math.min(uids.length , args.numPlayers);
+			if(numPlayers > 0)
+			{
+				var numPlayers = Math.min(uids.length , args.numPlayers);
+			}
+			else
+			{
+				var numPlayers = Math.max(uids.length + args.numPlayers, 1); //for inverse selection
+			}
 			uids = uids.slice(0,numPlayers);
 		}
 
@@ -979,44 +929,44 @@ function addRoomToPlayers(args, cb)
 }
 
 //this will need to change - groups are just rooms with names ?
-function createGroup(name, args, cli, cb)
-{
-	var selector = parseFilters(args, {room: cli.room});
-
-	if(!selector && cli.room){
-		selector = { filters: [ { not: false, mode: 'room', room: cli.room } ] } //search for players on the current room
-	}
-
-	selector.group = name;
-
-	if(selector && selector.group){
-
-		selectPlayers(selector, function(uids){
-
-			uids.forEach(function(e)
-			{
-				UserData.update({_id: e},{$push: {groups: selector.group}});
-			});
-
-			UserGroups.update({name: selector.group}, {$set: {members: uids}}, {upsert: true});
-
-			var rsp = uids.length + " players will now be called " + selector.group;
-			cb(rsp);
-
-		});
-
-
-	}else{
-		cb("");
-	}
-
-}
+// function createGroup(name, args, cli, cb)
+// {
+// 	var selector = parseFilters(args, {room: cli.room});
+//
+// 	if(!selector && cli.room){
+// 		selector = { filters: [ { not: false, mode: 'room', room: cli.room } ] } //search for players on the current room
+// 	}
+//
+// 	selector.group = name;
+//
+// 	if(selector && selector.group){
+//
+// 		selectPlayers(selector, function(uids){
+//
+// 			uids.forEach(function(e)
+// 			{
+// 				UserData.update({_id: e},{$push: {groups: selector.group}});
+// 			});
+//
+// 			UserGroups.update({name: selector.group}, {$set: {members: uids}}, {upsert: true});
+//
+// 			var rsp = uids.length + " players will now be called " + selector.group;
+// 			cb(rsp);
+//
+// 		});
+//
+//
+// 	}else{
+// 		cb("");
+// 	}
+//
+// }
 
 
 function useRoom(msg, cb) //add an optional cmd
 {
 	//attempt to get a selection object
-	var selector = parseFilters(msg.args, msg.cli_id);
+	var selector = parseFilters(msg.args, msg.room);
 
 	if(selector)
 	{
@@ -1041,29 +991,37 @@ function useRoom(msg, cb) //add an optional cmd
 }
 
 
-function parseFilters(args, cli){
+function parseFilters(args, currentRoom){
 
 	if(!args)return false;
 
-	//parses a set of selction filters into a mongo selector
+	//parses an array arguments and finds the filter arguments assempling them into an object
 
 	var selector = {};
 
-	for(var i = 0; i < args.length; ){
-		if(args[i] == "-f" || args[i] == "-n"){
+	for(var i = 0; i < args.length; i++)
+	{
+		if(args[i][0] == "f" || args[i][0] == "n")
+		{
 
 			if(typeof(selector.filters) == "undefined")selector.filters = [];
 
 			(function(){
 				var filter = {};
-				filter.not = args[i] == "-n";
-				args.splice(i,1);
+				filter.not = args[i][0] == "n";
 
-				switch(args[i]){
-
+				switch(args[i][1])
+				{
 					case "room":
 						filter.mode = "room";
-						filter.room = cli.room;
+						if(args[i][2] == "")
+						{
+							filter.room = currentRoom;
+						}
+						else
+						{
+							filter.room = args[i][2];
+						}
 					break;
 
 					case "play":
@@ -1071,64 +1029,47 @@ function parseFilters(args, cli){
 					case "wait":
 					case "broken":
 					case "connected":
-						filter.mode = args[i];
+						filter.mode = args[i][1];
 					break;
 
 					case "state":
 					case "envTime":
 					case "death":
-						filter.mode = args[i];
-						args.splice(i, 1);
-						filter[filter.mode] = args[i];
+						filter.mode = args[i][1];
+						filter[filter.mode] = args[i][2];
 					break;
 
 					case "isMobile":
 					case "isDying":
 					case "isSplat":
-						filter.mode = args[i];
-						args.splice(i, 1);
-						filter[filter.mode] = (args[i] == "T") ? true : false;
+						filter.mode = args[i][1];
+						filter[filter.mode] = (args[i][2] == "T") ? true : false;
 					break;
 
-
-					case undefined:
+					case "":
 					break;
 
 					default:
 
-						if(!isNaN(args[i]))
+						if(!isNaN(args[i][1]))
 						{
-							selector.numPlayers = parseInt(args[i]);
+							selector.numPlayers = parseInt(args[i][1]);
+							if(filter.not)selector.numPlayers *= -1; //means select all but that number
+							filter = null;
 						}
 						else
 						{
-							filter.mode = "group"; //assume it's a group
-							filter.group = args[i];
+							filter.mode = "room"; //assume it's a room name
+							filter.room = args[i][1];
 						}
 				}
 
-
-				args.splice(i, 1);
-				selector.filters.push(filter);
+				if(filter != null)selector.filters.push(filter);
 
 			})();
 
 		}
-		else if(args[i] == "-g")
-		{
-			args.splice(i,1);
-			selector.group = args[i];
-			args.splice(i,1);
-		}
-		else
-		{
-			//could add parsing text to ignore other arguments
-			//assume it's a group and that it exists
-			if(typeof(selector.filters) == "undefined")selector.filters = [];
-			var filter = {mode: "group", group: args[i]};
-			selector.filters.push(filter);
-			args.splice(i, 1);
-		}
+
 	}
 
 	if(typeof(selector.filters) == "undefined")
@@ -1140,12 +1081,10 @@ function parseFilters(args, cli){
 }
 
 
-//we don't need this for the moment
-
 function parseOptions(args, cb)
 {
 
-	//parses options into an object
+	//parses args into an object options
 
 	var options = {};
 
@@ -1155,45 +1094,31 @@ function parseOptions(args, cb)
 		return;
 	}
 
-	i = args.indexOf("-time");
-
-	if(i > -1){
-		args.splice(i,1);
-		options["time"] = parseInt(args[i]);
-		args.splice(i,1);
-	}
-
-	//We need the current options for the CLI to do this
+	//Deal with options for player state
 	var params = Object.keys(allOptions);
 
-	for(var x = 0; x < params.length; x++)
+	for(var i = 0; i < args.length; i++)
 	{
-			i = args.indexOf("-" + params[x]);
-			if(i > -1)
-			{
-				args.splice(i,1);
-				if(args[i].substring(0,1) == "[")
+		if(args[i][0] != "f" && args[i][0] != "n")
+		{
+				if(args[i][1].match(/\[.*?\]/)) //as many args
 				{
 					//repackage as an array
-					args[i] = args[i].substring(1, args[i].length -1);
-					options[params[x]] = args[i].split(",");
-
+					var str = args[i][1].match(/\[(.*?)\]/)[1];
+					options[args[i][0]] = str.split(",");
 				}
-				else if(args[i].substring(0,1) == "(")
+				else if(args[i][1].match(/\([^,],[^,]\)/)) //only two args
 				{
 					//repackage as an object
-					args[i] = args[i].substring(1, args[i].length -1);
-					var ar = args[i].split(",");
-					options[params[x]] = {min: parseFloat(ar[0]), max: parseFloat(ar[1])};
+					var str = args[i][1].match(/\((\d),(\d)\)/);
+					options[args[i][0]] = {min: parseFloat(str[1]), max: parseFloat(str[2])};
 				}
 				else
 				{
-					options[params[x]] = isNumber(args[i]) ? parseFloat(args[i]) : args[i];
-					if(options[params[x]] == "T")options[params[x]] = true; //handle booleans
-					if(options[params[x]] == "F")options[params[x]] = false;
+					options[args[i][0]] = isNumber(args[i][1]) ? parseFloat(args[i][1]) : args[i][1];
+					if(options[args[i][0]] == "T")options[args[i][0]] = true; //handle booleans
+					if(options[args[i][0]] == "F")options[args[i][0]] = false;
 				}
-
-				args.splice(i,1);
 
 			}
 	}

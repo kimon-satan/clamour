@@ -9,12 +9,10 @@ function basicCmd(cmd, args, cli)
 }
 
 var cmdList = [
-	"group",
 	"lplayers",
 	"stats",
-	"killroom",
+	"close",
 	"lrooms",
-	"lgroups",
 	"cleanup",
 	"resetall",
 	"transform",
@@ -166,12 +164,13 @@ CLMR_CMDS["_irooms"] = function(args, cli){
 }
 
 
-CLMR_CMDS["_killrooms"] = function(args,  cli)
+CLMR_CMDS["_closeall"] = function(args,  cli)
 {
   cli.room = "";
-  var msgobj = {cmd: "killrooms", cli_id: cli.idx}
+  var msgobj = {cmd: "closeall", cli_id: cli.idx}
   socket.emit('cmd', msgobj);
 
+	//clear the clis of references
   Object.keys(gClis).forEach(function(e){
     if(gClis[e].room != "")
     {

@@ -253,7 +253,7 @@ function CLI(idx, mode, room)
 function evaluateCommand(cmd,  cli){
 
   var result_str;
-  var args;
+  var args = [];
 
   //get rid of any unnecessary spaces
   cmd = cmd.replace(/,\s|\s,/g, ",");
@@ -263,10 +263,24 @@ function evaluateCommand(cmd,  cli){
   cmd = cmd.replace(/\(\s/g, "(");
   cmd = cmd.replace(/\s\)/g, ")");
 
+	r = /-(\w*)\s?([^-^\s]*)\s?([^-^\s]*)/g; //0-2 sub-parameters
+	match = " ";
 
-  args = cmd.split(" ");
-  cmd = args[0];
-  args = args.slice(1);
+	while (match != null)
+	{
+	  match = r.exec(cmd);
+		if(match != null)args.push([match[1], match[2], match[3]]);
+	}
+
+  r = cmd.match(/_\w*/);
+	if(r != null)
+	{
+		cmd = r[0];
+	}
+	else
+	{
+		cmd = undefined;
+	}
 
 	if(typeof(CLMR_CMDS[cmd]) != 'undefined')
 	{

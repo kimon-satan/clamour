@@ -59,8 +59,11 @@ shuffleArray = function(o){ //v1.0
     return o;
 }
 
-generateSearchObj = function(args){
+generateSearchObj = function(args)
+{
 
+	//converts my custom filter object into a mongodb search
+	
 	var searchObj = {};
 
 	if(typeof(args.filters) == "undefined")args.filters = [];
