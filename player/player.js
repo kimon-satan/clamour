@@ -16,12 +16,11 @@ $(document).ready(function(){
 
 
 
-function whoami(){
+function whoami()
+{
 
   console.log("whoami");
-
   var cookies = document.cookies;
-
 
   if(document.cookie != undefined)
   {
@@ -44,8 +43,6 @@ function whoami(){
 
 
 ////////////////////////////SOCKET STUFF//////////////////////////
-
-
 
 socket.on("whoareyou", function(msg){
   //location.reload(true);

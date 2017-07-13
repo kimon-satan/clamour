@@ -1,9 +1,10 @@
 TODO
 
-- deal with groups ... these simply become named rooms
-- check the options, filters, etc. is there any redundancy there ?
-- reorder refactor server code ... make readable
-
+- check disconnecting issue
+- asynchronous error logging
+- work out some load testing
+- sound commands section
+- multi-media with typing  ... json setup // new keystroke
 
 FIXES (in order of importance)
 
@@ -13,10 +14,8 @@ FIXES (in order of importance)
 
 /////////////////////////////////////////////
 
-Post gig refactoring
 
-- Logicise command parsing and player selection functions
-- Standardise organisation of response nodes ... combine where possible
+
 
 
 /////////////////////////////////////////////

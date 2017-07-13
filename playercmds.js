@@ -32,11 +32,12 @@ exports.response = function(socket)
 		if(msg == "new")
 		{
 
-		globals.UserData.insert(usrobj,{}, function(err,res)
+			globals.UserData.insert(usrobj,{}, function(err,res)
 			{
 				if(err) throw err;
 				console.log('hello new user: ' + res._id);
 				id = res._id;
+				socket.join(res._id);
 				socket.emit('welcome', res);
 				globals.sockets[res._id] = socket; //store socket on global list
 			});
@@ -57,6 +58,7 @@ exports.response = function(socket)
 						if(err) throw err;
 						console.log('hello new user: ' + res._id);
 						id = res._id;
+						socket.join(res._id);
 						socket.emit('welcome', res);
 						globals.sockets[res._id] = socket; //store socket on global list
 					});
@@ -66,11 +68,11 @@ exports.response = function(socket)
 					id = res._id;
 					console.log('welcome back user: ' + id);
 					res.connected = true;
+					socket.join(res._id);
 					//join any exitsting Rooms
-
 					for(var i = 0; i < res.rooms.length; i++)
 					{
-						console.log("joining " + res.rooms[i]);
+						//console.log("joining " + res.rooms[i]);
 						socket.join(res.rooms[i]);
 					}
 
@@ -95,7 +97,7 @@ exports.response = function(socket)
 
 	socket.on('splat', function(msg){
 
-		console.log("splat", msg);
+		//console.log("splat", msg);
 
 		var args = ["pan", msg.splatPan, "rate", msg.splatRate, "pos", msg.splatPos];
 

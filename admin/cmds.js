@@ -15,7 +15,6 @@ var cmdList = [
 	"lrooms",
 	"cleanup",
 	"resetall",
-	"transform",
 	"set",
 	"sub",
 	"end",
@@ -51,11 +50,11 @@ for(var i = 0; i < cmdList.length; i++)
 
 function displayCmd(cmd, args, cli)
 {
-	var msgobj = {cmd: cmd, args: args, cli_id: cli.idx}
+	var msgobj = {cmd: cmd, args: args, cli_id: cli.idx, room: cli.room}
   socket.emit('disp_cmd', msgobj);
 }
 
-var cmdList = ["splat", "dispBlob", "shinstruct", "shdisplay", "cldisplay"];
+var cmdList = ["splat", "dispBlob", "shinstruct", "shdisplay", "cldisplay",	"transform"];
 
 for(var i = 0; i < cmdList.length; i++)
 {

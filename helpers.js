@@ -1,5 +1,31 @@
 var globals = require('./globals.js');
 
+exports.joinRoom = function(uids, roomName, cb)
+{
+	//get each player to join the room
+	for(var i = 0; i < uids.length; i++)
+	{
+		if(typeof(globals.sockets[uids[i]]) != "undefined")
+		{
+			console.log("player " + uids[i] + " joining " + roomName)
+			globals.sockets[uids[i]].join(roomName);
+		}
+	}
+
+	//callback here
+	if(cb != undefined)cb(); // it is safe to send a command to the room
+
+	//now update the databases - this can be asynchronous
+
+	//add the room to UserData
+	//remove old versions first
+	globals.UserData.update({_id: { $in: uids} }, {$pull : {rooms: roomName}}, {multi: true}, function(){
+		globals.UserData.update({_id: { $in: uids} },{ $push : {rooms: roomName}}, {multi: true});
+	})
+
+	globals.Rooms.update({room: roomName},{room: roomName, population: uids}, {upsert: true});
+}
+
 exports.useRoom = function(msg, cb) //add an optional cmd
 {
 	//attempt to get a selection object
@@ -11,7 +37,7 @@ exports.useRoom = function(msg, cb) //add an optional cmd
 		if(selector.roomName == undefined)selector.roomName = generateTempId(5);
 		selector.mode = msg.mode;
 
-		exports.addRoomToPlayers(selector, function(resp)
+		exports.selectAndJoin(selector, function(resp)
 		{
 			if(typeof(cb) != "undefined")cb(selector.roomName);
 			globals.admin.emit('server_report', {msg: resp, id: msg.cli_id, room: selector.roomName });
@@ -26,81 +52,12 @@ exports.useRoom = function(msg, cb) //add an optional cmd
 	}
 }
 
-exports.addRoomToPlayers = function(args, cb)
-{
 
-		if(typeof(args) == "undefined")return false;
-
-		var subRooms;
-
-		exports.selectPlayers(args, function(uids)
-		{
-
-			var msg =  args.mode + " with " + uids.length + " players with room: " + args.roomName;
-
-			subRooms = [];
-			if(args.subRooms != undefined && args.subRooms > 1)
-			{
-				for(var i = 0; i < args.subRooms; i++ )
-				{
-					subRooms.push([]);
-				}
-			}
-
-			//get each player to join the room
-			for(var i = 0; i < uids.length; i++)
-			{
-				if(typeof(globals.sockets[uids[i]]) != "undefined")
-				{
-					console.log("player " + uids[i] + " joining " + args.roomName)
-					globals.sockets[uids[i]].join(args.roomName);
-					if(subRooms.length > 0)
-					{
-						var idx = i%subRooms.length;
-						var subRoom = args.roomName + "_" + idx;
-						globals.sockets[uids[i]].join(subRoom);
-						subRooms[i].push(uids[i]);
-					}
-				}
-			}
-
-			//callback here
-			cb(msg); // it is safe to send a command to the room
-
-			//now update the databases - this can be asynchronous
-
-			//add the room to UserData
-			//remove old versions first
-			globals.UserData.update({_id: { $in: uids} }, {$pull : {rooms: args.roomName}}, {multi: true}, function(){
-				globals.UserData.update({_id: { $in: uids} },{ $push : {rooms: args.roomName}}, {multi: true});
-			})
-
-			globals.Rooms.update({room: args.roomName},{room: args.roomName, population: uids}, {upsert: true});
-
-			//add any subrooms too
-
-			for(var i = 0; i < subRooms.length; i++)
-			{
-				var subRoomName = args.roomName + "_" + i;
-				var subRoom = subRooms[i];
-				globals.Rooms.update({room: subRoomName},{room: subRoomName, population: subRoom},{upsert: true});
-				//remove old versions first
-
-				globals.UserData.update({_id: { $in: subRoom}},{ $pull : {rooms: subRoomName}}, {multi: true}, function(){
-				console.log(subRoom) // TODO FIX ME
-				globals.UserData.update({_id: { $in: subRoom}},{ $push : {rooms: subRoomName}}, {multi: true});
-				});
-			}
-
-		});
-
-}
 
 exports.selectPlayers = function(args, cb)
 {
 
 	var searchObj = exports.generateSearchObj(args);
-	console.log(searchObj);
 
 	globals.UserData.find(searchObj, '_id').then((docs) =>
 	{
@@ -129,6 +86,18 @@ exports.selectPlayers = function(args, cb)
 
 	});
 
+}
+
+exports.selectAndJoin = function(args, cb)
+{
+		if(typeof(args) == "undefined")return false;
+		exports.selectPlayers(args, function(uids)
+		{
+			var msg =  args.mode + " with " + uids.length + " players with room: " + args.roomName;
+			exports.joinRoom(uids, args.roomName, function(){
+				cb(msg);
+			});
+		});
 }
 
 exports.parseFilters = function(args, currentRoom)
@@ -209,15 +178,10 @@ exports.parseFilters = function(args, currentRoom)
 		{
 			if(args[i][1] != "")selector.roomName = args[i][1];
 		}
-		else if(args[i][0] == "sub")
-		{
-			if(args[i][1] != "")selector.subRooms = parseInt(args[i][1]);
-		}
 	}
 
 	if(selector.filters.length == 0 &&
 		selector.roomName == undefined &&
-		selector.subRooms == undefined &&
 		selector.numPlayers == undefined)
 	{
 			selector = false; //there are no filter actions
@@ -226,7 +190,7 @@ exports.parseFilters = function(args, currentRoom)
 		selector.filters.length == 0 &&
 		currentRoom != undefined &&
 		selector.numPlayers == undefined &&
-		(selector.roomName != undefined || selector.subRooms != undefined)
+		selector.roomName != undefined
 	)
 	{
 		selector.filters.push({not: false, mode: "room", room: currentRoom}); //add the current room

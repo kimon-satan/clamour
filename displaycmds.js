@@ -8,7 +8,7 @@ exports.response = function(socket)
 
 	socket.on('addTone', function(msg){
 
-		console.log("addTone", msg);
+		//console.log("addTone", msg);
 
 		var args = [];
 
@@ -27,7 +27,7 @@ exports.response = function(socket)
 
 	socket.on('updateTone', function(msg){
 
-		console.log("updateTone", msg);
+		//console.log("updateTone", msg);
 
 		var args = [];
 
@@ -46,7 +46,7 @@ exports.response = function(socket)
 
 	socket.on('endTone', function(msg){
 
-		console.log("endTone", msg);
+		//console.log("endTone", msg);
 
 		var args = [];
 
@@ -67,7 +67,7 @@ exports.response = function(socket)
 
 	socket.on('startCrawler', function(msg){
 
-		console.log("startCrawler", msg);
+		//console.log("startCrawler", msg);
 
 		var args = [];
 
@@ -86,7 +86,7 @@ exports.response = function(socket)
 
 	socket.on('updateCrawler', function(msg){
 
-		console.log("updateCrawler", msg);
+		//console.log("updateCrawler", msg);
 		var args = [];
 
 		Object.keys(msg).forEach(function(p)
@@ -104,7 +104,7 @@ exports.response = function(socket)
 
 	socket.on('endCrawler', function(msg){
 
-		console.log("endCrawler", msg);
+		//console.log("endCrawler", msg);
 		var args = [];
 
 		Object.keys(msg).forEach(function(p)
@@ -122,7 +122,7 @@ exports.response = function(socket)
 
 	socket.on('transTone', function(msg){
 
-		console.log("transTone", msg);
+		//console.log("transTone", msg);
 
 		var args = [];
 

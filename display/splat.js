@@ -134,7 +134,8 @@ SplatManager = function(_prop, _socket)
             this.playerInfo[id].transEnv.z = 0;
             //callback
 
-            this.socket.emit('endTone', {
+            this.socket.emit('endTone', //calls back to server which communicates with player client
+						{
               scidx: this.playerInfo[id].scidx,
               id: id
             });
@@ -142,11 +143,6 @@ SplatManager = function(_prop, _socket)
             this.playerInfo[id].transform = false;
 
             this.playerInfo[id].callback();
-
-            // for(var i = 0; i < this.spots[id].length; )
-            // {
-            //
-            // }
 
           }
         }

@@ -47,31 +47,34 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "close")
 		{
-		globals.Rooms.remove({room: msg.room},{},function(e,r)
+			globals.Rooms.find({room: msg.room}).then((docs)=>
 			{
-					if(e == null)
+					if(docs.length > 0)
 					{
-						globals.admin.emit('server_report', {id: msg.cli_id , msg: "room: " +  msg.room + " removed" });
+						for(var i =0; i < docs[0].population.length; i++)
+						{
+							globals.sockets[docs[0]['population'][i]].leave(docs[0]['room']); // all leave the room
+						}
+						globals.Rooms.remove({room: msg.room});
+						globals.UserData.update({},{$pull: {rooms: msg.room}},{multi: true} );
+						globals.admin.emit('server_report', {id: msg.cli_id , msg: "room: " +  msg.room + " removed", room: "" });
 					}
 					else
 					{
-						globals.admin.emit('server_report', {id: msg.cli_id , msg: "room: " +  msg.room + " can't be found" });
+						globals.admin.emit('server_report', {id: msg.cli_id , msg: "room: " +  msg.room + " can't be found", room: "" });
 					}
 			});
 
-		globals.UserData.update({},{$pull: {rooms: msg.room}},{multi: true} );
 		}
 		else if(msg.cmd == "closeall")
 		{
-		globals.Rooms.remove({},{},function(){
-				globals.admin.emit('server_report', {id: msg.cli_id , msg: "allglobals.Rooms removed" });
-			});
-
-		globals.UserData.update({},{$set: {rooms: []}},{multi: true} );
+			closeAll(function(){
+				globals.admin.emit('server_report', {id: msg.cli_id , msg: "all rooms removed" });
+			})
 		}
 		else if(msg.cmd == "get_rooms")
 		{
-		globals.Rooms.find({}).then((docs)=>
+			globals.Rooms.find({}).then((docs)=>
 			{
 				if(docs.length < 1)
 				{
@@ -86,63 +89,52 @@ exports.response = function(socket)
 					}
 					globals.admin.emit('server_report', {id: msg.cli_id, suslist: res, susmode: "room", selected: msg.room});
 				}
-
 			});
 		}
 		else if(msg.cmd == "create_room")
 		{
 			helpers.useRoom(msg, null);
 		}
-		else if(msg.cmd == "transform")
+		else if(msg.cmd == "sub")
 		{
-			var selector = helpers.parseFilters(msg.args, msg.room);
-
-			globals.admin.emit('server_report', {id: msg.cli_id, msg: ""});
-
-			if(selector)
+			if(msg.room == "" || msg.room == undefined)
 			{
+				globals.admin.emit('server_report', {id: msg.cli_id});
+				return;
+			}
 
-				var so = helpers.generateSearchObj(selector);
-
-			globals.UserData.find(so).then((docs)=>
+			helpers.parseOptions(msg.args, function(options)
+			{
+				if(options['rooms'] != undefined)
 				{
-					docs.forEach(function(e)
+					globals.Rooms.find({room: msg.room}).then((docs)=>
 					{
-						if(!e.isMobile) //only if not transformed
+						if(docs.length > 0)
 						{
-							globals.display.emit("cmd", {type: "transform", val: e});
+							var n = Math.max(2, parseInt(options['rooms']));
+							var numPerSub = Math.ceil(docs[0].population.length / n);
+							var subPops = [];
+							while(docs[0].population.length > 0)
+							{
+								//TODO check when non divisible
+								subPops.push(docs[0].population.splice(0,numPerSub));
+							}
+
+							for(var i =0; i < subPops.length; i++)
+							{
+								helpers.joinRoom(subPops[i], msg.room + "_" + i);
+							}
+
+							globals.admin.emit('server_report', {msg: n + " subrooms of " + msg.room + " created", id: msg.cli_id});
 						}
-					});
-				})
-
-			}
-			else
-			{
-
-				if(msg.room != undefined)
-				{
-				globals.Rooms.find({room: msg.room}, 'population').then((docs)=>{
-
-						if(docs == null)return;
-						if(docs[0] != undefined)
+						else
 						{
-
-							docs[0].population.forEach(function(e){
-								//FIXME !!!
-							globals.UserData.find({_id: e}).then((docs2)=>
-								{
-									docs2.forEach(function(e2)
-									{
-										globals.display.emit("cmd", {type: "transform", val: e2});
-									});
-								})
-							});
-
+							globals.admin.emit('server_report', {id: msg.cli_id});
 						}
 
-					});
+					})
 				}
-			}
+			});
 		}
 		else if(msg.cmd == "set")
 		{
@@ -156,33 +148,35 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "cleanup")
 		{
+			//NB. disconnected users can somehow still appear as connected ... look into this
+			globals.UserData.find({connected: false}).then((docs)=>
+			{
+				if(docs == null)return;
 
+				var users = [];
 
-			globals.UserData.find({connected: false}).then((docs)=>{
-					if(docs == null)return;
-
-					var users = [];
-
-					docs.forEach(function(e){
-
+				docs.forEach(function(e)
+				{
 					globals.UserData.remove(e._id);
-						users.push(e._id);
-
-					});
-				globals.Rooms.update({},{$pull: {population: {$in: users }}}); //remove these users from anyglobals.Rooms
-					globals.admin.emit('server_report', {id: msg.cli_id, msg: docs.length + " disconnected users removed "});
+					users.push(e._id);
 				});
 
+				globals.Rooms.update({},{$pull: {population: {$in: users }}}); //remove these users from anyglobals.Rooms
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: docs.length + " disconnected users removed "});
+			});
 		}
 		else if(msg.cmd == "resetall")
 		{
-			//clear the Databases
-			globals.sockets = {};
-			globals.UserData.remove({});
-			globals.Rooms.remove({});
-			globals.admin.emit('server_report', {id: msg.cli_id, msg: "all databases reset"});
-			globals.players.emit('whoareyou'); //causes any connected players to reset
-			//TODO display reset
+			closeAll(function()
+			{
+				//clear the Databases
+				globals.sockets = {};
+				globals.UserData.remove({});
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: "all databases reset", room: ""});
+				globals.players.emit('whoareyou'); //causes any connected players to reset
+			})
+			globals.display.emit("cmd", {type: "instruct"});
+			globals.display.emit('cmd', {type: 'clear_display'});
 		}
 		else if(msg.cmd == "stats")
 		{
@@ -201,7 +195,6 @@ exports.response = function(socket)
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
 
 			});
-
 
 		}
 		else if(msg.cmd == "startmisty")
@@ -222,10 +215,12 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "end")
 		{
-			globals.udpPort.send({
+			globals.udpPort.send(
+			{
 					address: "/allOff",
 					args: []
-			}, "127.0.0.1", 57120);
+			},
+			"127.0.0.1", 57120);
 			globals.admin.emit('server_report', {id: msg.cli_id});
 			globals.display.emit("cmd", {type: "end"});
 			globals.players.emit('cmd', {cmd: 'change_mode', value: {mode: "blank"}});
@@ -237,10 +232,11 @@ exports.response = function(socket)
 
 	});
 
+	/////////////////////////////////////////////////////////////////////
+	//DISPLAY COMMANDS
+
 	socket.on('disp_cmd', function(msg)
 	{
-
-		//console.log(msg);
 
 		if(msg.cmd == "shinstruct")
 		{
@@ -274,6 +270,7 @@ exports.response = function(socket)
 				blobSeed: Math.random(),
 				splatPan: (Math.random() * 2.0 - 1.0) * 0.85,
 			}});
+
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
 		else if(msg.cmd == "dispBlob")
@@ -292,7 +289,45 @@ exports.response = function(socket)
 				colMode: Math.floor(Math.random() * 4),
 				blobSeed: Math.random()
 			}});
+
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
+		}
+		else if(msg.cmd == "transform")
+		{
+
+			//transforms splats into blobs
+			var selector = helpers.parseFilters(msg.args, msg.room);
+
+			if(selector)
+			{
+				helpers.selectPlayers(selector, function(uids)
+				{
+					globals.UserData.find({_id: {$in: uids}, isMobile: false}).then((docs)=>
+					{
+						globals.display.emit("cmd", {type: "transform", val: docs});
+						globals.admin.emit('server_report', {id: msg.cli_id, msg: docs.length + " splats have been transformed"});
+					})
+				})
+			}
+			else
+			{
+				//use the room population
+				globals.Rooms.find({room: msg.room}).then((docs)=>
+				{
+					if(docs.length > 0)
+					{
+						globals.UserData.find({_id: {$in: docs[0].population}, isMobile: false}).then((docs2)=>
+						{
+							globals.display.emit("cmd", {type: "transform", val: docs2});
+							globals.admin.emit('server_report', {id: msg.cli_id, msg: docs2.length + " splats have been transformed"});
+						});
+					}
+					else
+					{
+						globals.admin.emit('server_report', {id: msg.cli_id, msg: "room not found"});
+					}
+				})
+			}
 		}
 
 	})
@@ -355,5 +390,24 @@ function listRooms(args, room, cb)
 			results += str + "\n";
 		});
 		cb(results);
+	});
+}
+
+function closeAll(cb)
+{
+	//all users leave any rooms
+	globals.Rooms.find({}).then((docs)=>
+	{
+		if(docs.length > 0)
+		{
+			for(var i =0; i < docs[0].population.length; i++)
+			{
+				globals.sockets[docs[0]['population'][i]].leave(docs[0]['room']); // all leave the room
+			}
+		}
+
+		cb();
+		globals.Rooms.remove({});
+		globals.UserData.update({},{$set: {rooms:[]}},{multi: true} );
 	});
 }
