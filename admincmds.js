@@ -1,5 +1,6 @@
 var globals = require('./globals.js');
 var helpers = require('./helpers.js');
+require('./libs/utils.js'); //just for generateTempId
 
 exports.response = function(socket)
 {
@@ -205,7 +206,7 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "startmisty")
 		{
-			udpPort.send({
+			globals.udpPort.send({
 					address: "/startMisty",
 					args: []
 			}, "127.0.0.1", 57120);
@@ -213,7 +214,7 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "killsound")
 		{
-			udpPort.send({
+			globals.udpPort.send({
 					address: "/allOff",
 					args: []
 			}, "127.0.0.1", 57120);
@@ -221,7 +222,7 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "end")
 		{
-			udpPort.send({
+			globals.udpPort.send({
 					address: "/allOff",
 					args: []
 			}, "127.0.0.1", 57120);

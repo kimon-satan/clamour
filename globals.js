@@ -37,3 +37,23 @@ exports.admin = io.of('/admin');
 exports.display = io.of('/display');
 exports.players = io.of('/player');
 exports.sockets = {};
+
+var osc = require("osc");
+
+exports.udpPort = new osc.UDPPort({
+		localAddress: "127.0.0.1",
+		localPort: 12345
+});
+
+exports.udpPort.open();
+
+//update the graphics
+
+exports.udpPort.on('message', (msg, rinfo) => {
+
+		if(msg.address == "/poll")
+		{
+			 exports.display.emit('cmd', { type: 'update', id: msg.args[0], val: msg.args[1]});
+		}
+
+});

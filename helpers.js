@@ -1,5 +1,3 @@
-//simple db using monk & mongodb
-
 var globals = require('./globals.js');
 
 exports.useRoom = function(msg, cb) //add an optional cmd

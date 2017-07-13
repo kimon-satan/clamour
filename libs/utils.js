@@ -1,8 +1,5 @@
 /*---------------------------------------------------------GENERIC FUNCTIONS-----------------------------------*/
 
-
-
-
 //hashable random function
 
 rand = function(x){
