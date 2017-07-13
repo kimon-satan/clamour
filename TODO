@@ -1,7 +1,7 @@
 TODO
 
 - check disconnecting issue
-- asynchronous error logging
+- asynchronous error logging (maybe...)
 - work out some load testing
 - sound commands section
 - multi-media with typing  ... json setup // new keystroke

@@ -1,4 +1,10 @@
 var globals = require('./globals.js');
+var randomWords = require('random-words');
+
+exports.genRoomName = function()
+{
+	return randomWords({ exactly: 2, join: '-' });
+}
 
 exports.joinRoom = function(uids, roomName, cb)
 {
@@ -34,7 +40,7 @@ exports.useRoom = function(msg, cb) //add an optional cmd
 	if(selector)
 	{
 		//we are making a new room
-		if(selector.roomName == undefined)selector.roomName = generateTempId(5);
+		if(selector.roomName == undefined)selector.roomName = exports.genRoomName();
 		selector.mode = msg.mode;
 
 		exports.selectAndJoin(selector, function(resp)
@@ -94,7 +100,8 @@ exports.selectAndJoin = function(args, cb)
 		exports.selectPlayers(args, function(uids)
 		{
 			var msg =  args.mode + " with " + uids.length + " players with room: " + args.roomName;
-			exports.joinRoom(uids, args.roomName, function(){
+			exports.joinRoom(uids, args.roomName, function()
+			{
 				cb(msg);
 			});
 		});

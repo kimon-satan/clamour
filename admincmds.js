@@ -402,7 +402,10 @@ function closeAll(cb)
 		{
 			for(var i =0; i < docs[0].population.length; i++)
 			{
-				globals.sockets[docs[0]['population'][i]].leave(docs[0]['room']); // all leave the room
+				if(globals.sockets[docs[0]['population'][i]] != undefined)
+				{
+					globals.sockets[docs[0]['population'][i]].leave(docs[0]['room']); // all leave the room
+				}
 			}
 		}
 
