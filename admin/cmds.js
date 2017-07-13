@@ -17,6 +17,7 @@ var cmdList = [
 	"resetall",
 	"transform",
 	"set",
+	"sub",
 	"end",
 	"startmisty",
 	"killsound"

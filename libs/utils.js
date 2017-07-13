@@ -59,72 +59,7 @@ shuffleArray = function(o){ //v1.0
     return o;
 }
 
-generateSearchObj = function(args)
-{
 
-	//converts my custom filter object into a mongodb search
-	
-	var searchObj = {};
-
-	if(typeof(args.filters) == "undefined")args.filters = [];
-
-	for(var i = 0; i < args.filters.length; i++){
-
-	var filter = args.filters[i];
-
-	switch(filter.mode){
-
-		case "chat":
-    case "play":
-    case "wait":
-    case "broken":
-			searchObj.mode = filter.not ? {$ne: filter.mode} : filter.mode;
-		break;
-    case "connected":
-      searchObj[filter.mode]= !filter.not;
-    break;
-    case "isMobile":
-    case "isDying":
-    case "isSplat":
-      searchObj[filter.mode] = filter.not ? !filter[filter.mode] : filter[filter.mode];
-    break;
-		case "room":
-			searchObj.rooms = filter.not  ? {$nin: [filter.room]} : {$in: [filter.room]}
-		break;
-		case "state":
-    case "envTime":
-    case "death":
-			searchObj[filter.mode] = filter.not ? {$ne: parseInt(filter[filter.mode])} : parseInt(filter[filter.mode]);
-		break;
-		case "group":
-			if(typeof(searchObj.groups) == "undefined"){
-				searchObj.groups = filter.not ?  {$nin: [filter.group]} : {$in: [filter.group]}
-			}else{
-
-				if(filter.not){
-					if(typeof(searchObj.groups['$nin']) == "undefined"){
-						searchObj.groups['$nin'] = [filter.group];
-					}else{
-						searchObj.groups['$nin'].push(filter.group);
-					}
-
-				}else{
-
-					if(typeof(searchObj.groups.$in) == "undefined"){
-						searchObj.groups['$in'] = [filter.group];
-					}else{
-						searchObj.groups['$in'].push(filter.group);
-					}
-				}
-			}
-		break;
-		}
-
-	}
-
-	return searchObj;
-
-}
 
 /* -------------------------------------MAPPING -----------------------------------------*/
 

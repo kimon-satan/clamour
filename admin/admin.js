@@ -37,6 +37,7 @@ socket.on('server_report', function(msg)
   }
   else
   {
+		console.log("huh");
     gClis[msg.id].newCursor(true);
   }
 
