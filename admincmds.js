@@ -157,6 +157,8 @@ exports.response = function(socket)
 
 				docs.forEach(function(e)
 				{
+					delete globals.sockets[e._id]; //does this work ?
+					delete globals.checkins[e._id];
 					globals.UserData.remove(e._id);
 					users.push(e._id);
 				});

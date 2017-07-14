@@ -39,6 +39,7 @@ exports.response = function(socket)
 				id = res._id;
 				socket.join(res._id);
 				socket.emit('welcome', res);
+				globals.checkins[id] = Date.now();
 				globals.sockets[res._id] = socket; //store socket on global list
 			});
 
@@ -58,6 +59,7 @@ exports.response = function(socket)
 						if(err) throw err;
 						if(globals.DEBUG)console.log('hello new user: ' + res._id);
 						id = res._id;
+						globals.checkins[id] = Date.now();
 						socket.join(res._id);
 						socket.emit('welcome', res);
 						globals.sockets[res._id] = socket; //store socket on global list
@@ -69,6 +71,7 @@ exports.response = function(socket)
 					if(globals.DEBUG)console.log('welcome back user: ' + id);
 					res.connected = true;
 					socket.join(res._id);
+					globals.checkins[id] = Date.now();
 					//join any exitsting Rooms
 					for(var i = 0; i < res.rooms.length; i++)
 					{
@@ -118,12 +121,20 @@ exports.response = function(socket)
 
 	});
 
-
-
 	socket.on('disconnect', function()
 	{
 		if(globals.DEBUG)console.log('a player disconnected ' + id);
 		globals.UserData.update({_id: id},{$set: {connected: false}});
+		delete globals.checkins[id];
 	});
+
+	//a process to check players are with us
+	setInterval(function()
+	{
+		socket.emit('checkAlive',function(data)
+		{
+			globals.checkins[data] = Date.now();
+		});
+	},5000)
 
 }

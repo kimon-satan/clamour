@@ -1,9 +1,6 @@
 TODO
 
 
-- work out some load testing
-
-- check disconnecting issue
 - asynchronous error logging (maybe...)
 - sound commands section
 - multi-media with typing  ... json setup // new keystroke
@@ -14,11 +11,3 @@ FIXES (in order of importance)
 - splats rendered on mobile screen
 - adjust states / more variation between blobs
 - poisson disk for splat distribution
-
-/////////////////////////////////////////////
-
-
-
-
-
-/////////////////////////////////////////////

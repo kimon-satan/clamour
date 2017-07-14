@@ -37,6 +37,7 @@ exports.admin = io.of('/admin');
 exports.display = io.of('/display');
 exports.players = io.of('/player');
 exports.sockets = {};
+exports.checkins = {};
 
 var osc = require("osc");
 
@@ -57,3 +58,22 @@ exports.udpPort.on('message', (msg, rinfo) => {
 		}
 
 });
+
+setInterval(function(){
+
+	time = Date.now();
+
+	Object.keys(exports.checkins).forEach(function(k)
+	{
+			var delta = time - exports.checkins[k];
+			if(exports.DEBUG)console.log(k, delta);
+			if(delta > 20000) //20 secs = dormant
+			{
+				if(exports.DEBUG)console.log(k + " is dormant");
+				exports.UserData.update({_id: k},{$set: {connected: false}});
+				delete exports.checkins[k];
+			}
+	})
+
+
+}, 5000);

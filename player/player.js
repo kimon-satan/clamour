@@ -1,14 +1,23 @@
 
-//this will go into a new script
 
 Player = function(isDummy)
 {
+
+	this.lastCheckin = Date.now();
 
 	this.isDummy = (isDummy == undefined) ? false: true;
 	this.socket = io('/player');
 	this.data = {};
 	this.mode = "";
 	this.iface = undefined;
+
+	this.checkAlive = setInterval(function(){
+		if(Date.now() - this.lastCheckin > 8000)
+		{
+			clearInterval(this.checkAlive);
+			changeMode("refresh");
+		}
+	}.bind(this), 1000);
 
 	this.whoami = function()
 	{
@@ -31,6 +40,10 @@ Player = function(isDummy)
 				if(!this.isDummy)console.log("uid: " + id)
 				this.socket.emit('hello', id); //request a database update
 				this.data._id = id;
+			}
+			else
+			{
+				this.socket.emit('hello', 'new'); //create a new record
 			}
 		}
 		else
@@ -64,6 +77,12 @@ Player = function(isDummy)
 
 		changeMode(msg.mode);
 
+	}.bind(this));
+
+	this.socket.on('checkAlive', function (fn)
+	{
+		this.lastCheckin = Date.now();
+		fn(this.data._id); //return yes I'm alive
 	}.bind(this));
 
 	this.socket.on('cmd', function(msg)
@@ -244,6 +263,15 @@ Player = function(isDummy)
 				<h1>Sorry, I don't think I can do this on your device. </h1> \
 				<h2>Just enjoy the sounds for the moment. </h2> \
 				<h2>I'll be back soon. </h2> \
+				</div>" );
+			}
+
+			if(mode == "refresh")
+			{
+				$('#container').empty();
+				$('#container').append( "<div id='chatContainer'> \
+				<h1>Sorry your device has become disconnected</h1> \
+				<h2>Please refresh the page</h2> \
 				</div>" );
 			}
 
