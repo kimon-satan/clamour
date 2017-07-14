@@ -6,7 +6,7 @@ exports.response = function(socket)
 
 	var id;
 
-	console.log('a player connected ');
+	if(globals.DEBUG)console.log('a player connected ');
 	socket.emit("whoareyou", "?")
 
 	socket.on('hello', function(msg)
@@ -35,7 +35,7 @@ exports.response = function(socket)
 			globals.UserData.insert(usrobj,{}, function(err,res)
 			{
 				if(err) throw err;
-				console.log('hello new user: ' + res._id);
+				if(globals.DEBUG)console.log('hello new user: ' + res._id);
 				id = res._id;
 				socket.join(res._id);
 				socket.emit('welcome', res);
@@ -56,7 +56,7 @@ exports.response = function(socket)
 					globals.UserData.insert(usrobj, {}, function(err,res)
 					{
 						if(err) throw err;
-						console.log('hello new user: ' + res._id);
+						if(globals.DEBUG)console.log('hello new user: ' + res._id);
 						id = res._id;
 						socket.join(res._id);
 						socket.emit('welcome', res);
@@ -66,13 +66,13 @@ exports.response = function(socket)
 				else
 				{
 					id = res._id;
-					console.log('welcome back user: ' + id);
+					if(globals.DEBUG)console.log('welcome back user: ' + id);
 					res.connected = true;
 					socket.join(res._id);
 					//join any exitsting Rooms
 					for(var i = 0; i < res.rooms.length; i++)
 					{
-						//console.log("joining " + res.rooms[i]);
+						//if(globals.DEBUG)console.log("joining " + res.rooms[i]);
 						socket.join(res.rooms[i]);
 					}
 
@@ -97,7 +97,7 @@ exports.response = function(socket)
 
 	socket.on('splat', function(msg){
 
-		//console.log("splat", msg);
+		//if(globals.DEBUG)console.log("splat", msg);
 
 		var args = ["pan", msg.splatPan, "rate", msg.splatRate, "pos", msg.splatPos];
 
@@ -122,7 +122,7 @@ exports.response = function(socket)
 
 	socket.on('disconnect', function()
 	{
-		console.log('a player disconnected ' + id);
+		if(globals.DEBUG)console.log('a player disconnected ' + id);
 		globals.UserData.update({_id: id},{$set: {connected: false}});
 	});
 

@@ -23,6 +23,7 @@ globals.app.use("/admin",express.static(__dirname + "/admin"));
 globals.app.use("/style",express.static(__dirname + "/style"));
 globals.app.use("/libs",express.static(__dirname + "/libs"));
 globals.app.use("/player",express.static(__dirname + "/player"));
+globals.app.use("/tests",express.static(__dirname + "/tests"));
 globals.app.use("/display",express.static(__dirname + "/display"));
 globals.app.use("/samples",express.static(__dirname + "/samples"));
 globals.app.use("/images",express.static(__dirname + "/images"));
@@ -35,6 +36,10 @@ globals.app.use("/images",express.static(__dirname + "/images"));
  globals.app.get('/display', function(req, res){
 	 res.sendFile(__dirname + '/display/display.html');
  });
+//
+globals.app.get('/tests', function(req, res){
+	res.sendFile(__dirname + '/tests/tests.html');
+});
 
 //
  globals.app.get('/', function(req, res){

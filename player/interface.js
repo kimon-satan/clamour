@@ -1,33 +1,13 @@
-iface = undefined;
 
-setup = function (ud, callback)
-{
-  var d = $('#container');
-  if(window.Graphics != undefined && window.Sound != undefined && d.length > 0)
-  {
-    if(iface == undefined)
-    {
-      iface = new Interface(ud, callback);
-      iface.init();
+Interface = function(parent, callback){
 
-    }
-  }
-  else
-  {
-    window.setTimeout(setup, 10);
-  }
-}
-
-
-Interface = function(ud, callback){
-
+	this.parent = parent;
   this.graphics
   this.sound
   this.startTime
   this.ellapsedTime
   this.accumulator
   this.canvas
-  this.ud = ud;
   this.callback = callback;
   this.panicCount = 0;
 
@@ -53,8 +33,8 @@ Interface = function(ud, callback){
 
   this.maxState;
 
-  this.isMobile = ud.isMobile; //ugh horrible
-  this.isDying = ud.isDying;
+  this.isMobile = this.parent.data.isMobile; //ugh horrible
+  this.isDying = this.parent.data.isDying;
 
   this.splatPan = (-1.0 + Math.random() * 2.0) * 0.85;
   this.splatRate = Math.random();
@@ -63,8 +43,6 @@ Interface = function(ud, callback){
 
   this.transEnv = new Envelope2(0.1,2.0,60);
   this.rotEnv = new Envelope(1.0, 60);
-
-
 
   this.reactionMaps =
   {
@@ -180,7 +158,7 @@ Interface = function(ud, callback){
   this.init = function()
   {
 
-    this.graphics = new Graphics(this.ud);
+    this.graphics = new Graphics(this.parent.data);
     this.graphics.init();
     this.sound = new Sound();
     this.sound.init();
@@ -202,8 +180,8 @@ Interface = function(ud, callback){
 
     this.stateEnvelope = new Envelope(this.envTime, 60);
     this.stateEnvelope.targetVal = 1.0;
-    this.stateIndex = ud.stateIndex;
-    this.maxState = ud.maxState;
+    this.stateIndex = this.parent.data.stateIndex;
+    this.maxState = this.parent.data.maxState;
     this.changingState = true;
 
     this.excitementEnv = new Envelope2(1.75, 25, 60);
@@ -348,15 +326,15 @@ Interface = function(ud, callback){
 
     //start rendering
     //this.render(); // no longer using this as we do loading at the start to spread server load
-    var state_z = ud.state_z;
-    this.changeState(ud.state); //changes state z
-    this.setEnvTime(ud.envTime);
-    this.setIsSplat(ud.isSplat); //might cause a loop !?
-    this.setMaxState(ud.maxState);
-    this.setIsMobile(ud.isMobile);
-    this.setIsDying(ud.isDying); //changes state z
+    var state_z = this.parent.data.state_z;
+    this.changeState(this.parent.data.state); //changes state z
+    this.setEnvTime(this.parent.data.envTime);
+    this.setIsSplat(this.parent.data.isSplat); //might cause a loop !?
+    this.setMaxState(this.parent.data.maxState);
+    this.setIsMobile(this.parent.data.isMobile);
+    this.setIsDying(this.parent.data.isDying); //changes state z
     this.stateEnvelope.z = state_z;
-    this.ud.state_z = state_z;
+    this.parent.data.state_z = state_z;
     this.updateState(this.stateEnvelope.z);
 
   }
@@ -430,8 +408,8 @@ Interface = function(ud, callback){
     //check for latest reactionMap
     this.updateReactionMap();
     this.isGesture = false;
-    this.ud.state_z = this.stateEnvelope.z;
-    socket.emit('update_user', {_id: this.ud._id, state_z: this.ud.state_z}); //tell the server that we have changed mode
+    this.parent.data.state_z = this.stateEnvelope.z;
+    this.parent.socket.emit('update_user', {_id: this.parent.data._id, state_z: this.parent.data.state_z}); //tell the server that we have changed mode
   }
 
   this.updateGesture = function(ng)
@@ -504,10 +482,10 @@ Interface = function(ud, callback){
 
       this.isGesture = true;
       this.setEnvTargets(1.);
-      if(this.ud.isDying)
+      if(this.parent.data.isDying)
       {
-        this.sound.parameters.amp.max = Math.pow(this.ud.death, 2); //will need tweaking
-        this.sound.parameters.grainSpacing.min = 0.04 + Math.pow(this.ud.death, 3) * 0.2; //will need tweaking
+        this.sound.parameters.amp.max = Math.pow(this.parent.data.death, 2); //will need tweaking
+        this.sound.parameters.grainSpacing.min = 0.04 + Math.pow(this.parent.data.death, 3) * 0.2; //will need tweaking
       }
 
 
@@ -533,18 +511,18 @@ Interface = function(ud, callback){
 
       if(this.isDying)
       {
-        this.ud.death = Math.min(1.0, this.ud.death + 0.02);
-        this.stateEnvelope.targetVal = this.ud.death;
-        this.ud.state_z = this.stateEnvelope.z;
-        this.transEnv.targetVal *= 1.0 - this.ud.death;
-        socket.emit('update_user', {_id: this.ud._id, state_z: this.ud.state_z, death: this.ud.death});
+        this.parent.data.death = Math.min(1.0, this.parent.data.death + 0.02);
+        this.stateEnvelope.targetVal = this.parent.data.death;
+        this.parent.data.state_z = this.stateEnvelope.z;
+        this.transEnv.targetVal *= 1.0 - this.parent.data.death;
+        this.parent.socket.emit('update_user', {_id: this.parent.data._id, state_z: this.parent.data.state_z, death: this.parent.data.death});
       }
 
-      socket.emit('moveBlob', {
+      this.parent.socket.emit('moveBlob', {
         _id: userid,
         rot: this.rotEnv.targetVal,
         trans: this.transEnv.targetVal,
-        death: this.ud.death,
+        death: this.parent.data.death,
         state: this.stateIndex,
         state_z: this.stateEnvelope.z
       });
@@ -737,12 +715,12 @@ Interface = function(ud, callback){
               state_z: this.stateEnvelope.z
             };
 
-            Object.keys(this.ud).forEach(function(k, idx, array){
-              msgObj[k] = this.ud[k];
+            Object.keys(this.parent.data).forEach(function(k, idx, array){
+              msgObj[k] = this.parent.data[k];
 
               if(idx == array.length-1)
               {
-                socket.emit('splat', msgObj);
+                this.parent.socket.emit('splat', msgObj);
               }
             }, this);
 
@@ -786,7 +764,7 @@ Interface = function(ud, callback){
   this.incrementState = function()
   {
     this.stateIndex += 1;
-    this.ud.state = this.stateIndex;
+    this.parent.data.state = this.stateIndex;
 
     //modify the reactionMap here ?
 
@@ -799,7 +777,6 @@ Interface = function(ud, callback){
     //tell the server because the change came from here
     this.callback({state: this.stateIndex});
 
-
   }
 
   this.changeState = function(idx)
@@ -808,8 +785,8 @@ Interface = function(ud, callback){
 
     this.stateIndex = idx;
     this.stateEnvelope.z = 0.0;
-    this.ud.state_z = 0.0;
-    this.ud.state = idx;
+    this.parent.data.state_z = 0.0;
+    this.parent.data.state = idx;
     this.currentReactionMap = this.reactionMaps[0][0];
     this.graphics.instruct_material.visible = false;
     //stop all other envelopes
@@ -910,11 +887,11 @@ Interface = function(ud, callback){
   this.setIsDying = function(b)
   {
     this.isDying = b;
-    this.ud.isDying = b;
+    this.parent.data.isDying = b;
 
     if(b)
     {
-      //this.ud.death = 0; //we don't wanrt this incase it's just a reset
+      //this.parent.data.death = 0; //we don't wanrt this incase it's just a reset
       this.stateEnvelope.z = 0;
       this.stateEnvelope.targetVal = 0;
       this.updateReactionMap();
@@ -923,16 +900,16 @@ Interface = function(ud, callback){
     }
     else
     {
-      this.ud.death = 0;
-      this.changeState(Math.min(this.ud.state, 4));
-      this.setMaxState(Math.min(this.ud.maxState, 4)); //FIXME a hack would be better to make something which works from any state
+      this.parent.data.death = 0;
+      this.changeState(Math.min(this.parent.data.state, 4));
+      this.setMaxState(Math.min(this.parent.data.maxState, 4)); //FIXME a hack would be better to make something which works from any state
     }
   }
 
   this.setMaxState = function(n)
   {
     this.maxState = n;
-    this.ud.maxState = n;
+    this.parent.data.maxState = n;
 
     if(this.stateIndex <= this.maxState)
     {

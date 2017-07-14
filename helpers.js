@@ -13,7 +13,7 @@ exports.joinRoom = function(uids, roomName, cb)
 	{
 		if(typeof(globals.sockets[uids[i]]) != "undefined")
 		{
-			console.log("player " + uids[i] + " joining " + roomName)
+			if(globals.DEBUG)console.log("player " + uids[i] + " joining " + roomName)
 			globals.sockets[uids[i]].join(roomName);
 		}
 	}

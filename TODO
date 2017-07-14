@@ -1,13 +1,16 @@
 TODO
 
+
+- work out some load testing
+
 - check disconnecting issue
 - asynchronous error logging (maybe...)
-- work out some load testing
 - sound commands section
 - multi-media with typing  ... json setup // new keystroke
 
 FIXES (in order of importance)
 
+- why does updatereactionMaps happen 4 times on iface init ?
 - splats rendered on mobile screen
 - adjust states / more variation between blobs
 - poisson disk for splat distribution
