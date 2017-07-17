@@ -1,14 +1,14 @@
 [
 	{"name": "section_1", "clips":
 		[
-			{"audio": "misty/misty", "display": "section_1/random.jpg"},
-			{"audio": "misty/misty", "display": "section_1/boat.jpg"}
+			{"audio": "misty/misty", "img": "section_1/random.jpg"},
+			{"audio": "misty/misty", "img": "section_1/boat.jpg"}
 		]
 	},
 	{"name": "section_2", "clips":
 		[
-			{"audio": "misty/misty", "display": "section_2/graf.jpg"},
-			{"audio": "misty/misty", "display": "section_2/sandy-boots.jpg"}
+			{"audio": "misty/misty", "img": "section_2/graf.jpg"},
+			{"audio": "misty/misty", "img": "section_2/sandy-boots.jpg"}
 		]
 	}
 ]

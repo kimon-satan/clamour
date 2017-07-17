@@ -1,7 +1,11 @@
 TODO
 
-- A json interface for multi-media triggers
-- multi-media with typing  ... json setup // new keystroke
+- story reset
+- resetall (storyClip & stage)
+- sounds for story (once, loop, layer ?)
+- alternative texts (allow for multiples)
+
+- display data persistence
 - asynchronous error logging (maybe...)
 
 

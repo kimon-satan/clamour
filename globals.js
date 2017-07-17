@@ -19,6 +19,8 @@ exports.UserData = exports.DB.get('UserData');
 exports.Rooms = exports.DB.get('Rooms'); //This might become a variable ?
 exports.Presets = exports.DB.get('Presets'); //not using so far - probably should just be json
 
+
+
 exports.LoveParameters =
 {
 		state: 0,
@@ -81,6 +83,8 @@ fs.readFile('config/settings.json', 'utf8', function (err, data)
 		fs.readFile(exports.settings.storyPath, 'utf8', function (err, data)
 		{
 			exports.story = JSON.parse(data);
+			exports.storyStage = 0;
+			exports.storyClip = 0;
 		});
 
 });

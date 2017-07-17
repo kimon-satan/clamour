@@ -1,5 +1,5 @@
 
-display = undefined;
+love = undefined;
 
 var lastFrameTime, framePeriod, fps;
 
@@ -7,117 +7,70 @@ lastFrameTime = 0;
 
 var socket = io('/display');
 
-socket.on('cmd', function(msg){
-
-	//console.log(msg);
-
-	if(msg.type == "splat")
-	{
-		//todo check for blob
-		display.splatManager.addSplat(msg.val);
-		if(msg.val.state >= 4 && msg.val.state_z > 0.9) // utilmately make these flexible
-		{
-			if(display.splatManager.getEnergy(msg.val._id) >= 0.9)
-			{
-
-				var pos = new THREE.Vector2().copy(display.splatManager.playerInfo[msg.val._id].center);
-				var blob = display.blobManager.addBlob(pos, msg.val);
-				blob.updateState(msg.val.state_z);
-				blob.updateUniforms();
-
-				display.splatManager.transform(msg.val._id, function()
-				{
-							newBranch(blob);
-							display.scene.add(blob.mesh);
-				});
-
-			}
-		}
-	}
-	else if(msg.type == "transform")
-	{
-		for(var i = 0; i < msg.val.length; i++)
-		{
-			if(display.splatManager.playerInfo[msg.val[i]._id] != undefined)
-			{
-				if(!display.splatManager.playerInfo[msg.val[i]._id].transform)
-				{
-					var pos = new THREE.Vector2().copy(display.splatManager.playerInfo[msg.val[i]._id].center);
-					var blob = display.blobManager.addBlob(pos, msg.val[i]);
-					blob.updateState(msg.val[i].state_z);
-					blob.updateUniforms();
-
-					display.splatManager.transform(msg.val[i]._id, function()
-					{
-								newBranch(blob);
-								display.scene.add(blob.mesh);
-					});
-				}
-			}
-		}
-	}
-	// else if(msg.type == "blob")
-	// {
-	// 	var blob = display.blobManager.addBlob(new THREE.Vector2(Math.random() * 2.0 - 1.0,Math.random() * 2.0 -1), msg.val);
-	// 	var branch = display.branchManager.addBranch(blob);
-	// 	blob.branch = branch;
-	// 	display.scene.add(blob.mesh);
-	// 	display.scene.add(branch.mesh);
-	// }
-	else if(msg.type == "moveBlob")
-	{
-		if(display.blobManager.blobs[msg.val._id].currStateIdx != msg.val.state)
-		{
-			display.blobManager.changeState(msg.val._id, msg.val.state);
-		}
-		display.blobManager.blobs[msg.val._id].updateState(msg.val.state_z);
-		display.blobManager.blobs[msg.val._id].updateUniforms();
-		display.blobManager.moveBlob(msg.val._id,  msg.val.rot, msg.val.trans * 0.5, msg.val.death);
-	}
-	else if(msg.type == "update")
-	{
-		display.splatManager.updateGlow(msg.id, msg.val);
-	}
-	else if (msg.type == "end")
-	{
-		display.splatManager.clearAll();
-		display.blobManager.clearAll(display.scene);
-		display.branchManager.clearAll(display.scene);
-		display.grid.visible = false;
-	}
-	else if (msg.type == "clear_display")
-	{
-		display.splatManager.clearAll();
-		display.blobManager.clearAll(display.scene);
-		display.branchManager.clearAll(display.scene);
-		display.grid.visible = true;
-	}
-	else if (msg.type == "instruct")
-	{
-		setupInstructions();
-	}
-	else if (msg.type == "display" )
-	{
-		setupDisplay();
-	}
-
-});
-
-newBranch = function(parent)
-{
-	var branch = display.branchManager.addBranch(parent);
-	parent.branch = branch;
-	display.scene.add(branch.mesh);
-}
-
 $('document').ready(function(){
 
 	setupInstructions();
 })
 
+
+socket.on('cmd', function(msg){
+
+	//console.log(msg);
+	if (msg.type == "instruct")
+	{
+		setupInstructions();
+	}
+	else if (msg.type == "love" )
+	{
+		setupLove();
+	}
+	else if (msg.type == "story" )
+	{
+		story(msg.img);
+	}
+	else if (msg.type == "end")
+	{
+		//TODO context dependant here .. or just clear all displays
+
+		love.splatManager.clearAll();
+		love.blobManager.clearAll(love.scene);
+		love.branchManager.clearAll(love.scene);
+		love.grid.visible = false;
+	}
+	else if (msg.type == "clear")
+	{
+		//TODO context dependant here .. or just clear all displays
+
+		love.splatManager.clearAll();
+		love.blobManager.clearAll(love.scene);
+		love.branchManager.clearAll(love.scene);
+		love.grid.visible = true;
+	}
+	else if(msg.type == "splat")
+	{
+		love.splat(msg);
+	}
+	else if(msg.type == "transform")
+	{
+		love.transform(msg);
+	}
+	else if(msg.type == "moveBlob")
+	{
+		love.moveBlob(msg);
+	}
+	else if(msg.type == "update")
+	{
+		love.splatManager.updateGlow(msg.id, msg.val);
+	}
+
+
+
+});
+
+////////////////////////////////////////////INSTRUCTIONS/////////////////////////////
+
 function setupInstructions()
 {
-
 	$('#displayscreen').empty();
 	$('#displayscreen').append( " \
 		<div id='displayInstructions'> \
@@ -128,31 +81,47 @@ function setupInstructions()
 		<h3>4. Type the address love.local (no www.)</h3> \
 		<h3><i>Ask for help if it doesn't work</i></h3></div>"
 	);
-
 }
 
-function setupDisplay ()
+function story(img)
+{
+	$('#displayscreen').empty();
+	$('#displayscreen').append("<div id='storyContainer'><img src=" + img + "></div>");
+}
+
+///////////////////////////////////////LOVE//////////////////////////////////////////
+
+function setupLove ()
 {
 	$('#displayscreen').empty();
 	var d = $('#displayscreen');
 	if(d.length > 0)
 	{
-		if(display == undefined)
+		if(love == undefined)
 		{
-			display = new Display(socket);
+			love = new Love(socket);
 		}
 		else{
-			$('#displayscreen').append( display.renderer.domElement );
-			display.canvas = display.renderer.domElement;
+			$('#displayscreen').append( love.renderer.domElement );
+			love.canvas = love.renderer.domElement;
 		}
 	}
 	else
 	{
-		window.setTimeout(setupDisplay, 10);
+		window.setTimeout(setupLove, 10);
 	}
 }
 
-Display = function(socket)
+newBranch = function(parent)
+{
+	//FIXME ... this should be part of love class
+	var branch = love.branchManager.addBranch(parent);
+	parent.branch = branch;
+	love.scene.add(branch.mesh);
+}
+
+
+Love = function(socket)
 {
 	this.renderer = new THREE.WebGLRenderer();
 	this.renderer.setSize( window.innerWidth, window.innerHeight );
@@ -174,6 +143,7 @@ Display = function(socket)
 	this.blobManager = new BlobManager(p, socket);
 	this.branchManager = new BranchManager(newBranch);
 	this.scene.add(this.splatManager.mesh);
+
 
 	this.mousePos = new THREE.Vector2();
 
@@ -199,31 +169,16 @@ Display = function(socket)
 
 /////////////////////////////////////
 
-//  this.mousePos = new THREE.Vector2(0,0);
-
 	this.canvas.addEventListener('mousedown', function(e)
 	{
-		// this.mousePos.set(
-		//   -1 + e.clientX * 2/this.canvas.width,
-		//   1 + e.clientY* -2/this.canvas.height
-		// );
-		//
-		// var m = this.blobManager.addBlob(this.mousePos, generateTempId(5));
-		// this.scene.add(m);
-		// console.log("md");
 
 		this.isMouseDown = true;
+
 	}.bind(this)
 	, false);
 
 	this.canvas.addEventListener("mousemove", function (e)
 	{
-		// this.mousePos.set(
-		//   -1 + e.clientX * 2/this.canvas.width,
-		//   1 + e.clientY* -2/this.canvas.height
-		// );
-
-
 
 	}.bind(this)
 	, false);
@@ -236,7 +191,67 @@ Display = function(socket)
 	}.bind(this)
 	, false);
 
+	//////////////////////////////////////////////////////////////////
 
+	this.splat = function(msg)
+	{
+		this.splatManager.addSplat(msg.val);
+		if(msg.val.state >= 4 && msg.val.state_z > 0.9) // utilmately make these flexible
+		{
+			if(this.splatManager.getEnergy(msg.val._id) >= 0.9)
+			{
+
+				var pos = new THREE.Vector2().copy(this.splatManager.playerInfo[msg.val._id].center);
+				var blob = this.blobManager.addBlob(pos, msg.val);
+				blob.updateState(msg.val.state_z);
+				blob.updateUniforms();
+
+				this.splatManager.transform(msg.val._id, function()
+				{
+							newBranch(blob);
+							this.scene.add(blob.mesh);
+				});
+
+			}
+		}
+	}
+
+	this.transform = function(msg)
+	{
+		for(var i = 0; i < msg.val.length; i++)
+		{
+			if(this.splatManager.playerInfo[msg.val[i]._id] != undefined)
+			{
+				if(!this.splatManager.playerInfo[msg.val[i]._id].transform)
+				{
+					var pos = new THREE.Vector2().copy(this.splatManager.playerInfo[msg.val[i]._id].center);
+					var blob = this.blobManager.addBlob(pos, msg.val[i]);
+					blob.updateState(msg.val[i].state_z);
+					blob.updateUniforms();
+
+					this.splatManager.transform(msg.val[i]._id, function()
+					{
+								newBranch(blob);
+								love.scene.add(blob.mesh);
+					});
+				}
+			}
+		}
+	}
+
+	this.moveBlob = function(msg)
+	{
+		if(this.blobManager.blobs[msg.val._id].currStateIdx != msg.val.state)
+		{
+			this.blobManager.changeState(msg.val._id, msg.val.state);
+		}
+		this.blobManager.blobs[msg.val._id].updateState(msg.val.state_z);
+		this.blobManager.blobs[msg.val._id].updateUniforms();
+		this.blobManager.moveBlob(msg.val._id,  msg.val.rot, msg.val.trans * 0.5, msg.val.death);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////////////////
 
 	this.draw = function()
 	{

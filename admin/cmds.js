@@ -53,7 +53,14 @@ function displayCmd(cmd, args, cli)
   socket.emit('disp_cmd', msgobj);
 }
 
-var cmdList = ["splat", "dispBlob", "shinstruct", "shdisplay", "cldisplay",	"transform"];
+var cmdList = [
+	"dinstruct",
+	"dlove",
+	"dstory",
+	"dclear",
+	"dtransform",
+	"dsplat"
+];
 
 for(var i = 0; i < cmdList.length; i++)
 {
@@ -219,6 +226,15 @@ CLMR_CMDS["_c"] = function(args,  cli)
     if(cli.cli_mode == "chat" || cli.cli_mode == "story")
 		{
       socket.emit('cmd', { cmd: 'chat_clear', value: "" , room: cli.room});
+    }
+    cli.newCursor();
+}
+
+CLMR_CMDS["_d"] = function(args,  cli)
+{
+    if(cli.cli_mode == "story")
+		{
+      socket.emit('cmd', { cmd: 'story_next', value: "" , room: cli.room});
     }
     cli.newCursor();
 }

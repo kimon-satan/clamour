@@ -13,6 +13,20 @@ exports.response = function(socket)
 			helpers.parseOptions(msg.args, function(options)
 			{
 				options.mode = msg.mode;
+
+				//handle display ... TODO - perhaps an override for no display switching
+				if(msg.mode == "story")
+				{
+					//also fire off the music
+					var img_path = globals.settings.imagePath + globals.story[globals.storyStage].clips[globals.storyClip].img;
+					globals.display.emit('cmd', {type: 'story', img: img_path});
+				}
+				else if(msg.mode == "love")
+				{
+					globals.display.emit('cmd', {type: 'love'});
+				}
+
+				//handle users
 				helpers.useRoom(msg, function(rm)
 				{
 						globals.players.to(rm).emit('cmd', {cmd: 'change_mode', value: options});
@@ -30,6 +44,13 @@ exports.response = function(socket)
 		else if(msg.cmd == "chat_newline")
 		{
 			globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
+		}
+		else if(msg.cmd == "story_next")
+		{
+			helpers.incrementStoryClip();
+			var img_path = globals.settings.imagePath + globals.story[globals.storyStage].clips[globals.storyClip].img;
+			globals.display.emit('cmd', {type: 'story', img: img_path});
+			globals.players.to(msg.room).emit('cmd', {cmd: 'chat_clear'});
 		}
 		else if(msg.cmd == "lplayers")
 		{
@@ -281,22 +302,27 @@ exports.response = function(socket)
 	socket.on('disp_cmd', function(msg)
 	{
 
-		if(msg.cmd == "shinstruct")
+		if(msg.cmd == "dinstruct")
 		{
 			globals.display.emit("cmd", {type: "instruct"});
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
-		else if(msg.cmd == "shdisplay")
+		else if(msg.cmd == "dlove")
 		{
-			globals.display.emit("cmd", {type: "display"});
+			globals.display.emit("cmd", {type: "love"});
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
-		else if(msg.cmd == "cldisplay")
+		else if(msg.cmd == "dstory")
 		{
-			globals.display.emit("cmd", {type: "clear_display"});
+			globals.display.emit("cmd", {type: "story"});
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
-		else if(msg.cmd == "splat")
+		else if(msg.cmd == "dclear")
+		{
+			globals.display.emit("cmd", {type: "clear"});
+			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
+		}
+		else if(msg.cmd == "dsplat")
 		{
 			if(msg.args.length > 0)
 			{
@@ -316,26 +342,7 @@ exports.response = function(socket)
 
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
-		else if(msg.cmd == "dispBlob")
-		{
-			if(msg.args.length > 0)
-			{
-					var id = msg.args[0];
-			}
-			else
-			{
-					var id = generateTempId(5);
-			}
-
-			globals.display.emit("cmd", {type: "blob", val: {_id: id,
-				colSeed: Math.random(),
-				colMode: Math.floor(Math.random() * 4),
-				blobSeed: Math.random()
-			}});
-
-			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
-		}
-		else if(msg.cmd == "transform")
+		else if(msg.cmd == "dtransform")
 		{
 
 			//transforms splats into blobs

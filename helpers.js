@@ -1,6 +1,8 @@
 var globals = require('./globals.js');
 var randomWords = require('random-words');
 
+
+
 exports.genRoomName = function()
 {
 	return randomWords({ exactly: 2, join: '-' });
@@ -57,8 +59,6 @@ exports.useRoom = function(msg, cb) //add an optional cmd
 		globals.admin.emit('server_report', {id: msg.cli_id});
 	}
 }
-
-
 
 exports.selectPlayers = function(args, cb)
 {
@@ -206,7 +206,6 @@ exports.parseFilters = function(args, currentRoom)
 	return selector;
 }
 
-
 exports.parseOptions = function(args, cb)
 {
 
@@ -350,4 +349,22 @@ exports.loadPresets = function(args, options, cb)
 		cb(options);
 	}
 
+}
+
+exports.incrementStoryClip = function()
+{
+	globals.storyClip += 1;
+
+	if(globals.storyClip > globals.story[globals.storyStage].clips.length - 1)
+	{
+		if(globals.storyStage < globals.story.length -1)
+		{
+			globals.storyStage += 1;  //increment the stage
+			globals.storyClip = 0;
+		}
+		else
+		{
+			globals.storyClip = globals.story[globals.storyStage].clips.length - 1; //stay where we are
+		}
+	}
 }

@@ -95,7 +95,6 @@ exports.response = function(socket)
 
 	socket.on('update_user', function(msg)
 	{
-		console.log(msg);
 		globals.UserData.update({_id: msg._id},{$set: msg});
 	});
 
