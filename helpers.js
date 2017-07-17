@@ -1,6 +1,6 @@
 var globals = require('./globals.js');
 var randomWords = require('random-words');
-
+var fs = require('fs');
 
 
 exports.genRoomName = function()
@@ -351,6 +351,42 @@ exports.loadPresets = function(args, options, cb)
 
 }
 
+
+exports.loadSettings = function()
+{
+	//load global settings from JSON file
+	fs.readFile('config/settings.json', 'utf8', function (err, data)
+	{
+			if (err) throw err;
+			globals.settings = JSON.parse(data);
+			exports.loadStory();
+	});
+}
+
+exports.loadStory = function(cb)
+{
+	//load the audio samples
+	globals.udpPort.send(
+	{
+		address: "/loadSamples",
+		args: [globals.settings.samplePath]
+	},
+	"127.0.0.1", 57120);
+
+	//load the story object
+
+	fs.readFile(globals.settings.storyPath, 'utf8', function (err, data)
+	{
+		globals.story = JSON.parse(data);
+		globals.storyStage = 0;
+		globals.storyClip = 0;
+		if(cb != undefined)
+		{
+			cb(err);
+		}
+	});
+}
+
 exports.incrementStoryClip = function()
 {
 	globals.storyClip += 1;
@@ -367,4 +403,37 @@ exports.incrementStoryClip = function()
 			globals.storyClip = globals.story[globals.storyStage].clips.length - 1; //stay where we are
 		}
 	}
+}
+
+exports.playSound = function(options)
+{
+		//TODO add loop ?
+
+		if(options.path)
+		{
+			var args = options.path.split("/");
+			options.dir = args[0];
+			options.file = args[1];
+		}
+
+		if(options.dir && options.file)
+		{
+			if(options.amp == undefined)options.amp = 0.2; //default param
+
+			globals.udpPort.send(
+			{
+				address: "/playStereo",
+				args: [options.dir, options.file, options.amp]
+			},
+			"127.0.0.1", 57120);
+		}
+}
+
+exports.startStoryClip = function(room)
+{
+	var img_path = globals.settings.imagePath + globals.story[globals.storyStage].clips[globals.storyClip].img;
+	var sound_path = globals.story[globals.storyStage].clips[globals.storyClip].audio;
+	globals.display.emit('cmd', {type: 'story', img: img_path});
+	exports.playSound({path: sound_path});
+	if(room != undefined)globals.players.to(room).emit('cmd', {cmd: 'chat_clear'});
 }

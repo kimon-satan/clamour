@@ -1,8 +1,8 @@
 [
 	{"name": "section_1", "clips":
 		[
-			{"audio": "misty/misty", "img": "section_1/random.jpg"},
-			{"audio": "misty/misty", "img": "section_1/boat.jpg"}
+			{"audio": "misty/misty", "loop": "false", "fadeIn" : 0.1, "fadeOut" : 0.1, "amp" : 0.2, "cut": "true", "img": "section_1/boat.jpg"},
+			{"audio": "misty/misty", "img": "section_1/random.jpg"}
 		]
 	},
 	{"name": "section_2", "clips":

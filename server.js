@@ -17,6 +17,8 @@ globals.Presets.findOne({type: "love", name: "default"}).then((doc)=> {
 
 });
 
+helpers.loadSettings();
+
 //We define a route handler / that gets called when we hit our website home.
 
 globals.app.use("/admin",express.static(__dirname + "/admin"));

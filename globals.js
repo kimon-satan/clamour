@@ -3,7 +3,7 @@ console.log("importing globals");
 express = require('express');
 exports.app = express();
 http = require('http').Server(exports.app);
-var fs = require('fs');
+
 
 
 //simple db using monk & mongodb
@@ -18,7 +18,6 @@ exports.DB.then(() => {
 exports.UserData = exports.DB.get('UserData');
 exports.Rooms = exports.DB.get('Rooms'); //This might become a variable ?
 exports.Presets = exports.DB.get('Presets'); //not using so far - probably should just be json
-
 
 
 exports.LoveParameters =
@@ -63,31 +62,7 @@ exports.udpPort.on('message', (msg, rinfo) => {
 
 });
 
-//load global settings from JSON
 
-fs.readFile('config/settings.json', 'utf8', function (err, data)
-{
-		if (err) throw err;
-		exports.settings = JSON.parse(data);
-
-		//load the audio samples
-		exports.udpPort.send(
-		{
-			address: "/loadSamples",
-			args: [exports.settings.samplePath]
-		},
-		"127.0.0.1", 57120);
-
-		//load the story object
-
-		fs.readFile(exports.settings.storyPath, 'utf8', function (err, data)
-		{
-			exports.story = JSON.parse(data);
-			exports.storyStage = 0;
-			exports.storyClip = 0;
-		});
-
-});
 
 setInterval(function(){
 

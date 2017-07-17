@@ -14,12 +14,9 @@ exports.response = function(socket)
 			{
 				options.mode = msg.mode;
 
-				//handle display ... TODO - perhaps an override for no display switching
 				if(msg.mode == "story")
 				{
-					//also fire off the music
-					var img_path = globals.settings.imagePath + globals.story[globals.storyStage].clips[globals.storyClip].img;
-					globals.display.emit('cmd', {type: 'story', img: img_path});
+					helpers.startStoryClip();
 				}
 				else if(msg.mode == "love")
 				{
@@ -29,7 +26,8 @@ exports.response = function(socket)
 				//handle users
 				helpers.useRoom(msg, function(rm)
 				{
-						globals.players.to(rm).emit('cmd', {cmd: 'change_mode', value: options});
+					//handle display ... TODO - perhaps an override for no display switching
+					globals.players.to(rm).emit('cmd', {cmd: 'change_mode', value: options});
 				});
 			});
 		}
@@ -48,9 +46,22 @@ exports.response = function(socket)
 		else if(msg.cmd == "story_next")
 		{
 			helpers.incrementStoryClip();
-			var img_path = globals.settings.imagePath + globals.story[globals.storyStage].clips[globals.storyClip].img;
-			globals.display.emit('cmd', {type: 'story', img: img_path});
-			globals.players.to(msg.room).emit('cmd', {cmd: 'chat_clear'});
+			helpers.startStoryClip(msg.room);
+		}
+		else if(msg.cmd == "storyreset")
+		{
+			globals.storyStage = 0;
+			globals.storyClip = 0;
+			helpers.startStoryClip(msg.room);
+			globals.admin.emit('server_report', {id: msg.cli_id});
+		}
+		else if(msg.cmd == "reloadstory")
+		{
+			helpers.loadStory(function(resp)
+			{
+					helpers.startStoryClip(msg.room);
+					globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
+			});
 		}
 		else if(msg.cmd == "lplayers")
 		{
@@ -262,29 +273,9 @@ exports.response = function(socket)
 		{
 			helpers.parseOptions(msg.args, function(options)
 			{
-				if(options.path)
-				{
-					var args = options.path.split("/");
-					options.dir = args[0];
-					options.file = args[1];
-				}
-
-				if(options.dir && options.file)
-				{
-					if(options.amp == undefined)options.amp = 0.2; //default param
-
-					globals.udpPort.send(
-					{
-						address: "/playStereo",
-						args: [options.dir, options.file, options.amp]
-					},
-					"127.0.0.1", 57120);
-
-					globals.admin.emit('server_report', {id: msg.cli_id});
-				}
+				helpers.playSound(options);
+				globals.admin.emit('server_report', {id: msg.cli_id});
 			});
-
-
 		}
 		else if(msg.cmd == "killsound")
 		{

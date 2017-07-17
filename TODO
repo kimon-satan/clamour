@@ -1,8 +1,7 @@
 TODO
 
-- story reset
-- resetall (storyClip & stage)
-- sounds for story (once, loop, layer ?)
+- sounds for story (once, loop, layer options)
+- fadeIn and fadeOut for sound and images ?
 - alternative texts (allow for multiples)
 
 - display data persistence

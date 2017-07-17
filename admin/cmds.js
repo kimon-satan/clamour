@@ -18,7 +18,8 @@ var cmdList = [
 	"set",
 	"sub",
 	"end",
-	"reloadstory"
+	"reloadstory",
+	"storyreset"
 ];
 
 for(var i = 0; i < cmdList.length; i++)
