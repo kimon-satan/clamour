@@ -29,7 +29,7 @@ Graphics.prototype.init = function()
 	this.renderer.setSize( window.innerWidth, window.innerHeight );
 
 
-	$('#playContainer').append( this.renderer.domElement );
+	$('#loveContainer').append( this.renderer.domElement );
 	this.canvas = this.renderer.domElement;
 
 	var p = this.renderer.domElement.width/this.renderer.domElement.height;
@@ -178,7 +178,7 @@ Graphics.prototype.init = function()
 }
 
 Graphics.prototype.resume = function(){
-	$('#playContainer').append( this.renderer.domElement );
+	$('#loveContainer').append( this.renderer.domElement );
 	this.canvas = this.renderer.domElement;
 }
 

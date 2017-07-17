@@ -7,12 +7,12 @@ var playercmds = require('./playercmds.js');
 
 //check the various collections exist if not create them
 
-globals.Presets.findOne({type: "play", name: "default"}).then((doc)=> {
+globals.Presets.findOne({type: "love", name: "default"}).then((doc)=> {
 
 	if(doc == null)
 	{
 		console.log("creating default parameters");
-		globals.Presets.insert({name: "default", options: globals.AllOptions});
+		globals.Presets.insert({name: "default", options: globals.LoveParameters});
 	}
 
 });

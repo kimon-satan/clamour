@@ -53,7 +53,11 @@ exports.response = function(socket)
 					{
 						for(var i =0; i < docs[0].population.length; i++)
 						{
-							globals.sockets[docs[0]['population'][i]].leave(docs[0]['room']); // all leave the room
+							//NB. the player might have disappeared
+							if(globals.sockets[docs[0]['population'][i]] != undefined)
+							{
+								globals.sockets[docs[0]['population'][i]].leave(docs[0]['room']); // all leave the room
+							}
 						}
 						globals.Rooms.remove({room: msg.room});
 						globals.UserData.update({},{$pull: {rooms: msg.room}},{multi: true} );
@@ -199,22 +203,6 @@ exports.response = function(socket)
 			});
 
 		}
-		else if(msg.cmd == "startmisty")
-		{
-			globals.udpPort.send({
-					address: "/startMisty",
-					args: []
-			}, "127.0.0.1", 57120);
-			globals.admin.emit('server_report', {id: msg.cli_id});
-		}
-		else if(msg.cmd == "killsound")
-		{
-			globals.udpPort.send({
-					address: "/allOff",
-					args: []
-			}, "127.0.0.1", 57120);
-			globals.admin.emit('server_report', {id: msg.cli_id});
-		}
 		else if(msg.cmd == "end")
 		{
 			globals.udpPort.send(
@@ -232,6 +220,59 @@ exports.response = function(socket)
 
 		//console.log('admin command: ' , msg);
 
+	});
+
+	/////////////////////////////////////////////////////////////////////
+	//SOUND COMMANDS
+
+	socket.on('sound_cmd', function(msg)
+	{
+		if(msg.cmd == "reloadsamples")
+		{
+			globals.udpPort.send(
+			{
+				address: "/loadSamples",
+				args: [globals.samplePath]
+			},
+			"127.0.0.1", 57120);
+			globals.admin.emit('server_report', {id: msg.cli_id});
+		}
+		else if(msg.cmd == "play")
+		{
+			helpers.parseOptions(msg.args, function(options)
+			{
+				if(options.path)
+				{
+					var args = options.path.split("/");
+					options.dir = args[0];
+					options.file = args[1];
+				}
+
+				if(options.dir && options.file)
+				{
+					if(options.amp == undefined)options.amp = 0.2; //default param
+
+					globals.udpPort.send(
+					{
+						address: "/playStereo",
+						args: [options.dir, options.file, options.amp]
+					},
+					"127.0.0.1", 57120);
+
+					globals.admin.emit('server_report', {id: msg.cli_id});
+				}
+			});
+
+
+		}
+		else if(msg.cmd == "killsound")
+		{
+			globals.udpPort.send({
+					address: "/allOff",
+					args: []
+			}, "127.0.0.1", 57120);
+			globals.admin.emit('server_report', {id: msg.cli_id});
+		}
 	});
 
 	/////////////////////////////////////////////////////////////////////
@@ -267,8 +308,8 @@ exports.response = function(socket)
 			}
 
 			globals.display.emit("cmd", {type: "splat", val: {_id: id,
-				colSeed: globals.AllOptions.colSeed,
-				colMode: globals.AllOptions.colMode,
+				colSeed: globals.LoveParameters.colSeed,
+				colMode: globals.LoveParameters.colMode,
 				blobSeed: Math.random(),
 				splatPan: (Math.random() * 2.0 - 1.0) * 0.85,
 			}});
@@ -364,7 +405,7 @@ function listPlayers(args, room, cb)
 			str += (e.connected) ? " connected " : " dormant ";
 			str += ",  mode: " + e.mode;
 
-			if(e.mode == "play")
+			if(e.mode == "love")
 			{
 				str += ", state: " + Math.round((e.state + e.state_z)*100)/100;
 				str += ", maxState: " + e.maxState;

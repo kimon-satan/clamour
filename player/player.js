@@ -150,6 +150,7 @@ Player = function(isDummy)
 
 	var informServer = function(msg)
 	{
+		console.log(msg);
 		msg._id = this.data._id;
 		this.socket.emit('update_user', msg); //tell the server that we have changed mode
 	}
@@ -161,7 +162,7 @@ Player = function(isDummy)
 		Object.keys(msg).forEach(function(k)
 		{
 
-			if(msg[k] != undefined && k != "_id" && k != "mode")
+			if(msg[k] != undefined && k != "_id" && k != "mode" && k != "rooms")
 			{
 				if(Object.prototype.toString.call( msg[k] ) === '[object Array]')
 				{
@@ -241,15 +242,15 @@ Player = function(isDummy)
 
 		if(!this.isDummy)
 		{
-			if(this.mode == "play")
+			if(this.mode == "love")
 			{
 				this.iface.stopRendering();
 			}
 
-			if(mode == "play")
+			if(mode == "love")
 			{
 				$('#container').empty();
-				$('#container').append( '<div id="playContainer"></div>' );
+				$('#container').append( '<div id="loveContainer"></div>' );
 
 				//resume graphics
 				this.iface.graphics.resume();
@@ -276,7 +277,7 @@ Player = function(isDummy)
 			}
 
 
-			if(mode == "chat")
+			if(mode == "chat" || mode == "story")
 			{
 				$('#container').empty();
 				$('#container').append( '<div id="chatContainer"></div>' );

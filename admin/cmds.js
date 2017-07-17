@@ -18,8 +18,7 @@ var cmdList = [
 	"set",
 	"sub",
 	"end",
-	"startmisty",
-	"killsound"
+	"reloadstory"
 ];
 
 for(var i = 0; i < cmdList.length; i++)
@@ -37,7 +36,7 @@ function changeMode(mode, args, cli)
 	socket.emit('cmd', msgobj);
 }
 
-var cmdList = ["wait", "chat", "blank", "play"];
+var cmdList = ["wait", "chat", "story", "blank", "love"];
 
 for(var i = 0; i < cmdList.length; i++)
 {
@@ -59,6 +58,26 @@ var cmdList = ["splat", "dispBlob", "shinstruct", "shdisplay", "cldisplay",	"tra
 for(var i = 0; i < cmdList.length; i++)
 {
 	var funstr = 'displayCmd("' + cmdList[i] + '", arguments[0], arguments[1])';
+	CLMR_CMDS["_" + cmdList[i]] = new Function(funstr);
+}
+
+/* sound commands */
+
+function soundCmd(cmd, args, cli)
+{
+	var msgobj = {cmd: cmd, args: args, cli_id: cli.idx, mode: cli.cli_mode, room: cli.room}
+  socket.emit('sound_cmd', msgobj);
+}
+
+var cmdList = [
+	"killsound",
+	"play",
+	"reloadsamples"
+];
+
+for(var i = 0; i < cmdList.length; i++)
+{
+	var funstr = 'soundCmd("' + cmdList[i] + '", arguments[0], arguments[1])';
 	CLMR_CMDS["_" + cmdList[i]] = new Function(funstr);
 }
 
@@ -197,9 +216,11 @@ CLMR_CMDS["_room"] = function(args,  cli){
 
 CLMR_CMDS["_c"] = function(args,  cli)
 {
-    if(cli.cli_mode == "chat")
+    if(cli.cli_mode == "chat" || cli.cli_mode == "story")
 		{
       socket.emit('cmd', { cmd: 'chat_clear', value: "" , room: cli.room});
     }
     cli.newCursor();
 }
+
+//TODO there will need to be more story commands here.

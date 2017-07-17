@@ -138,7 +138,7 @@ exports.parseFilters = function(args, currentRoom)
 					}
 				break;
 
-				case "play":
+				case "love":
 				case "chat":
 				case "wait":
 				case "broken":

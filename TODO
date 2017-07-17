@@ -1,9 +1,9 @@
 TODO
 
-
-- asynchronous error logging (maybe...)
-- sound commands section
+- A json interface for multi-media triggers
 - multi-media with typing  ... json setup // new keystroke
+- asynchronous error logging (maybe...)
+
 
 FIXES (in order of importance)
 

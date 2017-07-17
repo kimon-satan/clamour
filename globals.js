@@ -3,6 +3,8 @@ console.log("importing globals");
 express = require('express');
 exports.app = express();
 http = require('http').Server(exports.app);
+var fs = require('fs');
+
 
 //simple db using monk & mongodb
 exports.URL = 'localhost:27017/ConditionalLove';
@@ -17,7 +19,7 @@ exports.UserData = exports.DB.get('UserData');
 exports.Rooms = exports.DB.get('Rooms'); //This might become a variable ?
 exports.Presets = exports.DB.get('Presets'); //not using so far - probably should just be json
 
-exports.AllOptions =
+exports.LoveParameters =
 {
 		state: 0,
 		state_z: 0,
@@ -56,6 +58,30 @@ exports.udpPort.on('message', (msg, rinfo) => {
 		{
 			 exports.display.emit('cmd', { type: 'update', id: msg.args[0], val: msg.args[1]});
 		}
+
+});
+
+//load global settings from JSON
+
+fs.readFile('config/settings.json', 'utf8', function (err, data)
+{
+		if (err) throw err;
+		exports.settings = JSON.parse(data);
+
+		//load the audio samples
+		exports.udpPort.send(
+		{
+			address: "/loadSamples",
+			args: [exports.settings.samplePath]
+		},
+		"127.0.0.1", 57120);
+
+		//load the story object
+
+		fs.readFile(exports.settings.storyPath, 'utf8', function (err, data)
+		{
+			exports.story = JSON.parse(data);
+		});
 
 });
 

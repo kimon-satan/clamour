@@ -21,8 +21,8 @@ exports.response = function(socket)
 				groups: []
 		}
 
-		Object.keys(globals.AllOptions).forEach(function(e){
-			usrobj[e] = globals.AllOptions[e];
+		Object.keys(globals.LoveParameters).forEach(function(e){
+			usrobj[e] = globals.LoveParameters[e];
 		})
 
 		usrobj.colSeed = Math.random();
@@ -95,6 +95,7 @@ exports.response = function(socket)
 
 	socket.on('update_user', function(msg)
 	{
+		console.log(msg);
 		globals.UserData.update({_id: msg._id},{$set: msg});
 	});
 
