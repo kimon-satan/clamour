@@ -19,6 +19,27 @@ globals.Presets.findOne({type: "love", name: "default"}).then((doc)=> {
 
 helpers.loadSettings();
 
+//check whether any existing users rejoin
+
+setTimeout(function()
+{
+	globals.UserData.find({connected: true}, '_id').then((docs)=>
+	{
+		if(docs != null)
+		{
+
+			for(var i = 0; i < docs.length; i++)
+			{
+				if(globals.sockets[docs[i]._id] == undefined) //no socket has been created
+				{
+					globals.UserData.update({_id: docs[i]._id}, {$set: {connected: false}});
+				}
+			}
+		}
+	});
+
+},3000);
+
 //We define a route handler / that gets called when we hit our website home.
 
 globals.app.use("/admin",express.static(__dirname + "/admin"));

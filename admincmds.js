@@ -195,6 +195,7 @@ exports.response = function(socket)
 				{
 					delete globals.sockets[e._id]; //does this work ?
 					delete globals.checkins[e._id];
+					clearInterval(globals.procs[e._id]);
 					globals.UserData.remove(e._id);
 					users.push(e._id);
 				});
@@ -212,9 +213,15 @@ exports.response = function(socket)
 				globals.UserData.remove({});
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: "all databases reset", room: ""});
 				globals.players.emit('whoareyou'); //causes any connected players to reset
+				Object.keys(globals.procs).forEach(function(id)
+				{
+					clearInterval(globals.procs);
+				});
 			})
 			globals.display.emit("cmd", {type: "instruct"});
 			globals.display.emit('cmd', {type: 'clear_display'});
+			globals.storyStage = 0;
+			globals.storyClip = 0;
 		}
 		else if(msg.cmd == "stats")
 		{
@@ -264,7 +271,7 @@ exports.response = function(socket)
 			globals.udpPort.send(
 			{
 				address: "/loadSamples",
-				args: [globals.samplePath]
+				args: [globals.settings.samplePath]
 			},
 			"127.0.0.1", 57120);
 			globals.admin.emit('server_report', {id: msg.cli_id});

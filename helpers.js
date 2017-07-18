@@ -141,6 +141,7 @@ exports.parseFilters = function(args, currentRoom)
 				case "love":
 				case "chat":
 				case "wait":
+				case "story":
 				case "broken":
 				case "connected":
 					filter.mode = args[i][1];
@@ -408,32 +409,53 @@ exports.incrementStoryClip = function()
 exports.playSound = function(options)
 {
 		//TODO add loop ?
+		var args = [];
 
 		if(options.path)
 		{
-			var args = options.path.split("/");
-			options.dir = args[0];
-			options.file = args[1];
+			var p = options.path.split("/");
+			options.dir = p[0];
+			options.file = p[1];
+			delete options.path;
 		}
 
 		if(options.dir && options.file)
 		{
-			if(options.amp == undefined)options.amp = 0.2; //default param
-
-			globals.udpPort.send(
-			{
-				address: "/playStereo",
-				args: [options.dir, options.file, options.amp]
-			},
-			"127.0.0.1", 57120);
+			args.push("dir");
+			args.push(options.dir);
+			args.push("file");
+			args.push(options.file);
+			delete options.file;
+			delete options.dir;
 		}
+		else
+		{
+			console.log("Error: no valid file path provided")
+			return;
+		}
+
+
+		var k = Object.keys(options);
+		for(var i = 0; i < k.length; i++)
+		{
+			args.push(k[i]);
+			args.push(options[k[i]]);
+		}
+
+		globals.udpPort.send(
+		{
+			address: "/playStereo",
+			args: args
+		},
+		"127.0.0.1", 57120);
 }
 
 exports.startStoryClip = function(room)
 {
 	var img_path = globals.settings.imagePath + globals.story[globals.storyStage].clips[globals.storyClip].img;
-	var sound_path = globals.story[globals.storyStage].clips[globals.storyClip].audio;
+	var audio_options = globals.story[globals.storyStage].clips[globals.storyClip].audio;
 	globals.display.emit('cmd', {type: 'story', img: img_path});
-	exports.playSound({path: sound_path});
+	let cloned = Object.assign({}, audio_options);
+	exports.playSound(cloned);
 	if(room != undefined)globals.players.to(room).emit('cmd', {cmd: 'chat_clear'});
 }

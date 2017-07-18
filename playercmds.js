@@ -126,10 +126,11 @@ exports.response = function(socket)
 		if(globals.DEBUG)console.log('a player disconnected ' + id);
 		globals.UserData.update({_id: id},{$set: {connected: false}});
 		delete globals.checkins[id];
+		clearInterval(globals.procs[id]);
 	});
 
 	//a process to check players are with us
-	setInterval(function()
+	globals.procs[id] = setInterval(function()
 	{
 		socket.emit('checkAlive',function(data)
 		{

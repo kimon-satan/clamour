@@ -306,8 +306,12 @@ Player = function(isDummy)
 
 		this.mode = mode;
 		this.data.mode = mode;
-		this.socket.emit('update_user', {_id: this.data._id, mode: this.mode}); //tell the server that we have changed mode
+		if(this.mode != "refresh")
+		{
+			this.socket.emit('update_user', {_id: this.data._id, mode: this.mode}); //tell the server that we have changed mode
+		}
 
+		//for load testing only
 		if(this.updateTable != undefined)
 		{
 			this.updateTable(this.tableid, this.data);

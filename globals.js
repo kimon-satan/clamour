@@ -41,6 +41,7 @@ exports.display = io.of('/display');
 exports.players = io.of('/player');
 exports.sockets = {};
 exports.checkins = {};
+exports.procs = {};
 
 var osc = require("osc");
 
