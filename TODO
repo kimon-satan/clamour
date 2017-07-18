@@ -1,8 +1,11 @@
 TODO
 
-- sounds for story (once, loop, layer options)
-- fadeIn and fadeOut for sound and images ?
 - alternative texts (allow for multiples)
+//How to do this ?
+ ... v1. use both types of text as input ... (dummy based on chars per minute)
+ ... v2. always include a text duration
+
+- fadeIn and fadeOut for images ?
 
 - display data persistence
 - asynchronous error logging (maybe...)

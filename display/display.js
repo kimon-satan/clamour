@@ -1,7 +1,7 @@
 
 love = undefined;
 
-var lastFrameTime, framePeriod, fps;
+var lastFrameTime, framePeriod, fps, mode;
 
 lastFrameTime = 0;
 
@@ -30,8 +30,6 @@ socket.on('cmd', function(msg){
 	}
 	else if (msg.type == "end")
 	{
-		//TODO context dependant here .. or just clear all displays
-
 		love.splatManager.clearAll();
 		love.blobManager.clearAll(love.scene);
 		love.branchManager.clearAll(love.scene);
@@ -39,12 +37,17 @@ socket.on('cmd', function(msg){
 	}
 	else if (msg.type == "clear")
 	{
-		//TODO context dependant here .. or just clear all displays
-
-		love.splatManager.clearAll();
-		love.blobManager.clearAll(love.scene);
-		love.branchManager.clearAll(love.scene);
-		love.grid.visible = true;
+		if(mode == "love")
+		{
+			love.splatManager.clearAll();
+			love.blobManager.clearAll(love.scene);
+			love.branchManager.clearAll(love.scene);
+			love.grid.visible = true;
+		}
+		else
+		{
+			$('#displayscreen').empty();
+		}
 	}
 	else if(msg.type == "splat")
 	{
@@ -81,12 +84,16 @@ function setupInstructions()
 		<h3>4. Type the address love.local (no www.)</h3> \
 		<h3><i>Ask for help if it doesn't work</i></h3></div>"
 	);
+
+	mode = "instruct";
 }
 
 function story(img)
 {
 	$('#displayscreen').empty();
 	$('#displayscreen').append("<div id='storyContainer'><img src=" + img + "></div>");
+
+	mode = "story";
 }
 
 ///////////////////////////////////////LOVE//////////////////////////////////////////
@@ -110,6 +117,8 @@ function setupLove ()
 	{
 		window.setTimeout(setupLove, 10);
 	}
+
+	mode = "love";
 }
 
 newBranch = function(parent)

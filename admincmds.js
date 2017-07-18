@@ -59,7 +59,6 @@ exports.response = function(socket)
 		{
 			helpers.loadStory(function(resp)
 			{
-					helpers.startStoryClip(msg.room);
 					globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
 			});
 		}
