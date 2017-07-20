@@ -1,9 +1,11 @@
 TODO
 
-- alternative texts (allow for multiples)
-//How to do this ?
- ... v1. use both types of text as input ... (dummy based on chars per minute)
- ... v2. always include a text duration
+- story_update ... needs to pipe to relevant subrooms
+- story_clear ... needs to know how many subrooms are active at a given time
+	(looks like we'll need to create subroom objects and store text)
+- change mode ... finds subrooms and assigns them
+
+
 
 - fadeIn and fadeOut for images ?
 

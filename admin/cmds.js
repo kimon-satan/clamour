@@ -18,8 +18,9 @@ var cmdList = [
 	"set",
 	"sub",
 	"end",
-	"reloadstory",
-	"storyreset"
+	"sreload",
+	"sreset",
+	"ssub"
 ];
 
 for(var i = 0; i < cmdList.length; i++)
@@ -224,14 +225,18 @@ CLMR_CMDS["_room"] = function(args,  cli){
 
 CLMR_CMDS["_c"] = function(args,  cli)
 {
-    if(cli.cli_mode == "chat" || cli.cli_mode == "story")
+    if(cli.cli_mode == "chat" )
 		{
       socket.emit('cmd', { cmd: 'chat_clear', value: "" , room: cli.room});
     }
+		else if(cli.cli_mode == "story")
+		{
+			socket.emit('cmd', { cmd: 'story_clear', value: "" , room: cli.room});
+		}
     cli.newCursor();
 }
 
-CLMR_CMDS["_d"] = function(args,  cli)
+CLMR_CMDS["_n"] = function(args,  cli)
 {
     if(cli.cli_mode == "story")
 		{

@@ -26,6 +26,31 @@ exports.response = function(socket)
 				//handle users
 				helpers.useRoom(msg, function(rm)
 				{
+					if(msg.mode == "story")
+					{
+						if(options.sub != undefined)
+						{
+							helpers.subRoom(rm, options.sub, function(r)
+							{
+								globals.storyRooms = [];
+
+								globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
+
+								for(var i = 0; i < options.sub; i++)
+								{
+									globals.storyRooms.push(rm + "_" + i);
+								}
+
+								console.log(globals.storyRooms);
+
+							})
+						}
+						else
+						{
+							//use rm to find subrooms
+						}
+					}
+
 					//handle display ... TODO - perhaps an override for no display switching
 					globals.players.to(rm).emit('cmd', {cmd: 'change_mode', value: options});
 				});
@@ -43,17 +68,28 @@ exports.response = function(socket)
 		{
 			globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
 		}
+		else if(msg.cmd == "story_clear")
+		{
+			if(globals.storyRooms.length > 1)
+			{
+				//only clear the master room ? ... hmmm needs some thought
+				globals.players.to(msg.room).emit('cmd', {cmd: 'chat_clear'});
+			}
+			else
+			{
+				globals.players.to(msg.room).emit('cmd', {cmd: 'chat_clear'});
+			}
+
+		}
 		else if(msg.cmd == "story_update")
 		{
 
 			if(globals.story[globals.storyStage].clips[globals.storyClip].texts != undefined) //check this clip has text
 			{
-
 				var txts = globals.story[globals.storyStage].clips[globals.storyClip].texts;
 
 				if(txts.length > 1) //we only need to bother if there are alternative texts
 				{
-
 
 					globals.storyCurrText[globals.storyCurrText.length - 1] = msg.value;
 
@@ -79,16 +115,16 @@ exports.response = function(socket)
 							if(res == null)
 							{
 								//before any %
-								globals.players.to(msg.room).emit('cmd', {cmd: 'chat_update', value: n});
+								//globals.players.to(msg.room).emit('cmd', {cmd: 'chat_update', value: n});
 							}
 							else if(res[1] == "")
 							{
 								//new line
-								globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
+								//globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
 							}
 							else
 							{
-								globals.players.to(msg.room).emit('cmd', {cmd: 'chat_update', value: res[1]});
+								//globals.players.to(msg.room).emit('cmd', {cmd: 'chat_update', value: res[1]});
 							}
 						}
 
@@ -99,6 +135,7 @@ exports.response = function(socket)
 				}
 				else
 				{
+					//send this to all users
 					globals.players.to(msg.room).emit('cmd', {cmd: 'chat_update', value: msg.value});
 				}
 
@@ -107,21 +144,21 @@ exports.response = function(socket)
 		else if(msg.cmd == "story_newline")
 		{
 			globals.storyCurrText.push("");
+			globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
 		}
 		else if(msg.cmd == "story_next")
 		{
 			helpers.incrementStoryClip();
 			helpers.startStoryClip(msg.room);
 		}
-		else if(msg.cmd == "storyreset")
+		else if(msg.cmd == "sreset")
 		{
 			globals.storyStage = 0;
 			globals.storyClip = 0;
-			globals.storyCurrText = [""];
 			helpers.startStoryClip(msg.room);
 			globals.admin.emit('server_report', {id: msg.cli_id});
 		}
-		else if(msg.cmd == "reloadstory")
+		else if(msg.cmd == "sreload")
 		{
 			helpers.loadStory(function(resp)
 			{
@@ -208,31 +245,9 @@ exports.response = function(socket)
 			{
 				if(options['rooms'] != undefined)
 				{
-					globals.Rooms.find({room: msg.room}).then((docs)=>
+					helpers.subRoom(msg.room, options['rooms'], function(r)
 					{
-						if(docs.length > 0)
-						{
-							var n = Math.max(2, parseInt(options['rooms']));
-							var numPerSub = Math.ceil(docs[0].population.length / n);
-							var subPops = [];
-							while(docs[0].population.length > 0)
-							{
-								//TODO check when non divisible
-								subPops.push(docs[0].population.splice(0,numPerSub));
-							}
-
-							for(var i =0; i < subPops.length; i++)
-							{
-								helpers.joinRoom(subPops[i], msg.room + "_" + i);
-							}
-
-							globals.admin.emit('server_report', {msg: n + " subrooms of " + msg.room + " created", id: msg.cli_id});
-						}
-						else
-						{
-							globals.admin.emit('server_report', {id: msg.cli_id});
-						}
-
+						globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
 					})
 				}
 			});

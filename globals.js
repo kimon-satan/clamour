@@ -37,6 +37,7 @@ exports.LoveParameters =
 
 exports.storyCurrText = [""];
 exports.storyNumChars = 0;
+exports.storyRooms = [];
 
 io = require('socket.io')(http);
 exports.admin = io.of('/admin');

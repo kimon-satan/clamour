@@ -20,8 +20,10 @@ exports.joinRoom = function(uids, roomName, cb)
 		}
 	}
 
+	globals.Rooms.update({room: roomName},{room: roomName, population: uids},{upsert: true}, cb);
+
 	//callback here
-	if(cb != undefined)cb(); // it is safe to send a command to the room
+	//if(cb != undefined)cb(); // it is safe to send a command to the room
 
 	//now update the databases - this can be asynchronous
 
@@ -31,7 +33,7 @@ exports.joinRoom = function(uids, roomName, cb)
 		globals.UserData.update({_id: { $in: uids} },{ $push : {rooms: roomName}}, {multi: true});
 	})
 
-	globals.Rooms.update({room: roomName},{room: roomName, population: uids}, {upsert: true});
+
 }
 
 exports.useRoom = function(msg, cb) //add an optional cmd
@@ -105,6 +107,36 @@ exports.selectAndJoin = function(args, cb)
 				cb(msg);
 			});
 		});
+}
+
+exports.subRoom =  function(room, numRooms, cb)
+{
+	globals.Rooms.find({room: room}).then((docs)=>
+	{
+		if(docs.length > 0)
+		{
+			var n = Math.max(2, parseInt(numRooms));
+			var numPerSub = Math.ceil(docs[0].population.length / n);
+			var subPops = [];
+			while(docs[0].population.length > 0)
+			{
+				//TODO check when non divisible
+				subPops.push(docs[0].population.splice(0,numPerSub));
+			}
+
+			for(var i =0; i < subPops.length; i++)
+			{
+				exports.joinRoom(subPops[i], room + "_" + i);
+			}
+
+			cb(n + " subrooms of " + room + " created");
+		}
+		else
+		{
+			cb();
+		}
+
+	})
 }
 
 exports.parseFilters = function(args, currentRoom)
@@ -381,32 +413,9 @@ exports.loadStory = function(cb)
 		globals.story = JSON.parse(data);
 		globals.storyStage = 0;
 		globals.storyClip = 0;
+		globals.storyCurrText = [""];
+		globals.storyNumChars = 0;
 
-		// for(var stage = 0; stage < globals.story.length; stage++)
-		// {
-		// 	for(var clip = 0; clip < globals.story[stage]['clips'].length; clip++)
-		// 	{
-		// 		var txts = globals.story[stage].clips[clip].texts;
-		// 		if(txts)
-		// 		{
-		// 			globals.story[stage].clips[clip].textStats = [];
-		// 			for(var t = 0; t < txts.length; t++)
-		// 			{
-		// 				var cobj = {total: 0, props: [], counts: []};
-		// 				for(var i = 0; i < txts[t].length; i++)
-		// 				{
-		// 					cobj.total += txts[t][i].length;
-		// 					cobj.counts.push(cobj.total);
-		// 				}
-		// 				for(var i = 0; i < txts[t].length; i++)
-		// 				{
-		// 					cobj.props.push(cobj.counts[i]/cobj.total);
-		// 				}
-		// 				globals.story[stage].clips[clip].textStats.push(cobj);
-		// 			}
-		// 		}
-		// 	}
-		// }
 		if(cb != undefined)
 		{
 			cb(err);
