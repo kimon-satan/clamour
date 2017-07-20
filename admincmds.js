@@ -46,36 +46,62 @@ exports.response = function(socket)
 		else if(msg.cmd == "story_update")
 		{
 
-			globals.storyCurrText[globals.storyCurrText.length - 1] = msg.value;
-
-			//get the story text ... compare original with
-			if(globals.story[globals.storyStage].clips[globals.storyClip].texts != undefined)
+			if(globals.story[globals.storyStage].clips[globals.storyClip].texts != undefined) //check this clip has text
 			{
-				var num_chars = 0;
-				for(var i = 0; i < globals.storyCurrText.length; i++)
-				{
-					num_chars += globals.storyCurrText[i].length;
-				}
 
 				var txts = globals.story[globals.storyStage].clips[globals.storyClip].texts;
-				var txtStats = globals.story[globals.storyStage].clips[globals.storyClip].textStats;
 
-				if(txts.length > 1)
+				if(txts.length > 1) //we only need to bother if there are alternative texts
 				{
+
+
+					globals.storyCurrText[globals.storyCurrText.length - 1] = msg.value;
+
+					var num_chars = 0;
+					for(var i = 0; i < globals.storyCurrText.length; i++)
+					{
+						num_chars += globals.storyCurrText[i].length;
+					}
+
 					//TODO implement new lines for dummy text
-					console.log(txtStats[0].total, num_chars);
-					var prog = Math.min(1.0,num_chars/(txtStats[0].total * 0.9)); // slightly optimisitic to account for typos etc
-					console.log(prog);
-					// for(var i = 1; i < txts.length; i++)
-					// {
-					// 	var l = prog * txts[i].length;
-					// 	globals.players.to(msg.room).emit('cmd', {cmd: 'chat_update', value: txts[i].substring(0,l)});
-					// }
+					var prog = Math.min(1.0,num_chars/(txts[0].length * 0.9)); // slightly optimisitic to account for typos etc
+
+					//alternative texts only go forwards ... delete is ignored
+					if(num_chars > globals.storyNumChars)
+					{
+						for(var i = 1; i < txts.length; i++)
+						{
+							var l = prog * txts[i].length;
+							var n = txts[i].substring(0,l);
+							r = /%{1}([^%]*?)$/;
+							res = r.exec(n);
+
+							if(res == null)
+							{
+								//before any %
+								globals.players.to(msg.room).emit('cmd', {cmd: 'chat_update', value: n});
+							}
+							else if(res[1] == "")
+							{
+								//new line
+								globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
+							}
+							else
+							{
+								globals.players.to(msg.room).emit('cmd', {cmd: 'chat_update', value: res[1]});
+							}
+						}
+
+
+						globals.storyNumChars = num_chars;
+					}
+
 				}
 				else
 				{
 					globals.players.to(msg.room).emit('cmd', {cmd: 'chat_update', value: msg.value});
 				}
+
 			}
 		}
 		else if(msg.cmd == "story_newline")

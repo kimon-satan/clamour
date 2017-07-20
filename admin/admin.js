@@ -242,8 +242,9 @@ function CLI(idx, mode, room)
 		var cmds = str.split(this.cursor_prefix); //
 		var cmd = cmds[cmds.length - 1];
 
-	//TODO. Story may well end up with it's own functions here
-		if((this.cli_mode == "chat" || this.cli_mode == "story") && cmd.substring(0,1) != "_"){
+		if((this.cli_mode == "chat" || this.cli_mode == "story") && cmd.substring(0,1) != "_")
+		{
+			//NB sometimes this is getting called when there is no new text
 			this.handleChatKeys(e, cmd);
 		}
 		else if(e.keyCode == 13)
