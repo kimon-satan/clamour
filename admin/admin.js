@@ -145,11 +145,23 @@ function CLI(idx, mode, room)
 	this.handleChatKeys = function(e, cmd)
 	{
 
-		if(e.keyCode == 13){
+		if(e.keyCode == 13 && this.cli_mode == "chat")
+		{
 			this.newCursor();
 			socket.emit('cmd', { cmd: 'chat_newline', value:  "", room: this.room});
-		}else{
+		}
+		else if(e.keyCode == 13 && this.cli_mode == "story")
+		{
+			this.newCursor();
+			socket.emit('cmd', { cmd: 'story_newline', value:  "", room: this.room});
+		}
+		else if(this.cli_mode == "chat")
+		{
 			socket.emit('cmd', { cmd: 'chat_update', value:  cmd, room: this.room});
+		}
+		else if(this.cli_mode == "story")
+		{
+			socket.emit('cmd', { cmd: 'story_update', value:  cmd, room: this.room});
 		}
 
 	}

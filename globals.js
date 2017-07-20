@@ -35,6 +35,8 @@ exports.LoveParameters =
 		death: 0
 }
 
+exports.storyCurrText = [""];
+
 io = require('socket.io')(http);
 exports.admin = io.of('/admin');
 exports.display = io.of('/display');

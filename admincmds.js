@@ -43,6 +43,45 @@ exports.response = function(socket)
 		{
 			globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
 		}
+		else if(msg.cmd == "story_update")
+		{
+
+			globals.storyCurrText[globals.storyCurrText.length - 1] = msg.value;
+
+			//get the story text ... compare original with
+			if(globals.story[globals.storyStage].clips[globals.storyClip].texts != undefined)
+			{
+				var num_chars = 0;
+				for(var i = 0; i < globals.storyCurrText.length; i++)
+				{
+					num_chars += globals.storyCurrText[i].length;
+				}
+
+				var txts = globals.story[globals.storyStage].clips[globals.storyClip].texts;
+				var txtStats = globals.story[globals.storyStage].clips[globals.storyClip].textStats;
+
+				if(txts.length > 1)
+				{
+					//TODO implement new lines for dummy text
+					console.log(txtStats[0].total, num_chars);
+					var prog = Math.min(1.0,num_chars/(txtStats[0].total * 0.9)); // slightly optimisitic to account for typos etc
+					console.log(prog);
+					// for(var i = 1; i < txts.length; i++)
+					// {
+					// 	var l = prog * txts[i].length;
+					// 	globals.players.to(msg.room).emit('cmd', {cmd: 'chat_update', value: txts[i].substring(0,l)});
+					// }
+				}
+				else
+				{
+					globals.players.to(msg.room).emit('cmd', {cmd: 'chat_update', value: msg.value});
+				}
+			}
+		}
+		else if(msg.cmd == "story_newline")
+		{
+			globals.storyCurrText.push("");
+		}
 		else if(msg.cmd == "story_next")
 		{
 			helpers.incrementStoryClip();
@@ -52,6 +91,7 @@ exports.response = function(socket)
 		{
 			globals.storyStage = 0;
 			globals.storyClip = 0;
+			globals.storyCurrText = [""];
 			helpers.startStoryClip(msg.room);
 			globals.admin.emit('server_report', {id: msg.cli_id});
 		}

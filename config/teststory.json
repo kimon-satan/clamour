@@ -4,8 +4,8 @@
 			{"audio": {"path" : "misty/misty", "loop": "false", "in" : 1.0, "out" : 0.01, "amp" : 0.2, "solo": "true"},
 			"img": "section_1/boat.jpg",
 			"texts": [
-				"This is a story all about how my life got twisted upside down. ",
-				"This is a similar story but the text is quite different really."
+				["This is a story all about how", "my life got twisted upside down."],
+				["This is a similar story", "but",  "the text is quite different really."]
 			]
 			},
 

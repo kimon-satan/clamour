@@ -381,6 +381,32 @@ exports.loadStory = function(cb)
 		globals.story = JSON.parse(data);
 		globals.storyStage = 0;
 		globals.storyClip = 0;
+
+		for(var stage = 0; stage < globals.story.length; stage++)
+		{
+			for(var clip = 0; clip < globals.story[stage]['clips'].length; clip++)
+			{
+				var txts = globals.story[stage].clips[clip].texts;
+				if(txts)
+				{
+					globals.story[stage].clips[clip].textStats = [];
+					for(var t = 0; t < txts.length; t++)
+					{
+						var cobj = {total: 0, props: [], counts: []};
+						for(var i = 0; i < txts[t].length; i++)
+						{
+							cobj.total += txts[t][i].length;
+							cobj.counts.push(cobj.total);
+						}
+						for(var i = 0; i < txts[t].length; i++)
+						{
+							cobj.props.push(cobj.counts[i]/cobj.total);
+						}
+						globals.story[stage].clips[clip].textStats.push(cobj);
+					}
+				}
+			}
+		}
 		if(cb != undefined)
 		{
 			cb(err);
@@ -404,7 +430,9 @@ exports.incrementStoryClip = function()
 			globals.storyClip = globals.story[globals.storyStage].clips.length - 1; //stay where we are
 		}
 	}
+
 }
+
 
 exports.playSound = function(options)
 {
@@ -455,7 +483,11 @@ exports.startStoryClip = function(room)
 	var img_path = globals.settings.imagePath + globals.story[globals.storyStage].clips[globals.storyClip].img;
 	var audio_options = globals.story[globals.storyStage].clips[globals.storyClip].audio;
 	globals.display.emit('cmd', {type: 'story', img: img_path});
-	let cloned = Object.assign({}, audio_options);
+	var cloned = Object.assign({}, audio_options);
 	exports.playSound(cloned);
 	if(room != undefined)globals.players.to(room).emit('cmd', {cmd: 'chat_clear'});
+
+	globals.storyCurrText = [""];
+
+
 }
