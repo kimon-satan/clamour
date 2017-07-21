@@ -91,8 +91,11 @@ function setupInstructions()
 function story(img)
 {
 	$('#displayscreen').empty();
-	$('#displayscreen').append("<div id='storyContainer'><img src=" + img + "></div>");
-
+	if(img != "blank")
+	{
+		$('#displayscreen').append("<div id='storyContainer'><img src=" + img + "></div>");
+	}
+	
 	mode = "story";
 }
 

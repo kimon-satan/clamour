@@ -1,4 +1,9 @@
 [
+	{"name": "pre_section", "clips":
+		[
+			{}
+		]
+	},
 	{"name": "section_1", "clips":
 		[
 			{"audio": {"path" : "misty/misty", "loop": "false", "in" : 1.0, "out" : 0.01, "amp" : 0.2, "solo": "true"},
@@ -12,7 +17,7 @@
 				"texts":
 				[
 					"And I'd like to take a minute%just sit right there",
-					"Look at me% I'm as helpless as a kitten up a tree"
+					"Look at me$ I'm as helpless as a kitten up a tree"
 				]
 			}
 		]
@@ -30,9 +35,14 @@
 				"texts":
 				[
 					"In west Philadelphia born and raised.",
-					"I can't understand,%I get misty, just holding your hand."
+					"I can't understand,$I get misty, just holding your hand."
 				]
 			}
+		]
+	},
+	{"name": "end_section", "clips":
+		[
+			{}
 		]
 	}
 ]

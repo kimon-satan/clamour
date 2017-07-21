@@ -23,34 +23,13 @@ exports.response = function(socket)
 					globals.display.emit('cmd', {type: 'love'});
 				}
 
-				//handle users
+				//handle subrooms for story
 				helpers.useRoom(msg, function(rm)
 				{
 					if(msg.mode == "story")
 					{
-						if(options.sub != undefined)
-						{
-							helpers.subRoom(rm, options.sub, function(r)
-							{
-								globals.storyRooms = [];
-
-								globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
-
-								for(var i = 0; i < options.sub; i++)
-								{
-									globals.storyRooms.push(rm + "_" + i);
-								}
-
-								console.log(globals.storyRooms);
-
-							})
-						}
-						else
-						{
-							//use rm to find subrooms
-						}
+						handleStorySubrooms(rm, options, msg.cli_id);
 					}
-
 					//handle display ... TODO - perhaps an override for no display switching
 					globals.players.to(rm).emit('cmd', {cmd: 'change_mode', value: options});
 				});
@@ -70,13 +49,26 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "story_clear")
 		{
-			if(globals.storyRooms.length > 1)
+			var txts = globals.story[globals.storyStage].clips[globals.storyClip].texts;
+			if(txts.length > 1 && globals.storyRooms.length > 1)
 			{
-				//only clear the master room ? ... hmmm needs some thought
-				globals.players.to(msg.room).emit('cmd', {cmd: 'chat_clear'});
+				//send the clear to room 0
+				globals.storyCurrText.push("");
+				globals.players.to(globals.storyRooms[0]).emit('cmd', {cmd: 'chat_clear'});
+
+				for(var i = 1; i < globals.storyRooms.length; i++)
+				{
+					var tidx = i%txts.length;
+					if(tidx == 0)
+					{
+						//send the clear
+						globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_clear'});
+					}
+				}
 			}
 			else
 			{
+				globals.storyCurrText.push("");
 				globals.players.to(msg.room).emit('cmd', {cmd: 'chat_clear'});
 			}
 
@@ -88,11 +80,15 @@ exports.response = function(socket)
 			{
 				var txts = globals.story[globals.storyStage].clips[globals.storyClip].texts;
 
-				if(txts.length > 1) //we only need to bother if there are alternative texts
+				if(txts.length > 1 && globals.storyRooms.length > 1) //we only need to bother if there are alternative texts
 				{
+
+					//the first room gets the original text
+					globals.players.to(globals.storyRooms[0]).emit('cmd', {cmd: 'chat_update', value: msg.value});
 
 					globals.storyCurrText[globals.storyCurrText.length - 1] = msg.value;
 
+					//count the characters
 					var num_chars = 0;
 					for(var i = 0; i < globals.storyCurrText.length; i++)
 					{
@@ -102,40 +98,53 @@ exports.response = function(socket)
 					//TODO implement new lines for dummy text
 					var prog = Math.min(1.0,num_chars/(txts[0].length * 0.9)); // slightly optimisitic to account for typos etc
 
-					//alternative texts only go forwards ... delete is ignored
-					if(num_chars > globals.storyNumChars)
+					for(var i = 1; i < globals.storyRooms.length; i++)
 					{
-						for(var i = 1; i < txts.length; i++)
+
+						//new line and clear will also need to work this out
+						var tidx = i%txts.length;
+						if(tidx == 0)
 						{
-							var l = prog * txts[i].length;
-							var n = txts[i].substring(0,l);
-							r = /%{1}([^%]*?)$/;
+							//send the original text
+							globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_update', value: msg.value});
+						}
+						else if(num_chars > globals.storyNumChars)//alternative texts only go forwards ... delete is ignored
+						{
+
+							var l = prog * txts[tidx].length;
+							var n = txts[tidx].substring(0,l);
+							r = /[%$]{1}([^%^$]*?)$/;
 							res = r.exec(n);
+
+							//determine room to send
 
 							if(res == null)
 							{
-								//before any %
-								//globals.players.to(msg.room).emit('cmd', {cmd: 'chat_update', value: n});
+								//before any special char
+								globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_update', value: n});
 							}
-							else if(res[1] == "")
+							else if(res[0] == "%")
 							{
-								//new line
-								//globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
+								globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_newline'});
+							}
+							else if(res[0] == "$")
+							{
+								globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_clear'});
 							}
 							else
 							{
-								//globals.players.to(msg.room).emit('cmd', {cmd: 'chat_update', value: res[1]});
+								globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_update', value: res[1]});
 							}
 						}
 
 
-						globals.storyNumChars = num_chars;
 					}
 
+					if(num_chars > globals.storyNumChars)globals.storyNumChars = num_chars;
 				}
 				else
 				{
-					//send this to all users
+					//otherwise just send to all
 					globals.players.to(msg.room).emit('cmd', {cmd: 'chat_update', value: msg.value});
 				}
 
@@ -143,8 +152,29 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "story_newline")
 		{
-			globals.storyCurrText.push("");
-			globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
+			var txts = globals.story[globals.storyStage].clips[globals.storyClip].texts;
+			if(txts.length > 1 && globals.storyRooms.length > 1)
+			{
+				//send the new line to room 0
+				globals.storyCurrText.push("");
+				globals.players.to(globals.storyRooms[0]).emit('cmd', {cmd: 'chat_newline'});
+
+				for(var i = 1; i < globals.storyRooms.length; i++)
+				{
+					var tidx = i%txts.length;
+					if(tidx == 0)
+					{
+						//send the return
+						globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_newline'});
+					}
+				}
+			}
+			else
+			{
+				globals.storyCurrText.push("");
+				globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
+			}
+
 		}
 		else if(msg.cmd == "story_next")
 		{
@@ -541,4 +571,38 @@ function closeAll(cb)
 		globals.Rooms.remove({});
 		globals.UserData.update({},{$set: {rooms:[]}},{multi: true} );
 	});
+}
+
+function handleStorySubrooms(room, options, cli_id)
+{
+	if(options.sub != undefined)
+	{
+		helpers.subRoom(room, options.sub, function(r)
+		{
+			globals.storyRooms = [];
+
+			globals.admin.emit('server_report', {id: cli_id, msg: r});
+
+			for(var i = 0; i < options.sub; i++)
+			{
+				globals.storyRooms.push(room + "_" + i);
+			}
+
+		})
+	}
+	else
+	{
+		//NB. this doesn't guarantee that the right players are memebers
+		globals.storyRooms = [];
+		var re = new RegExp(room + ".+", "g");
+		globals.Rooms.find({room: { $regex: re }}, 'room').then((docs)=>
+		{
+			for(var i = 0; i < docs.length; i++)
+			{
+				globals.storyRooms.push(docs[i].room);
+			}
+			globals.admin.emit('server_report', {id: cli_id, msg: docs.length + " subrooms found"});
+		});
+
+	}
 }

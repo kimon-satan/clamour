@@ -489,11 +489,35 @@ exports.playSound = function(options)
 
 exports.startStoryClip = function(room)
 {
-	var img_path = globals.settings.imagePath + globals.story[globals.storyStage].clips[globals.storyClip].img;
-	var audio_options = globals.story[globals.storyStage].clips[globals.storyClip].audio;
+	var img = globals.story[globals.storyStage].clips[globals.storyClip].img;
+	if(img)
+	{
+		var img_path = globals.settings.imagePath + img;
+	}
+	else
+	{
+		var img_path = "blank";
+	}
 	globals.display.emit('cmd', {type: 'story', img: img_path});
-	var cloned = Object.assign({}, audio_options);
-	exports.playSound(cloned);
+
+
+	var audio_options = globals.story[globals.storyStage].clips[globals.storyClip].audio;
+	if(audio_options)
+	{
+		var cloned = Object.assign({}, audio_options);
+		exports.playSound(cloned);
+	}
+	else
+	{
+		//we need to trigger the end of the old sound
+		globals.udpPort.send(
+		{
+			address: "/allOff",
+		},
+		"127.0.0.1", 57120);
+	}
+
+	//NB. at some point we might need the option not to clear the screen
 	if(room != undefined)globals.players.to(room).emit('cmd', {cmd: 'chat_clear'});
 
 	globals.storyCurrText = [""];

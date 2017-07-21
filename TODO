@@ -1,13 +1,10 @@
 TODO
 
-- story_update ... needs to pipe to relevant subrooms
-- story_clear ... needs to know how many subrooms are active at a given time
-	(looks like we'll need to create subroom objects and store text)
-- change mode ... finds subrooms and assigns them
-
-
-
+- try / catch for admin commands
+- story stuff will need refactoring into a different place
+- investigate text to speech options
 - fadeIn and fadeOut for images ?
+
 
 - display data persistence
 - asynchronous error logging (maybe...)

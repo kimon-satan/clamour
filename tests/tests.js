@@ -19,5 +19,8 @@ function updateTable (tableid , data)
 	$('#' + tableid).empty();
 	$('#' + tableid).append('<td>'+ data._id +'</td>')
 	$('#' + tableid).append('<td>'+ data.mode +'</td>')
-	if(this.data.mode == "chat")$('#' + tableid).append('<td>'+ data.chatText +'</td>')
+	if(this.data.mode == "chat" || this.data.mode == "story")
+	{
+		$('#' + tableid).append('<td>'+ data.chatText +'</td>')
+	}
 }
