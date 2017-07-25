@@ -20,7 +20,7 @@ var cmdList = [
 	"end",
 	"sreload",
 	"sreset",
-	"ssub"
+	"sgoto"
 ];
 
 for(var i = 0; i < cmdList.length; i++)

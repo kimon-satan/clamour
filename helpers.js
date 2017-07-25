@@ -411,7 +411,7 @@ exports.loadStory = function(cb)
 	fs.readFile(globals.settings.storyPath, 'utf8', function (err, data)
 	{
 		globals.story = JSON.parse(data);
-		globals.storyStage = 0;
+		globals.storyChapter = 0;
 		globals.storyClip = 0;
 		globals.storyCurrText = [""];
 		globals.storyNumChars = 0;
@@ -427,16 +427,16 @@ exports.incrementStoryClip = function()
 {
 	globals.storyClip += 1;
 
-	if(globals.storyClip > globals.story[globals.storyStage].clips.length - 1)
+	if(globals.storyClip > globals.story[globals.storyChapter].clips.length - 1)
 	{
-		if(globals.storyStage < globals.story.length -1)
+		if(globals.storyChapter < globals.story.length -1)
 		{
-			globals.storyStage += 1;  //increment the stage
+			globals.storyChapter += 1;  //increment the stage
 			globals.storyClip = 0;
 		}
 		else
 		{
-			globals.storyClip = globals.story[globals.storyStage].clips.length - 1; //stay where we are
+			globals.storyClip = globals.story[globals.storyChapter].clips.length - 1; //stay where we are
 		}
 	}
 
@@ -489,7 +489,7 @@ exports.playSound = function(options)
 
 exports.startStoryClip = function(room)
 {
-	var img = globals.story[globals.storyStage].clips[globals.storyClip].img;
+	var img = globals.story[globals.storyChapter].clips[globals.storyClip].img;
 	if(img)
 	{
 		var img_path = globals.settings.imagePath + img;
@@ -501,7 +501,7 @@ exports.startStoryClip = function(room)
 	globals.display.emit('cmd', {type: 'story', img: img_path});
 
 
-	var audio_options = globals.story[globals.storyStage].clips[globals.storyClip].audio;
+	var audio_options = globals.story[globals.storyChapter].clips[globals.storyClip].audio;
 	if(audio_options)
 	{
 		var cloned = Object.assign({}, audio_options);

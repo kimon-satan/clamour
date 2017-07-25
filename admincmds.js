@@ -49,7 +49,7 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "story_clear")
 		{
-			var txts = globals.story[globals.storyStage].clips[globals.storyClip].texts;
+			var txts = globals.story[globals.storyChapter].clips[globals.storyClip].texts;
 			if(txts.length > 1 && globals.storyRooms.length > 1)
 			{
 				//send the clear to room 0
@@ -76,9 +76,9 @@ exports.response = function(socket)
 		else if(msg.cmd == "story_update")
 		{
 
-			if(globals.story[globals.storyStage].clips[globals.storyClip].texts != undefined) //check this clip has text
+			if(globals.story[globals.storyChapter].clips[globals.storyClip].texts != undefined) //check this clip has text
 			{
-				var txts = globals.story[globals.storyStage].clips[globals.storyClip].texts;
+				var txts = globals.story[globals.storyChapter].clips[globals.storyClip].texts;
 
 				if(txts.length > 1 && globals.storyRooms.length > 1) //we only need to bother if there are alternative texts
 				{
@@ -152,7 +152,7 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "story_newline")
 		{
-			var txts = globals.story[globals.storyStage].clips[globals.storyClip].texts;
+			var txts = globals.story[globals.storyChapter].clips[globals.storyClip].texts;
 			if(txts.length > 1 && globals.storyRooms.length > 1)
 			{
 				//send the new line to room 0
@@ -183,7 +183,7 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "sreset")
 		{
-			globals.storyStage = 0;
+			globals.storyChapter = 0;
 			globals.storyClip = 0;
 			helpers.startStoryClip(msg.room);
 			globals.admin.emit('server_report', {id: msg.cli_id});
@@ -194,6 +194,41 @@ exports.response = function(socket)
 			{
 					globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
 			});
+		}
+		else if (msg.cmd == "sgoto")
+		{
+			helpers.parseOptions(msg.args, function(options){
+				if(options.chapter != undefined)
+				{
+
+					if(!isNaN(options.chapter) && options.chapter != '')
+					{
+						globals.storyChapter = Math.max(0,options.chapter);
+						globals.storyClip = 0;
+						helpers.startStoryClip(msg.room);
+						globals.admin.emit('server_report', {id: msg.cli_id, msg: "chapter " + options.chapter + " : " + globals.story[options.chapter].name});
+						return;
+					}
+					else {
+
+						for(var i = 0; i < globals.story.length; i++)
+						{
+								if(globals.story[i].name == options.chapter)
+								{
+									globals.storyChapter = i;
+									globals.storyClip = 0;
+									helpers.startStoryClip(msg.room);
+									globals.admin.emit('server_report', {id: msg.cli_id, msg: "chapter " + i + " : " + globals.story[i].name});
+									return;
+								}
+						}
+
+					}
+
+				}
+
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: "chapter not found"});
+			})
 		}
 		else if(msg.cmd == "lplayers")
 		{
@@ -330,7 +365,7 @@ exports.response = function(socket)
 			})
 			globals.display.emit("cmd", {type: "instruct"});
 			globals.display.emit('cmd', {type: 'clear_display'});
-			globals.storyStage = 0;
+			globals.storyChapter = 0;
 			globals.storyClip = 0;
 		}
 		else if(msg.cmd == "stats")
