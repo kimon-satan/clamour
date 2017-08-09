@@ -124,6 +124,18 @@ Player = function(isDummy)
 		{
 			parseMsgParams(msg.value);
 		}
+		else if(msg.cmd == 'new_vote')
+		{
+			//TODO make large tapable buttons
+			if(this.mode == "vote")
+			{
+				$('#voteContainer').empty();
+				$('#voteContainer').append("<h2>" + msg.value[0] +"</h2>");
+				$('#voteContainer').append("<h2>" + msg.value[1] +"</h2>");
+				console.log("nv: " + msg.value);
+			}
+
+		}
 
 	}.bind(this));
 
@@ -286,7 +298,7 @@ Player = function(isDummy)
 			if(mode == "vote")
 			{
 				$('#container').empty();
-				$('#container').append( '<h1>Vote</h1>' );
+				$('#container').append( '<div id="voteContainer"><h1>Waiting ...</h1></div>' );
 			}
 
 			if(mode == "wait")

@@ -1,0 +1,27 @@
+{
+	"sentences": [
+		["Vobj", "MN"]
+	],
+	
+	"wordPairs": {
+		"Vobj": [
+			["embrace", "reject"],
+			["encourage", "discourage"],
+			["tolerate", "expel"],
+			["seek", "avoid"],
+			["accept", "overcome"],
+			["recognise", "refute"]
+		],
+		"MN": [
+			["individualism", "collectivism"],
+			["ambition", "contentment"],
+			["optimism", "skepticism"],
+			["creativity", "efficiency"],
+			["division", "uniformity"],
+			["equality", "diversity"],
+			["radical ideas", "experience"],
+			["unity", "dissent"],
+			["conformity", "sectarianism"]
+		]
+	}
+}

@@ -3,6 +3,11 @@ var randomWords = require('random-words');
 var fs = require('fs');
 
 
+exports.choose = function(list)
+{
+	return list[Math.floor(Math.random() * list.length)];
+}
+
 exports.genRoomName = function()
 {
 	return randomWords({ exactly: 2, join: '-' });
@@ -400,6 +405,7 @@ exports.loadSettings = function()
 			if (err) throw err;
 			globals.settings = JSON.parse(data);
 			exports.loadStory();
+			exports.loadDictionary();
 	});
 }
 
@@ -530,4 +536,27 @@ exports.startStoryClip = function(room)
 	globals.storyCurrText = [""];
 	globals.storyNumChars = 0;
 
+}
+
+exports.loadDictionary = function(cb)
+{
+	// //load the audio samples
+	// globals.udpPort.send(
+	// {
+	// 	address: "/loadSamples",
+	// 	args: [globals.settings.samplePath]
+	// },
+	// "127.0.0.1", 57120);
+
+	//load the story object
+
+	fs.readFile(globals.settings.dictionaryPath, 'utf8', function (err, data)
+	{
+		globals.dictionary = JSON.parse(data);
+
+		if(typeof(cb) == "function")
+		{
+			cb(err);
+		}
+	});
 }

@@ -400,6 +400,74 @@ exports.response = function(socket)
 			globals.players.emit('cmd', {cmd: 'change_mode', value: {mode: "blank"}});
 
 		}
+		else if(msg.cmd == "vpairs")
+		{
+			helpers.parseOptions(msg.args, function(options)
+			{
+				var r = "";
+
+				if(options.type != undefined)
+				{
+					var k = globals.dictionary.wordPairs[options.type];
+				}
+				else
+				{
+					var k = Object.keys(globals.dictionary.wordPairs);
+				}
+
+
+				if(k != undefined)
+				{
+					for(var i = 0; i < k.length; i++)
+					{
+						r += k[i] + "\n";
+					}
+				}
+				else
+				{
+					r = options.type + " not found";
+				}
+
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
+			});
+		}
+		else if(msg.cmd == "vsentences")
+		{
+			var r = "";
+			for(var i = 0; i < globals.dictionary.sentences.length; i++)
+			{
+				r += globals.dictionary.sentences[i] + "\n";
+			}
+			globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
+		}
+		else if(msg.cmd == "vnew")
+		{
+			helpers.parseOptions(msg.args, function(options)
+			{
+				//-type
+				//-pool //voting pool size ... implement later
+
+				var r = "choice: ";
+				var t = (options.type != undefined) ? options.type : helpers.choose(Object.keys(globals.dictionary.wordPairs));
+				var p = helpers.choose(globals.dictionary.wordPairs[t]);
+
+				for(var i = 0; i < p.length; i++)
+				{
+					r += p[i] + ", ";
+				}
+
+
+
+				helpers.useRoom(msg, function(rm)
+				{
+					//send the message to the players
+					//NB. what if the mode isn't vote ?
+					globals.players.to(rm).emit('cmd', {cmd: 'new_vote', value: p});
+					globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
+				});
+			});
+
+		}
 
 
 		//console.log('admin command: ' , msg);

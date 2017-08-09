@@ -9,7 +9,8 @@ function basicCmd(cmd, args, cli)
 }
 
 var cmdList = [
-	"lplayers",
+
+	"lplayers", //player management
 	"stats",
 	"close",
 	"lrooms",
@@ -18,9 +19,14 @@ var cmdList = [
 	"set",
 	"sub",
 	"end",
-	"sreload",
+
+	"sreload", //story stuff
 	"sreset",
-	"sgoto"
+	"sgoto",
+
+	"vpairs", //vote stuff
+	"vsentences",
+	"vnew"
 ];
 
 for(var i = 0; i < cmdList.length; i++)
