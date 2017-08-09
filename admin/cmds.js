@@ -38,7 +38,7 @@ function changeMode(mode, args, cli)
 	socket.emit('cmd', msgobj);
 }
 
-var cmdList = ["wait", "chat", "story", "blank", "love"];
+var cmdList = ["wait", "blank", "chat", "story", "vote", "love"];
 
 for(var i = 0; i < cmdList.length; i++)
 {

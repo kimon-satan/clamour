@@ -49,7 +49,7 @@ exports.useRoom = function(msg, cb) //add an optional cmd
 
 		exports.selectAndJoin(selector, function(resp)
 		{
-			if(typeof(cb) != "undefined")cb(selector.roomName);
+			if(typeof(cb) == "function")cb(selector.roomName);
 			globals.admin.emit('server_report', {msg: resp, id: msg.cli_id, room: selector.roomName });
 		});
 	}
@@ -57,7 +57,7 @@ exports.useRoom = function(msg, cb) //add an optional cmd
 	{
 		//use the existing room
 
-		if(typeof(cb) != "undefined")cb(msg.room);
+		if(typeof(cb) == "function")cb(msg.room);
 		globals.admin.emit('server_report', {id: msg.cli_id});
 	}
 }
@@ -77,15 +77,17 @@ exports.selectPlayers = function(args, cb)
 			uids.push(docs[i]._id);
 		}
 
-		if(typeof(args.numPlayers) != "undefined"){
+		if(typeof(args.numPlayers) != "undefined")
+		{
+
 			shuffleArray(uids);
-			if(numPlayers > 0)
+			if(args.numPlayers > 0)
 			{
 				var numPlayers = Math.min(uids.length , args.numPlayers);
 			}
 			else
 			{
-				var numPlayers = Math.max(uids.length + args.numPlayers, 1); //for inverse selection
+				var numPlayers = Math.max(uids.length - args.numPlayers, 1); //for inverse selection
 			}
 			uids = uids.slice(0,numPlayers);
 		}
@@ -170,8 +172,10 @@ exports.parseFilters = function(args, currentRoom)
 					}
 				break;
 
-				case "love":
+				case "love":	//TODO - create a single list of room types
 				case "chat":
+				case "blank":
+				case "vote":
 				case "wait":
 				case "story":
 				case "broken":
@@ -295,26 +299,29 @@ exports.generateSearchObj = function(args)
 
 	switch(filter.mode){
 
-		case "chat":
-    case "play":
-    case "wait":
-    case "broken":
+		case "chat":	//TODO - as above
+		case "play":
+		case "wait":
+		case "blank":
+		case "vote":
+		case "story":
+		case "broken":
 			searchObj.mode = filter.not ? {$ne: filter.mode} : filter.mode;
 		break;
-    case "connected":
-      searchObj[filter.mode]= !filter.not;
-    break;
-    case "isMobile":
-    case "isDying":
-    case "isSplat":
-      searchObj[filter.mode] = filter.not ? !filter[filter.mode] : filter[filter.mode];
-    break;
+		case "connected":
+			searchObj[filter.mode]= !filter.not;
+		break;
+		case "isMobile":
+		case "isDying":
+		case "isSplat":
+			searchObj[filter.mode] = filter.not ? !filter[filter.mode] : filter[filter.mode];
+		break;
 		case "room":
 			searchObj.rooms = filter.not  ? {$nin: [filter.room]} : {$in: [filter.room]}
 		break;
 		case "state":
-    case "envTime":
-    case "death":
+		case "envTime":
+		case "death":
 			searchObj[filter.mode] = filter.not ? {$ne: parseInt(filter[filter.mode])} : parseInt(filter[filter.mode]);
 		break;
 		case "group":

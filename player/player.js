@@ -283,6 +283,12 @@ Player = function(isDummy)
 				$('#container').append( '<div id="chatContainer"></div>' );
 			}
 
+			if(mode == "vote")
+			{
+				$('#container').empty();
+				$('#container').append( '<h1>Vote</h1>' );
+			}
+
 			if(mode == "wait")
 			{
 				$('#container').empty();
@@ -294,7 +300,6 @@ Player = function(isDummy)
 					<h3>Turn autolock OFF!</h3> \
 					<h3>Keep your phone in portrait position</h3> \
 				</div>" );
-
 			}
 
 			if(mode == "blank")
