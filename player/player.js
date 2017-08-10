@@ -126,12 +126,22 @@ Player = function(isDummy)
 		}
 		else if(msg.cmd == 'new_vote')
 		{
-			//TODO make large tapable buttons
 			if(this.mode == "vote")
 			{
 				$('#voteContainer').empty();
-				$('#voteContainer').append("<h2>" + msg.value[0] +"</h2>");
-				$('#voteContainer').append("<h2>" + msg.value[1] +"</h2>");
+
+				//TODO ...finish this off
+				for(var i = 0; i < msg.value.length; i++)
+				{
+					var d = $("<div class='mbut noselect'/>");
+					var tc = $("<div class='textContainer'></div>");
+					d.attr("id", "option" + i);
+					tc.html(msg.value[i]);
+					console.log(tc);
+					d.append(tc);
+					$('#voteContainer').append(d);
+				}
+
 				console.log("nv: " + msg.value);
 			}
 

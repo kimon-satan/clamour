@@ -1,102 +1,129 @@
-body{
+@keyframes voteanim
+{
+	 0%   {background-color: darkgrey;}
+	 7% {background-color: white;}
+	 50%   {background-color: darkgrey;}
+	 100% {background-color: black;}
+}
+
+@keyframes rejectanim
+{
+	 0%   {background-color: darkgrey;}
+	 100% {background-color: black;}
+}
+
+body
+{
 	font-family: "Helvetica", sans-serif;
 	background: #000;
 	color: #BBB;
-    margin: 0;
-    height: 100%;
-    overflow: hidden;
+	margin: 0;
+	overflow: hidden;
 }
 
-canvas { width: 100%; height: 100% }
+canvas
+{
+	width: 100%;
+	height: 100%
+}
+
+h1
+{
+	font-size: 40px;
+}
 
 .noselect {
-			  -webkit-touch-callout: none; /* iOS Safari */
-			  -webkit-user-select: none;   /* Chrome/Safari/Opera */
-			  -khtml-user-select: none;    /* Konqueror */
-			  -moz-user-select: none;      /* Firefox */
-			  -ms-user-select: none;       /* Internet Explorer/Edge */
-			  user-select: none;           /* Non-prefixed version, currently
-			                                  not supported by any browser */
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
 }
 
-.scrollable{
-    max-height: 700px;
-    overflow: scroll;
-}
+/*.scrollable{
+	max-height: 700px;
+	overflow: scroll;
+}*/
 
-h1{
 
-	font-size: 40px;
-
-}
-
-#displayInstructions{
+#displayInstructions
+{
 	text-align: center;
 	margin: 50px;
-
 }
 
-#displayInstructions>h1{
+#displayInstructions>h1
+{
 	font-size: 40px;
 }
 
-#displayInstructions>h3{
+#displayInstructions>h3
+{
 	font-size: 25px;
 }
 
-#chatContainer{
+#chatContainer
+{
 	text-align: center;
 	margin: 5px;
 }
 
-#storyContainer{
+#storyContainer
+{
 	text-align: center;
 	margin: auto;
 }
 
-#loveContainer{
+#loveContainer
+{
 	height: 100%;
 	position: fixed;
 }
 
-#voteContainer{
+#voteContainer
+{
 	text-align: center;
-	margin: 5px;
+	height: 100%;
 }
 
-
-
-.largeText{
+.largeText
+{
 	font-size: 35px;
 }
 
-.bigText{
-
-    font-size: 125px;
-    font-style: normal;
-
+.cmdText
+{
+	background: #000;
+	height:  340px;
+	width: 375px;
+	margin: 2px;
+	color: white;
+	font-family: monospace;
+	font-size: 12px;
 }
 
-.tbSpacer{
-	margin: 10px 0;
+.mbut
+{
+	background-color: darkgrey;
+	margin: 5%;
+	height: 45%;
 }
 
-.lrSpacer{
-	margin: 0px 10px;
+.textContainer
+{
+	width: 100%;
 }
 
-.selected{
-    background: #000;
-
+.vote
+{
+	animation: voteanim 2s forwards;
+	-webkit-animation: voteanim 2.0s forwards; /* for less modern browsers */
 }
 
-.cmdText{
-    background: #000;
-    height:  340px;
-		width: 375px;
-		margin: 2px;
-    color: white;
-    font-family: monospace;
-    font-size: 12px;
-
+.reject
+{
+	animation: rejectanim 1s forwards;
+	-webkit-animation: rejectanim 1.0s forwards; /* for less modern browsers */
 }
