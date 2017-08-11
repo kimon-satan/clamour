@@ -1,15 +1,37 @@
 @keyframes voteanim
 {
-	 0%   {background-color: darkgrey;}
-	 7% {background-color: white;}
-	 50%   {background-color: darkgrey;}
-	 100% {background-color: black;}
+	 0%
+	 {
+		 background-color: #333333;
+		 color: #ffffff
+	 }
+	 7%
+	 {
+		 background-color: white;
+		 color: black;
+	 }
+	 50%
+	 {
+		 background-color: #333333;
+		 color: black;
+	 }
+	 100%
+	 {
+		 background-color: black;
+		 color: black;
+	 }
 }
 
 @keyframes rejectanim
 {
-	 0%   {background-color: darkgrey;}
-	 100% {background-color: black;}
+	 0%   {
+		 background-color: #333333;
+		 color: #ffffff
+	 }
+	 100% {
+		 background-color: black;
+		 color: black;
+	 }
 }
 
 body
@@ -106,7 +128,8 @@ h1
 
 .mbut
 {
-	background-color: darkgrey;
+	background-color: #333333;
+	color: #ffffff;
 	margin: 5%;
 	height: 45%;
 }
@@ -118,12 +141,12 @@ h1
 
 .vote
 {
-	animation: voteanim 2s forwards;
-	-webkit-animation: voteanim 2.0s forwards; /* for less modern browsers */
+	animation: voteanim 3s forwards;
+	-webkit-animation: voteanim 3.0s forwards; /* for less modern browsers */
 }
 
 .reject
 {
-	animation: rejectanim 1s forwards;
-	-webkit-animation: rejectanim 1.0s forwards; /* for less modern browsers */
+	animation: rejectanim 0.7s forwards;
+	-webkit-animation: rejectanim 0.7s forwards; /* for less modern browsers */
 }

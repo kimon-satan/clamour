@@ -10,6 +10,7 @@ Player = function(isDummy)
 	this.data = {};
 	this.mode = "";
 	this.iface = undefined;
+	this.currentVote = -1;
 
 	this.checkAlive = setInterval(function(){
 		if(Date.now() - this.lastCheckin > 8000)
@@ -124,32 +125,70 @@ Player = function(isDummy)
 		{
 			parseMsgParams(msg.value);
 		}
-		else if(msg.cmd == 'new_vote')
+		else if(msg.cmd == 'new_vote' && this.mode == "vote")
 		{
-			if(this.mode == "vote")
-			{
-				$('#voteContainer').empty();
-
-				//TODO ...finish this off
-				for(var i = 0; i < msg.value.length; i++)
-				{
-					var d = $("<div class='mbut noselect'/>");
-					var tc = $("<div class='textContainer'></div>");
-					d.attr("id", "option" + i);
-					tc.html(msg.value[i]);
-					console.log(tc);
-					d.append(tc);
-					$('#voteContainer').append(d);
-				}
-
-				console.log("nv: " + msg.value);
-			}
-
+			createVote(msg.value);
 		}
 
 	}.bind(this));
 
 	//private functions
+
+	var createVote = function(value)
+	{
+
+		$('#voteContainer').empty();
+		this.currentVote = value;
+		var pair = value.pair;
+
+		for(var i = 0; i < 2; i++)
+		{
+			var d = $("<div class='mbut noselect'/>");
+			var tc = $("<div class='textContainer'></div>");
+
+			d.attr("id", "option" + i);
+			d.attr("name", pair[i]);
+
+			//text resizing according to content ...
+			var w = pair[i].split(" ");
+			var fs = Math.min(Math.max(0.5, pair[i].length/60), 1.0);
+			for(var j = 0; j < w.length; j++)
+			{
+				if(w[j].length > 0)
+				{
+					fs = Math.max(w[j].length/15, fs);
+				}
+			}
+			fs = Math.min(Math.max(0.5, fs), 1.0);
+
+			tc.html(pair[i]);
+			d.append(tc);
+			$('#voteContainer').append(d);
+			$('#option' + i).fitText(fs);
+
+		}
+
+		//looks like we don't need touchstart
+		//$(".mbut").on("touchstart", voted);
+
+		$(".mbut").on("click", voted);
+
+	}.bind(this);
+
+	var voted = function(e)
+	{
+		if(this.currentVote == null) return; //you already voted !
+
+		var r = /option(\d)/;
+		var o = parseInt(r.exec(e.target.id)[1]);
+		$('#option' + o).addClass("vote");
+		$('#option' + (o+1)%2).addClass("reject");
+		this.socket.emit('voted', {choice: o, id: this.currentVote.id});
+		this.currentVote = null;
+		e.preventDefault();
+		e.stopPropagation();
+
+	}.bind(this);
 
 	var setupIface = function (callback)
 	{

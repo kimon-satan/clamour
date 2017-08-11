@@ -4,7 +4,7 @@ express = require('express');
 exports.app = express();
 http = require('http').Server(exports.app);
 
-
+//exports.DEBUG = true;
 
 //simple db using monk & mongodb
 exports.URL = 'localhost:27017/ConditionalLove';
@@ -39,6 +39,9 @@ exports.storyCurrText = [""];
 exports.storyNumChars = 0;
 exports.storyRooms = [];
 
+
+exports.currentVotes = {};
+
 io = require('socket.io')(http);
 exports.admin = io.of('/admin');
 exports.display = io.of('/display');
@@ -46,6 +49,7 @@ exports.players = io.of('/player');
 exports.sockets = {};
 exports.checkins = {};
 exports.procs = {};
+
 
 var osc = require("osc");
 

@@ -93,6 +93,23 @@ exports.response = function(socket)
 
 	});
 
+	socket.on('voted', function(msg)
+	{
+		//TODO ...
+		//start with vote counting
+		globals.currentVotes[msg.id].scores[msg.choice] += 1;
+		console.log("voted", globals.currentVotes[msg.id]);
+
+		//TODO ... manage voters ... then sound
+		/*voted { pair: [ 'recognise', 'refute' ],
+	  type: 'Vobj',
+	  scores: [ 0, 1 ],
+	  voting: [],
+	  voted: [],
+	  notvoted: [] }*/
+
+	})
+
 	socket.on('update_user', function(msg)
 	{
 		globals.UserData.update({_id: msg._id},{$set: msg});

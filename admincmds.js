@@ -447,6 +447,7 @@ exports.response = function(socket)
 				//-type
 				//-pool //voting pool size ... implement later
 
+
 				var r = "choice: ";
 				var t = (options.type != undefined) ? options.type : helpers.choose(Object.keys(globals.dictionary.wordPairs));
 				var p = helpers.choose(globals.dictionary.wordPairs[t]);
@@ -456,13 +457,15 @@ exports.response = function(socket)
 					r += p[i] + ", ";
 				}
 
-
+				var id = Date.now();
+				var omsg = {pair: p, id: id};
+				globals.currentVotes[id] = {pair: p, type: t, scores: [0,0], voting: [], voted: [], notvoted: []};
 
 				helpers.useRoom(msg, function(rm)
 				{
 					//send the message to the players
 					//NB. what if the mode isn't vote ?
-					globals.players.to(rm).emit('cmd', {cmd: 'new_vote', value: p});
+					globals.players.to(rm).emit('cmd', {cmd: 'new_vote', value: omsg});
 					globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
 				});
 			});
