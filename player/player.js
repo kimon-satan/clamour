@@ -10,7 +10,6 @@ Player = function(isDummy)
 	this.data = {};
 	this.mode = "";
 	this.iface = undefined;
-	this.currentVote = -1;
 
 	this.checkAlive = setInterval(function(){
 		if(Date.now() - this.lastCheckin > 8000)
@@ -62,7 +61,7 @@ Player = function(isDummy)
 
 	this.socket.on('welcome', function (msg)
 	{
-		if(!this.isDummy)console.log("welcome: " , msg);
+		if(!this.isDummy)console.log("welcome: " + msg.currentVotePair);
 		if(!this.isDummy)
 		{
 			document.cookie = "userid=" + msg._id;
@@ -127,19 +126,20 @@ Player = function(isDummy)
 		}
 		else if(msg.cmd == 'new_vote' && this.mode == "vote")
 		{
-			createVote(msg.value);
+			this.data.currentVoteId = msg.value.id;
+			this.data.currentVotePair = msg.value.pair;
+			createVote();
 		}
 
 	}.bind(this));
 
 	//private functions
 
-	var createVote = function(value)
+	var createVote = function()
 	{
 
 		$('#voteContainer').empty();
-		this.currentVote = value;
-		var pair = value.pair;
+
 
 		for(var i = 0; i < 2; i++)
 		{
@@ -147,11 +147,11 @@ Player = function(isDummy)
 			var tc = $("<div class='textContainer'></div>");
 
 			d.attr("id", "option" + i);
-			d.attr("name", pair[i]);
+			d.attr("name", this.data.currentVotePair[i]);
 
 			//text resizing according to content ...
-			var w = pair[i].split(" ");
-			var fs = Math.min(Math.max(0.5, pair[i].length/60), 1.0);
+			var w = this.data.currentVotePair[i].split(" ");
+			var fs = Math.min(Math.max(0.5, this.data.currentVotePair[i].length/60), 1.0);
 			for(var j = 0; j < w.length; j++)
 			{
 				if(w[j].length > 0)
@@ -161,7 +161,7 @@ Player = function(isDummy)
 			}
 			fs = Math.min(Math.max(0.5, fs), 1.0);
 
-			tc.html(pair[i]);
+			tc.html(this.data.currentVotePair[i]);
 			d.append(tc);
 			$('#voteContainer').append(d);
 			$('#option' + i).fitText(fs);
@@ -177,14 +177,14 @@ Player = function(isDummy)
 
 	var voted = function(e)
 	{
-		if(this.currentVote == null) return; //you already voted !
+		if(this.data.currentVoteId == -1) return; //you already voted !
 
 		var r = /option(\d)/;
 		var o = parseInt(r.exec(e.target.id)[1]);
 		$('#option' + o).addClass("vote");
 		$('#option' + (o+1)%2).addClass("reject");
-		this.socket.emit('voted', {choice: o, id: this.currentVote.id});
-		this.currentVote = null;
+		this.socket.emit('voted', {choice: o, id: this.data.currentVoteId });
+		this.data.currentVoteId = -1;
 		e.preventDefault();
 		e.stopPropagation();
 
@@ -211,7 +211,7 @@ Player = function(isDummy)
 
 	var informServer = function(msg)
 	{
-		console.log(msg);
+		console.log("inform:" , msg);
 		msg._id = this.data._id;
 		this.socket.emit('update_user', msg); //tell the server that we have changed mode
 	}
@@ -223,7 +223,12 @@ Player = function(isDummy)
 		Object.keys(msg).forEach(function(k)
 		{
 
-			if(msg[k] != undefined && k != "_id" && k != "mode" && k != "rooms")
+			if(k == "currentVotePair")
+			{
+				this.data[k] = msg[k];
+				resp[k] = this.data[k];
+			}
+			else if(msg[k] != undefined && k != "_id" && k != "mode" && k != "rooms")
 			{
 				if(Object.prototype.toString.call( msg[k] ) === '[object Array]')
 				{
@@ -241,11 +246,9 @@ Player = function(isDummy)
 					this.data[k] = msg[k];
 					resp[k] = this.data[k];
 				}
-
 			}
 
 		}.bind(this));
-
 
 		if(this.iface)
 		{
@@ -347,7 +350,16 @@ Player = function(isDummy)
 			if(mode == "vote")
 			{
 				$('#container').empty();
-				$('#container').append( '<div id="voteContainer"><h1>Waiting ...</h1></div>' );
+				$('#container').append( '<div id="voteContainer"></div>' );
+
+				if(this.data.currentVoteId == -1) //TODO
+				{
+					$('#voteContainer').html( '<h1>Waiting ...</h1>' );
+				}
+				else
+				{
+					createVote();
+				}
 			}
 
 			if(mode == "wait")

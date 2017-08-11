@@ -12,18 +12,7 @@ exports.response = function(socket)
 	socket.on('hello', function(msg)
 	{
 
-		//make all options
-
-		var usrobj = {
-				mode: "wait",
-				connected: true,
-				rooms: [],
-				groups: []
-		}
-
-		Object.keys(globals.LoveParameters).forEach(function(e){
-			usrobj[e] = globals.LoveParameters[e];
-		})
+		var usrobj = Object.assign({},globals.usrobj);
 
 		usrobj.colSeed = Math.random();
 		usrobj.colMode = Math.floor(Math.random() * 4);
@@ -95,12 +84,17 @@ exports.response = function(socket)
 
 	socket.on('voted', function(msg)
 	{
-		//TODO ...
-		//start with vote counting
+
 		globals.currentVotes[msg.id].scores[msg.choice] += 1;
+		//normalise
+		//swap arrays
+		//logic to initiate the next vote
+
 		console.log("voted", globals.currentVotes[msg.id]);
 
-		//TODO ... manage voters ... then sound
+		//TODO ...
+		//Update UserData
+		console.log(id);
 		/*voted { pair: [ 'recognise', 'refute' ],
 	  type: 'Vobj',
 	  scores: [ 0, 1 ],

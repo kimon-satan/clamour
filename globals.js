@@ -19,6 +19,15 @@ exports.UserData = exports.DB.get('UserData');
 exports.Rooms = exports.DB.get('Rooms'); //This might become a variable ?
 exports.Presets = exports.DB.get('Presets'); //not using so far - probably should just be json
 
+exports.usrobj =
+{
+	mode: "wait",
+	connected: true,
+	rooms: [],
+	groups: [],
+	currentVoteId: -1,
+	currentVotePair: [0,0]
+}
 
 exports.LoveParameters =
 {
@@ -35,10 +44,16 @@ exports.LoveParameters =
 		death: 0
 }
 
+var k = Object.keys(exports.LoveParameters);
+
+for(var i = 0; i < k.length; i++)
+{
+	exports.usrobj[k[i]] = exports.LoveParameters[k[i]];
+}
+
 exports.storyCurrText = [""];
 exports.storyNumChars = 0;
 exports.storyRooms = [];
-
 
 exports.currentVotes = {};
 
@@ -73,7 +88,8 @@ exports.udpPort.on('message', (msg, rinfo) => {
 
 
 
-setInterval(function(){
+setInterval(function()
+{
 
 	time = Date.now();
 
