@@ -16,6 +16,7 @@ exports.DB.then(() => {
 })
 
 exports.UserData = exports.DB.get('UserData');
+exports.Votes = exports.DB.get('Votes');
 exports.Rooms = exports.DB.get('Rooms'); //This might become a variable ?
 exports.Presets = exports.DB.get('Presets'); //not using so far - probably should just be json
 

@@ -85,23 +85,33 @@ exports.response = function(socket)
 	socket.on('voted', function(msg)
 	{
 
-		globals.currentVotes[msg.id].scores[msg.choice] += 1;
-		//normalise
-		//swap arrays
-		//logic to initiate the next vote
-
-		console.log("voted", globals.currentVotes[msg.id]);
-
-		//TODO ...
-		//Update UserData
-		console.log(id);
 		/*voted { pair: [ 'recognise', 'refute' ],
-	  type: 'Vobj',
-	  scores: [ 0, 1 ],
-	  voting: [],
-	  voted: [],
-	  notvoted: [] }*/
+		type: 'Vobj',
+		scores: [ 0, 1 ],
+		voting: [],
+		voted: [],
+		notvoted: [] }*/
 
+		var p = globals.Votes.findOne(msg.id);
+
+		p = p.then((data)=>{
+			data.scores[msg.choice] += 1.0/data.population;
+
+			//TODO initiate the next voter if there is one
+			//TODO resolve the vote if there are no voters left
+			//TODO trigger the audio sample
+			globals.Votes.update(data._id, {$push: {voted: id}, $pull: {voting: id}, $set:{scores: data.scores}});
+			return globals.Votes.findOne(msg.id);
+		})
+
+		p.then((data)=>
+		{
+			console.log("voted", data);
+		});
+
+		//reset this users vote
+		globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
+		
 	})
 
 	socket.on('update_user', function(msg)

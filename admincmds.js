@@ -356,6 +356,7 @@ exports.response = function(socket)
 				//clear the Databases
 				globals.sockets = {};
 				globals.UserData.remove({});
+				globals.Votes.remove({});
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: "all databases reset", room: ""});
 				globals.players.emit('whoareyou'); //causes any connected players to reset
 				Object.keys(globals.procs).forEach(function(id)
@@ -456,25 +457,29 @@ exports.response = function(socket)
 					r += p[i] + ", ";
 				}
 
-				var id = Date.now();
-				var omsg = {pair: p, id: id};
-				globals.currentVotes[id] = {pair: p, type: t, scores: [0,0], voting: [], voted: [], notvoted: []};
-
 				helpers.useRoom(msg, function(rm)
 				{
 
-					globals.Rooms.find({room: rm}).then((docs)=>
+					var promise = globals.Rooms.find({room: rm});
+
+					promise = promise.then((docs)=>
 					{
-						globals.currentVotes[id].notvoted = docs[0].population;
-
-						//Ultimately we don't do this here ... farmed off to a process
-						globals.UserData.update({rooms: rm},{$set: {currentVoteId: id, currentVotePair: p }},{multi: true});
-
-						globals.players.to(rm).emit('cmd', {cmd: 'new_vote', value: omsg});
 						globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
+						return globals.Votes.insert({ pair: p, type: t, scores: [0,0], voting: [], voted: [], notvoted: docs[0].population, population: docs[0].population.length});
 					})
 
+					promise.then((data)=>{
+						var omsg = {pair: data.pair, id: data._id};
+
+						//choose the first voter (ultimately it might be more than one)
+						var player = helpers.choose(data.notvoted);
+						globals.UserData.update(player,{$set: {currentVoteId: data._id, currentVotePair: data.pair }},{multi: true});
+						globals.players.to(player).emit('cmd', {cmd: 'new_vote', value: omsg});
+						globals.Votes.update(data._id, {$push: {voting: player}, $pull: {notvoted: player}});
+					});
+
 				});
+
 			});
 
 		}
