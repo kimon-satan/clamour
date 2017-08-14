@@ -23,4 +23,9 @@ function updateTable (tableid , data)
 	{
 		$('#' + tableid).append('<td>'+ data.chatText +'</td>')
 	}
+	else if(this.data.mode == "vote")
+	{
+		$('#' + tableid).append('<td>' + data.currentVoteId + ': '+
+		data.currentVotePair[0] + ',' +data.currentVotePair[1] + '</td>')
+	}
 }

@@ -97,8 +97,7 @@ exports.response = function(socket)
 		p = p.then((data)=>{
 			data.scores[msg.choice] += 1.0/data.population;
 
-			//TODO initiate the next voter if there is one
-			//TODO resolve the vote if there are no voters left
+
 			//TODO trigger the audio sample
 			globals.Votes.update(data._id, {$push: {voted: id}, $pull: {voting: id}, $set:{scores: data.scores}});
 			return globals.Votes.findOne(msg.id);
@@ -106,12 +105,21 @@ exports.response = function(socket)
 
 		p.then((data)=>
 		{
-			console.log("voted", data);
+			if(data.voted.length == data.population)
+			{
+				//TODO resolve the vote if there are no voters left
+				console.log("vote concluded")
+			}
+			else
+			{
+				//initiate the next voter if there is one
+				helpers.sendVote(data);
+			}
 		});
 
 		//reset this users vote
 		globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
-		
+
 	})
 
 	socket.on('update_user', function(msg)

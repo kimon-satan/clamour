@@ -560,3 +560,13 @@ exports.loadDictionary = function(cb)
 		}
 	});
 }
+
+
+exports.sendVote = function(data)
+{
+	var omsg = {pair: data.pair, id: data._id};
+	var player = exports.choose(data.notvoted);
+	globals.UserData.update(player,{$set: {currentVoteId: data._id, currentVotePair: data.pair }},{multi: true});
+	globals.players.to(player).emit('cmd', {cmd: 'new_vote', value: omsg});
+	globals.Votes.update(data._id, {$push: {voting: player}, $pull: {notvoted: player}});
+}

@@ -92,43 +92,53 @@ Player = function(isDummy)
 			parseMsgParams(msg.value);
 			changeMode(msg.value.mode);
 		}
-		else if (msg.cmd == "chat_update" && !this.isDummy)
+		else if (this.isDummy)
 		{
-			$('#chatContainer>div.largeText:last-child').remove();
-			$('#chatContainer').append( '<div class="largeText">' + msg.value +'</div>' );
-		}
-		else if(msg.cmd == 'chat_newline' && !this.isDummy)
-		{
-			$('#chatContainer').append( '<div class="largeText"></div>' );
-		}
-		else if(msg.cmd == 'chat_clear' && !this.isDummy)
-		{
-			$('#chatContainer').empty();
-		}
-		else if (msg.cmd == "chat_update")
-		{
-			this.data.chatText = msg.value
+			if (msg.cmd == "chat_update")
+			{
+				this.data.chatText = msg.value;
+			}
+			else if(msg.cmd == 'chat_newline')
+			{
+				this.data.chatText = "NL";
+			}
+			else if(msg.cmd == 'chat_clear')
+			{
+				this.data.chatText = "";
+			}
+			else if(msg.cmd == 'new_vote' && this.mode == "vote")
+			{
+				this.data.currentVoteId = msg.value.id;
+				this.data.currentVotePair = msg.value.pair;
+
+			}
 			this.updateTable(this.tableid, this.data);
 		}
-		else if(msg.cmd == 'chat_newline')
+		else
 		{
-			this.data.chatText = "NL";
-			this.updateTable(this.tableid, this.data);
-		}
-		else if(msg.cmd == 'chat_clear')
-		{
-			this.data.chatText = "";
-			this.updateTable(this.tableid, this.data);
-		}
-		else if(msg.cmd == 'set_params')
-		{
-			parseMsgParams(msg.value);
-		}
-		else if(msg.cmd == 'new_vote' && this.mode == "vote")
-		{
-			this.data.currentVoteId = msg.value.id;
-			this.data.currentVotePair = msg.value.pair;
-			createVote();
+			if (msg.cmd == "chat_update")
+			{
+				$('#chatContainer>div.largeText:last-child').remove();
+				$('#chatContainer').append( '<div class="largeText">' + msg.value +'</div>' );
+			}
+			else if(msg.cmd == 'chat_newline')
+			{
+				$('#chatContainer').append( '<div class="largeText"></div>' );
+			}
+			else if(msg.cmd == 'chat_clear')
+			{
+				$('#chatContainer').empty();
+			}
+			else if(msg.cmd == 'set_params')
+			{
+				parseMsgParams(msg.value);
+			}
+			else if(msg.cmd == 'new_vote' && this.mode == "vote")
+			{
+				this.data.currentVoteId = msg.value.id;
+				this.data.currentVotePair = msg.value.pair;
+				createVote();
+			}
 		}
 
 	}.bind(this));
@@ -179,6 +189,7 @@ Player = function(isDummy)
 	{
 		if(this.data.currentVoteId == -1) return; //you already voted !
 
+		//************ something happened here ************
 		var r = /option(\d)/;
 		var o = parseInt(r.exec(e.target.id)[1]);
 		$('#option' + o).addClass("vote");

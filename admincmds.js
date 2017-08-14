@@ -468,14 +468,9 @@ exports.response = function(socket)
 						return globals.Votes.insert({ pair: p, type: t, scores: [0,0], voting: [], voted: [], notvoted: docs[0].population, population: docs[0].population.length});
 					})
 
-					promise.then((data)=>{
-						var omsg = {pair: data.pair, id: data._id};
-
-						//choose the first voter (ultimately it might be more than one)
-						var player = helpers.choose(data.notvoted);
-						globals.UserData.update(player,{$set: {currentVoteId: data._id, currentVotePair: data.pair }},{multi: true});
-						globals.players.to(player).emit('cmd', {cmd: 'new_vote', value: omsg});
-						globals.Votes.update(data._id, {$push: {voting: player}, $pull: {notvoted: player}});
+					promise.then((data)=>
+					{
+						helpers.sendVote(data);
 					});
 
 				});
