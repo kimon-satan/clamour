@@ -108,20 +108,8 @@ Player = function(isDummy)
 			}
 			else if(msg.cmd == 'new_vote' && this.mode == "vote")
 			{
-				this.data.currentVoteId = msg.value.id;
-				this.data.currentVotePair = msg.value.pair;
-
-				window.setTimeout(function()
-				{
-					var o = Math.round(Math.random());
-					this.socket.emit('voted', {choice: o, id: this.data.currentVoteId });
-					this.data.currentVoteId = -1;
-					this.updateTable(this.tableid, this.data);
-					this.data.currentVotePair = ["",""];
-				}.bind(this), 100 + Math.random() * 200);
-
+				createTestVote(msg); //TODO implement the same for real vote
 			}
-			this.updateTable(this.tableid, this.data);
 		}
 		else
 		{
@@ -153,6 +141,36 @@ Player = function(isDummy)
 	}.bind(this));
 
 	//private functions
+
+	var createTestVote = function(msg)
+	{
+
+		if(this.data.currentVoteId != -1)
+		{
+			window.setTimeout(function()
+			{
+				createTestVote(msg);
+			},1000); //try again in 1 sec
+			return;
+		}
+
+		this.data.currentVoteId = msg.value.id;
+		this.data.currentVotePair = msg.value.pair;
+
+		window.setTimeout(function()
+		{
+			var o = Math.round(Math.random());
+			this.socket.emit('voted', {choice: o, id: this.data.currentVoteId });
+			this.data.currentVoteId = -1;
+			this.updateTable(this.tableid, this.data);
+			this.data.currentVotePair = ["",""];
+			this.updateTable(this.tableid, this.data);
+
+		}.bind(this), 150 + Math.random() * 500);
+
+		this.updateTable(this.tableid, this.data);
+
+	}.bind(this);
 
 	var createVote = function()
 	{

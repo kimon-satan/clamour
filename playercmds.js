@@ -92,27 +92,38 @@ exports.response = function(socket)
 		voted: [],
 		notvoted: [] }*/
 
-		var p = globals.Votes.findOne(msg.id);
+		if(typeof(msg) != "object")
+		{
+			console.log("null msg");
+		}
+		var p = globals.Votes.findOne({_id: msg.id});
 
 		p = p.then((data)=>
 		{
+			if(data == null)
+			{
+				throw "vote " + msg.id + " could not be found ";
+			}
 			data.scores[msg.choice] += 1.0/data.population;
 			//TODO trigger the audio sample
-			return globals.Votes.update(data._id, {$push: {voted: id}, $pull: {voting: id}, $set:{scores: data.scores}});
-
+			return globals.Votes.update({_id: data._id}, {$push: {voted: id}, $pull: {voting: id}, $set:{scores: data.scores}});
 		})
 
 		p = p.then((data)=>
 		{
-			return globals.Votes.findOne(msg.id);
+			return globals.Votes.findOne({_id: msg.id});
 		})
 
-		p.then((data)=>
+		p = p.then((data)=>
 		{
+			if(typeof(data) != "object")
+			{
+				throw "oops";
+			}
 			if(data.voted.length == data.population)
 			{
 				//TODO resolve the vote if there are no voters left
-				console.log("vote concluded")
+				console.log("vote concluded, " + data._id)
 			}
 			else
 			{
@@ -120,6 +131,11 @@ exports.response = function(socket)
 				helpers.sendVote(data);
 			}
 		});
+
+		p.catch((reason)=>{
+			console.log("Error - voted " + reason) ;
+		})
+
 		//reset this users vote
 		globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
 	})

@@ -565,13 +565,28 @@ exports.loadDictionary = function(cb)
 exports.sendVote = function(data)
 {
 	var omsg = {pair: data.pair, id: data._id};
-	var p = globals.UserData.findOne({_id: {$in: data.notvoted}, currentVoteId: -1});
+	var p = globals.UserData.find({_id: {$in: data.notvoted}, currentVoteId: -1});
 
-	p.then((data)=>{
-		console.log(data._id, omsg.id);
-		globals.UserData.update(data._id,{$set: {currentVoteId: data._id, currentVotePair: data.pair }},{multi: true});
-		globals.players.to(data._id).emit('cmd', {cmd: 'new_vote', value: omsg});
-		globals.Votes.update(omsg.id, {$push: {voting: data._id}, $pull: {notvoted: data._id}});
+	p = p.then((docs)=>
+	{
+		if(docs.length > 0)
+		{
+			var player = exports.choose(docs);
+			globals.players.to(player._id).emit('cmd',{cmd: 'new_vote', value: omsg});
+			globals.Votes.update(omsg.id, {$push: {voting: player._id}, $pull: {notvoted: player._id}});
+			globals.UserData.update(player._id,{$set: {currentVoteId: player._id, currentVotePair: player.pair }});
+		}
+		else
+		{
+			setTimeout(function()
+			{
+				exports.sendVote(data)
+			}, 500); // call the function again
+		}
+	})
+
+	p.catch((data)=>{
+		console.log("Error - sendVote: " + data);
 	})
 
 }

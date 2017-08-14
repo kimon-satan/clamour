@@ -459,7 +459,6 @@ exports.response = function(socket)
 
 				helpers.useRoom(msg, function(rm)
 				{
-
 					var promise = globals.Rooms.find({room: rm});
 
 					promise = promise.then((docs)=>
@@ -468,13 +467,29 @@ exports.response = function(socket)
 						return globals.Votes.insert({ pair: p, type: t, scores: [0,0], voting: [], voted: [], notvoted: docs[0].population, population: docs[0].population.length});
 					})
 
-					promise.then((data)=>
+					promise = promise.then((data)=>
 					{
 						helpers.sendVote(data);
 					});
 
 				});
 
+			});
+
+		}
+		else if(msg.cmd == "lvotes")
+		{
+			var p = globals.Votes.find({});
+
+			p.then((docs)=>{
+				var r = "";
+				for(var i = 0; i < docs.length; i++)
+				{
+					var id = String(docs[i]._id);
+					var idstr = id.substring(0,3) + "..." + id.substring(id.length -3, id.length);
+					r += idstr + ", population: " + docs[i].population + ", voted: " + docs[i].voted.length + "\n";
+				}
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
 			});
 
 		}

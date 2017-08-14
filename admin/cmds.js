@@ -26,7 +26,8 @@ var cmdList = [
 
 	"vpairs", //vote stuff
 	"vsentences",
-	"vnew"
+	"vnew",
+	"lvotes"
 ];
 
 for(var i = 0; i < cmdList.length; i++)
