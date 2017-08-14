@@ -94,12 +94,16 @@ exports.response = function(socket)
 
 		var p = globals.Votes.findOne(msg.id);
 
-		p = p.then((data)=>{
+		p = p.then((data)=>
+		{
 			data.scores[msg.choice] += 1.0/data.population;
-
-
 			//TODO trigger the audio sample
-			globals.Votes.update(data._id, {$push: {voted: id}, $pull: {voting: id}, $set:{scores: data.scores}});
+			return globals.Votes.update(data._id, {$push: {voted: id}, $pull: {voting: id}, $set:{scores: data.scores}});
+
+		})
+
+		p = p.then((data)=>
+		{
 			return globals.Votes.findOne(msg.id);
 		})
 
@@ -116,10 +120,8 @@ exports.response = function(socket)
 				helpers.sendVote(data);
 			}
 		});
-
 		//reset this users vote
 		globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
-
 	})
 
 	socket.on('update_user', function(msg)

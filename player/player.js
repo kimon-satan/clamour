@@ -111,6 +111,15 @@ Player = function(isDummy)
 				this.data.currentVoteId = msg.value.id;
 				this.data.currentVotePair = msg.value.pair;
 
+				window.setTimeout(function()
+				{
+					var o = Math.round(Math.random());
+					this.socket.emit('voted', {choice: o, id: this.data.currentVoteId });
+					this.data.currentVoteId = -1;
+					this.updateTable(this.tableid, this.data);
+					this.data.currentVotePair = ["",""];
+				}.bind(this), 100 + Math.random() * 200);
+
 			}
 			this.updateTable(this.tableid, this.data);
 		}

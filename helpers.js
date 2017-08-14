@@ -565,8 +565,13 @@ exports.loadDictionary = function(cb)
 exports.sendVote = function(data)
 {
 	var omsg = {pair: data.pair, id: data._id};
-	var player = exports.choose(data.notvoted);
-	globals.UserData.update(player,{$set: {currentVoteId: data._id, currentVotePair: data.pair }},{multi: true});
-	globals.players.to(player).emit('cmd', {cmd: 'new_vote', value: omsg});
-	globals.Votes.update(data._id, {$push: {voting: player}, $pull: {notvoted: player}});
+	var p = globals.UserData.findOne({_id: {$in: data.notvoted}, currentVoteId: -1});
+
+	p.then((data)=>{
+		console.log(data._id, omsg.id);
+		globals.UserData.update(data._id,{$set: {currentVoteId: data._id, currentVotePair: data.pair }},{multi: true});
+		globals.players.to(data._id).emit('cmd', {cmd: 'new_vote', value: omsg});
+		globals.Votes.update(omsg.id, {$push: {voting: data._id}, $pull: {notvoted: data._id}});
+	})
+
 }
