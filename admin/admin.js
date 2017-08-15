@@ -249,7 +249,11 @@ function CLI(idx, mode, room)
 		}
 		else if(e.keyCode == 13)
 		{
-			if(gPrevComms.indexOf(cmd) == -1)gPrevComms.push(cmd);
+			gPrevComms.push(cmd);
+			if(gPrevComms.length > 20){
+				gPrevComms.splice(0,1);
+			}
+			this.com_idx = gPrevComms.length;
 			cmd.replace(/\r?\n|\r/,"");
 			evaluateCommand(cmd, this);
 		}

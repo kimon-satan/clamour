@@ -445,8 +445,6 @@ exports.response = function(socket)
 		{
 			helpers.parseOptions(msg.args, function(options)
 			{
-				//-type
-				//-pool //voting pool size ... implement later
 
 				var r = "choice: ";
 				var t = (options.type != undefined) ? options.type : helpers.choose(Object.keys(globals.dictionary.wordPairs));
