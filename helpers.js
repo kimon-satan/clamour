@@ -572,17 +572,19 @@ exports.sendVote = function(data, num)
 	{
 		if(docs.length > 0)
 		{
+
 			for(var i = num; i > 0; i--)
 			{
 				if(docs.length == 0)
 				{
+					//TODO probably store and kill these on reset just to be safe
 					setTimeout(function()
 					{
-						globals.Votes.findOne(omsg.id).then((res)=>{
-							if(res.notvoted > 0)
+						globals.Votes.findOne(omsg.id).then((res)=>
+						{
+							if(res.notvoted.length > 0)
 							{
-								console.log("try again " + num - i);
-								exports.sendVote(res,num -i);
+								exports.sendVote(res,i);
 							}
 						})
 					}, 500); // call the function again
@@ -599,12 +601,12 @@ exports.sendVote = function(data, num)
 		}
 		else
 		{
+			//TODO probably store and kill these on reset just to be safe
 			setTimeout(function()
 			{
 				globals.Votes.findOne(omsg.id).then((res)=>{
-					if(res.notvoted > 0)
+					if(res.notvoted.length > 0)
 					{
-						console.log("try again");
 						exports.sendVote(res,num);
 					}
 				})

@@ -98,14 +98,17 @@ Player = function(isDummy)
 			if (msg.cmd == "chat_update")
 			{
 				this.data.chatText = msg.value;
+				this.updateTable(this.tableid, this.data);
 			}
 			else if(msg.cmd == 'chat_newline')
 			{
 				this.data.chatText = "NL";
+				this.updateTable(this.tableid, this.data);
 			}
 			else if(msg.cmd == 'chat_clear')
 			{
 				this.data.chatText = "";
+				this.updateTable(this.tableid, this.data);
 			}
 			else if(msg.cmd == 'new_vote' && this.mode == "vote")
 			{
@@ -156,6 +159,7 @@ Player = function(isDummy)
 		{
 			window.setTimeout(function()
 			{
+				console.log("waiting, " +  msg.value.id);
 				createTestVote(msg);
 			},1000); //try again in 1 sec
 			return;
