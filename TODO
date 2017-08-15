@@ -1,5 +1,11 @@
 TODO
 
+- votes initial pool size
+- votes implement timeouts for real client
+- votes audio
+- votes deal with concluded Votes
+- then stage two
+
 - try / catch for admin commands
 - story stuff will need refactoring into a different place
 - investigate text to speech options

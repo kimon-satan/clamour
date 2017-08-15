@@ -10,6 +10,7 @@ Player = function(isDummy)
 	this.data = {};
 	this.mode = "";
 	this.iface = undefined;
+	this.previousVotes = {};
 
 	this.checkAlive = setInterval(function(){
 		if(Date.now() - this.lastCheckin > 8000)
@@ -145,6 +146,12 @@ Player = function(isDummy)
 	var createTestVote = function(msg)
 	{
 
+		if(this.previousVotes[msg.value.id] != undefined)
+		{
+			console.log("duplicate vote");
+			return;
+		}
+
 		if(this.data.currentVoteId != -1)
 		{
 			window.setTimeout(function()
@@ -154,6 +161,7 @@ Player = function(isDummy)
 			return;
 		}
 
+		this.previousVotes[msg.value.id] = true;
 		this.data.currentVoteId = msg.value.id;
 		this.data.currentVotePair = msg.value.pair;
 
@@ -162,11 +170,10 @@ Player = function(isDummy)
 			var o = Math.round(Math.random());
 			this.socket.emit('voted', {choice: o, id: this.data.currentVoteId });
 			this.data.currentVoteId = -1;
-			this.updateTable(this.tableid, this.data);
 			this.data.currentVotePair = ["",""];
 			this.updateTable(this.tableid, this.data);
 
-		}.bind(this), 150 + Math.random() * 500);
+		}.bind(this), 1500 + Math.random() * 5000);
 
 		this.updateTable(this.tableid, this.data);
 

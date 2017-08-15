@@ -450,6 +450,7 @@ exports.response = function(socket)
 
 				var r = "choice: ";
 				var t = (options.type != undefined) ? options.type : helpers.choose(Object.keys(globals.dictionary.wordPairs));
+				var num = (options.num != undefined) ? options.num : 1;
 				var p = helpers.choose(globals.dictionary.wordPairs[t]);
 
 				for(var i = 0; i < p.length; i++)
@@ -469,7 +470,7 @@ exports.response = function(socket)
 
 					promise = promise.then((data)=>
 					{
-						helpers.sendVote(data);
+						helpers.sendVote(data, num);
 					});
 
 				});

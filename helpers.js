@@ -562,31 +562,58 @@ exports.loadDictionary = function(cb)
 }
 
 
-exports.sendVote = function(data)
+exports.sendVote = function(data, num)
 {
 	var omsg = {pair: data.pair, id: data._id};
 	var p = globals.UserData.find({_id: {$in: data.notvoted}, currentVoteId: -1});
+	if(num == undefined)num = 1;
 
 	p = p.then((docs)=>
 	{
 		if(docs.length > 0)
 		{
-			var player = exports.choose(docs);
-			globals.players.to(player._id).emit('cmd',{cmd: 'new_vote', value: omsg});
-			globals.Votes.update(omsg.id, {$push: {voting: player._id}, $pull: {notvoted: player._id}});
-			globals.UserData.update(player._id,{$set: {currentVoteId: player._id, currentVotePair: player.pair }});
+			for(var i = num; i > 0; i--)
+			{
+				if(docs.length == 0)
+				{
+					setTimeout(function()
+					{
+						globals.Votes.findOne(omsg.id).then((res)=>{
+							if(res.notvoted > 0)
+							{
+								console.log("try again " + num - i);
+								exports.sendVote(res,num -i);
+							}
+						})
+					}, 500); // call the function again
+					break;
+				}
+				var idx = Math.floor(Math.random() * docs.length);
+				var player = docs[idx];
+				docs.splice(idx, 1);
+				globals.players.to(player._id).emit('cmd',{cmd: 'new_vote', value: omsg});
+				globals.Votes.update(omsg.id, {$push: {voting: player._id}, $pull: {notvoted: player._id}});
+				globals.UserData.update(player._id,{$set: {currentVoteId: player._id, currentVotePair: player.pair }});
+
+			}
 		}
 		else
 		{
 			setTimeout(function()
 			{
-				exports.sendVote(data)
+				globals.Votes.findOne(omsg.id).then((res)=>{
+					if(res.notvoted > 0)
+					{
+						console.log("try again");
+						exports.sendVote(res,num);
+					}
+				})
 			}, 500); // call the function again
 		}
 	})
 
-	p.catch((data)=>{
-		console.log("Error - sendVote: " + data);
+	p.catch((reason)=>{
+		console.log("Error - sendVote: " + reason);
 	})
 
 }
