@@ -137,4 +137,8 @@ exports.response = function(socket)
 				args: args,
 		}, "127.0.0.1", 57120);
 	})
+
+	socket.on('vidUpdate', function(msg){
+		globals.DisplayState.videoProgress = msg;
+	})
 }

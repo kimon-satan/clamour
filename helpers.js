@@ -512,15 +512,18 @@ exports.startStoryClip = function(room)
 	{
 		var vid_path = globals.settings.videoPath + vid;
 		globals.display.emit('cmd', {type: 'story', video: vid_path});
+		globals.DisplayState.storyMedia = "video";
 	}
 	else if(img)
 	{
 		var img_path = globals.settings.imagePath + img;
 		globals.display.emit('cmd', {type: 'story', img: img_path});
+		globals.DisplayState.storyMedia = "img";
 	}
 	else if (blank)
 	{
 		globals.display.emit('cmd', {type: 'story', blank: true});
+		globals.DisplayState.storyMedia = "blank";
 	}
 
 

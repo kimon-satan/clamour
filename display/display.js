@@ -125,8 +125,7 @@ function story(msg)
 
 		vidProgRoutine = window.setInterval(function(){
 			var p = $('#vidPlayer').get(0).currentTime;
-			console.log(p);
-			//TODO send back to admin
+			socket.emit("vidUpdate", p);
 		},500);
 	}
 	mode = "story";

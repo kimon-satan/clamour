@@ -16,10 +16,12 @@ exports.response = function(socket)
 
 				if(msg.mode == "story")
 				{
+					globals.DisplayState.mode = "story";
 					helpers.startStoryClip();
 				}
 				else if(msg.mode == "love")
 				{
+					globals.DisplayState.mode = "love";
 					globals.display.emit('cmd', {type: 'love'});
 				}
 
@@ -153,26 +155,29 @@ exports.response = function(socket)
 		else if(msg.cmd == "story_newline")
 		{
 			var txts = globals.story[globals.storyChapter].clips[globals.storyClip].texts;
-			if(txts.length > 1 && globals.storyRooms.length > 1)
+			if(txts)
 			{
-				//send the new line to room 0
-				globals.storyCurrText.push("");
-				globals.players.to(globals.storyRooms[0]).emit('cmd', {cmd: 'chat_newline'});
-
-				for(var i = 1; i < globals.storyRooms.length; i++)
+				if(txts.length > 1 && globals.storyRooms.length > 1)
 				{
-					var tidx = i%txts.length;
-					if(tidx == 0)
+					//send the new line to room 0
+					globals.storyCurrText.push("");
+					globals.players.to(globals.storyRooms[0]).emit('cmd', {cmd: 'chat_newline'});
+
+					for(var i = 1; i < globals.storyRooms.length; i++)
 					{
-						//send the return
-						globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_newline'});
+						var tidx = i%txts.length;
+						if(tidx == 0)
+						{
+							//send the return
+							globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_newline'});
+						}
 					}
 				}
-			}
-			else
-			{
-				globals.storyCurrText.push("");
-				globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
+				else
+				{
+					globals.storyCurrText.push("");
+					globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
+				}
 			}
 
 		}
@@ -230,6 +235,28 @@ exports.response = function(socket)
 
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: "chapter not found"});
 			})
+		}
+		else if(msg.cmd == "ldisplay")
+		{
+			//TODO finish this
+			var displayStr = "mode: " + globals.DisplayState.mode + "\n";
+
+			if(globals.DisplayState.mode == "story")
+			{
+				displayStr += "chapter: " + globals.storyChapter + ", clip: " + globals.storyClip + "\n";
+				displayStr += "media: " + globals.DisplayState.storyMedia + "\n";
+				if(globals.DisplayState.storyMedia == "video")
+				{
+					displayStr += "progress: " + globals.DisplayState.videoProgress + "\n";
+				}
+				if(globals.story[globals.storyChapter].clips[globals.storyClip].texts)
+				{
+					displayStr += globals.story[globals.storyChapter].clips[globals.storyClip].texts[0] + "\n";
+				}
+
+			}
+
+			globals.admin.emit('server_report', {id: msg.cli_id, room: msg.room, isproc: msg.isproc , msg: displayStr}); //same room response
 		}
 		else if(msg.cmd == "lplayers")
 		{
@@ -365,6 +392,7 @@ exports.response = function(socket)
 					clearInterval(globals.procs);
 				});
 			})
+			globals.DisplayState.mode = "instruct";
 			globals.display.emit("cmd", {type: "instruct"});
 			globals.display.emit('cmd', {type: 'clear_display'});
 			globals.storyChapter = 0;
@@ -399,6 +427,7 @@ exports.response = function(socket)
 			"127.0.0.1", 57120);
 			globals.admin.emit('server_report', {id: msg.cli_id});
 			globals.display.emit("cmd", {type: "end"});
+			globals.DisplayState.mode = "end";
 			globals.players.emit('cmd', {cmd: 'change_mode', value: {mode: "blank"}});
 
 		}
@@ -540,16 +569,19 @@ exports.response = function(socket)
 
 		if(msg.cmd == "dinstruct")
 		{
+			globals.DisplayState.mode = "instruct";
 			globals.display.emit("cmd", {type: "instruct"});
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
 		else if(msg.cmd == "dlove")
 		{
+			globals.DisplayState.mode = "love";
 			globals.display.emit("cmd", {type: "love"});
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
 		else if(msg.cmd == "dstory")
 		{
+			globals.DisplayState.mode = "story";
 			globals.display.emit("cmd", {type: "story"});
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}

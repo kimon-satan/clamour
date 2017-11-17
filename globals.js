@@ -15,6 +15,12 @@ exports.DB.then(() => {
 	console.log('Connected correctly to server')
 })
 
+exports.DisplayState = {
+	mode: "instruct",
+	storyMedia: "blank",
+	videoProgress: 0
+}
+
 exports.UserData = exports.DB.get('UserData');
 exports.Votes = exports.DB.get('Votes');
 exports.Rooms = exports.DB.get('Rooms'); //This might become a variable ?
