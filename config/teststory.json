@@ -10,22 +10,30 @@
 	{"name": "section_1", "clips":
 		[
 			{"video": "intro.mp4",
-			"texts":
-				[
-					"Our Mothership as we know her ..."
-				]
+			"nextcue": 30
+			},
+			
+			{
+				"texts":
+					[
+						"Our Mothership as we know her ..."
+					],
+				"nextcue": 70
 			},
 
-			{"texts":
+			{
+				"texts":
 				[
 					"But things weren't always this way"
-				]
+				],
+				"nextcue": 90
 			},
 
 			{"texts":
 				[
 					"Not long ago ..."
-				]
+				],
+				"nextcue": 100
 			},
 
 			{"texts":
@@ -34,7 +42,8 @@
 					"a trawler not far off the coast of Mainland",
 					"a trawler not far off the coast of Mainland",
 					"Control sent out a pathfinder trawler "
-				]
+				],
+				"nextcue": 115
 			},
 
 			{"texts":
@@ -43,7 +52,8 @@
 					"was despatched by our Central Control",
 					"was traced by our Central Control",
 					"not far from the coast of Mainland,"
-				]
+				],
+				"nextcue": 135
 			},
 
 			{"texts":

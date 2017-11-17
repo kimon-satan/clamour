@@ -248,11 +248,25 @@ exports.response = function(socket)
 				if(globals.DisplayState.storyMedia == "video")
 				{
 					displayStr += "progress: " + globals.DisplayState.videoProgress + "\n";
+					if(globals.story[globals.storyChapter].clips[globals.storyClip].nextcue)
+					{
+						displayStr += "next cue: " + globals.story[globals.storyChapter].clips[globals.storyClip].nextcue + "\n";
+					}
 				}
+
+
+
 				if(globals.story[globals.storyChapter].clips[globals.storyClip].texts)
 				{
+					displayStr += "num threads: " + globals.story[globals.storyChapter].clips[globals.storyClip].texts.length + "\n\n\n";
 					displayStr += globals.story[globals.storyChapter].clips[globals.storyClip].texts[0] + "\n";
 				}
+				else
+				{
+					displayStr += "no text \n";
+				}
+
+
 
 			}
 
