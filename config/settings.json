@@ -2,5 +2,6 @@
 	"samplePath": "/Users/kimonsatan/Music/projectSamples/conditionalLove/samples",
 	"storyPath": "config/teststory.json",
 	"imagePath": "/images/story/",
+	"videoPath": "/videos/",
 	"dictionaryPath": "config/dictionary.json"
 }

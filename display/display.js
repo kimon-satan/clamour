@@ -2,6 +2,7 @@
 love = undefined;
 
 var lastFrameTime, framePeriod, fps, mode;
+var vidProgRoutine;
 
 lastFrameTime = 0;
 
@@ -26,7 +27,7 @@ socket.on('cmd', function(msg){
 	}
 	else if (msg.type == "story" )
 	{
-		story(msg.img);
+		story(msg);
 	}
 	else if (msg.type == "end")
 	{
@@ -88,14 +89,46 @@ function setupInstructions()
 	mode = "instruct";
 }
 
-function story(img)
+function story(msg)
 {
-	$('#displayscreen').empty();
-	if(img != "blank")
+
+	if(msg.blank)
 	{
-		$('#displayscreen').append("<div id='storyContainer'><img src=" + img + "></div>");
+		if(typeof(vidProgRoutine) != "undefined")
+		{
+			window.clearInterval(vidProgRoutine);
+			vidProgRoutine = undefined
+		}
+		$('#displayscreen').empty(); //just empty the screen
 	}
-	
+	else if(msg.img)
+	{
+		if(typeof(vidProgRoutine) != "undefined")
+		{
+			window.clearInterval(vidProgRoutine);
+			vidProgRoutine = undefined
+		}
+		$('#displayscreen').empty();
+		$('#displayscreen').append("<div id='storyContainer'><img src=" + msg.img + "></div>");
+	}
+	else if (msg.video)
+	{
+		if(typeof(vidProgRoutine) != "undefined")
+		{
+			window.clearInterval(vidProgRoutine);
+			vidProgRoutine = undefined
+		}
+		$('#displayscreen').empty();
+		$('#displayscreen').append("<video id='vidPlayer'><source src='" + msg.video + "' type='video/mp4'></video>");
+		$('#vidPlayer').attr('width',window.innerWidth);
+		$('#vidPlayer').get(0).play();
+
+		vidProgRoutine = window.setInterval(function(){
+			var p = $('#vidPlayer').get(0).currentTime;
+			console.log(p);
+			//TODO send back to admin
+		},500);
+	}
 	mode = "story";
 }
 

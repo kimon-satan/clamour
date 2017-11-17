@@ -1,5 +1,7 @@
 /////////////////////////////// COMMANDS ////////////////////////////////
 
+//TODO iDisplay mode for monitoring
+
 /* basic commands */
 
 function basicCmd(cmd, args, cli)
@@ -247,9 +249,9 @@ CLMR_CMDS["_n"] = function(args,  cli)
 {
     if(cli.cli_mode == "story")
 		{
-      socket.emit('cmd', { cmd: 'story_next', value: "" , room: cli.room});
+      socket.emit('cmd', { cmd: 'story_next', value: "" , room: cli.room, cli_id: cli.idx,});
     }
-    cli.newCursor();
+//    cli.newCursor();
 }
 
 //TODO there will need to be more story commands here.

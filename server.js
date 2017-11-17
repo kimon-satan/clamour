@@ -50,6 +50,7 @@ globals.app.use("/tests",express.static(__dirname + "/tests"));
 globals.app.use("/display",express.static(__dirname + "/display"));
 globals.app.use("/samples",express.static(__dirname + "/samples"));
 globals.app.use("/images",express.static(__dirname + "/images"));
+globals.app.use("/videos",express.static(__dirname + "/videos"));
 
 //three types of user
  globals.app.get('/admin', function(req, res){

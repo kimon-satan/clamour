@@ -502,16 +502,26 @@ exports.playSound = function(options)
 
 exports.startStoryClip = function(room)
 {
+
+	//TODO add video handler here
+	var vid = globals.story[globals.storyChapter].clips[globals.storyClip].video;
 	var img = globals.story[globals.storyChapter].clips[globals.storyClip].img;
-	if(img)
+	var blank = globals.story[globals.storyChapter].clips[globals.storyClip].blank;
+
+	if(vid)
+	{
+		var vid_path = globals.settings.videoPath + vid;
+		globals.display.emit('cmd', {type: 'story', video: vid_path});
+	}
+	else if(img)
 	{
 		var img_path = globals.settings.imagePath + img;
+		globals.display.emit('cmd', {type: 'story', img: img_path});
 	}
-	else
+	else if (blank)
 	{
-		var img_path = "blank";
+		globals.display.emit('cmd', {type: 'story', blank: true});
 	}
-	globals.display.emit('cmd', {type: 'story', img: img_path});
 
 
 	var audio_options = globals.story[globals.storyChapter].clips[globals.storyClip].audio;

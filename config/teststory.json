@@ -1,7 +1,23 @@
 [
 	{"name": "pre_section", "clips":
 		[
-			{}
+			{"blank": 1}
+		]
+	},
+	{"name": "section_1", "clips":
+		[
+			{"video": "intro.mp4",
+			"texts": [
+				"Now this is the story all about how%My life got flipped, turned upside down."
+			]
+			},
+
+			{"texts":
+				[
+					"And I'd like to take a minute%just sit right there",
+					"Look at me$ I'm as helpless as a kitten up a tree"
+				]
+			}
 		]
 	},
 	{"name": "section_1", "clips":

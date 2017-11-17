@@ -180,6 +180,7 @@ exports.response = function(socket)
 		{
 			helpers.incrementStoryClip();
 			helpers.startStoryClip(msg.room);
+			globals.admin.emit('server_report', {id: msg.cli_id, msg: "chapter: " + globals.storyChapter + ", clip: " + globals.storyClip });
 		}
 		else if(msg.cmd == "sreset")
 		{
