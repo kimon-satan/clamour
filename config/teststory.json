@@ -12,7 +12,7 @@
 			{"video": "intro.mp4",
 			"nextcue": 30
 			},
-			
+
 			{
 				"texts":
 					[
@@ -58,29 +58,263 @@
 
 			{"texts":
 				[
-					"relics from a land long-forgotten.",
+					"relics from a land long-forgotten,",
 					"its mission: to gather the evidence of our past",
 					"its mission, we believe: to gather the evidence of our past",
 					"its mission: to gather the evidence of our past"
-				]
-			}
-		]
-	},
+				],
+				"nextcue": 135
+			},
 
-	{"name": "section_2", "clips":
-		[
-			{"audio": {"path" : "misc/lions", "loop": "true", "in" : 0.01, "out" : 0.01, "amp" : 0.5, "solo": "true", "dur" : 3.5}, "img": "section_2/graf.jpg",
-				"texts":
+			{"texts":
 				[
-					"Test text"
+					"a place we know only as Sealand.",
+					"and the home we remember as Sealand",
+					"and the home we remember as Sealand",
+					"and the home we call Sealand"
+				],
+				"nextcue": 160
+			},
+
+			{"texts":
+				[
+					"Now...%researchers are starting to piece together",
+					"Now...%researchers are starting to piece together",
+					"Now...%their researchers are trying to piece together",
+					"Now...%researchers are starting to piece together"
+				],
+				"nextcue": 180
+			},
+
+			{"texts":
+				[
+					"a picture of how things once were."
+				],
+				"nextcue": 200
+			},
+
+			{"texts":
+				[
+					"A unique survey of the territory%and its people - the Sealanders",
+					"A vital survey of our land%and of our forbears - the early Sealanders",
+					"A survey of our once great land%and of our forbears - the early Sealanders",
+					"A vital survey of our land%and of our forbears - the early Sealanders"
+				],
+				"nextcue": 240
+			},
+
+			{"texts":
+				[
+					"The founders of a peculiar civilisation%that we are only beginning to understand.",
+					"The architects of our very civilisation%about whom we strive to know more.",
+					"The architects of our proud civilisation%about whom these Mainlanders struggle to understand.",
+					"The architects of our doomed civilisation%about whom we strive to understand."
+				],
+				"nextcue": 286
+			},
+
+			{"texts":
+				[
+					"And yet ...%newly recovered documents%perfectly preserved on the sea floor"
+				],
+				"nextcue": 325
+			},
+
+			{"texts":
+				[
+					"have revealed a secret history.",
+					"have confirmed the tales long passed down.",
+					"have revealed a dark chapter of history.",
+					"have confirmed the tales passed down."
+				],
+				"nextcue": 350
+			},
+
+			{"texts":
+				[
+					"At the height of its civilisation",
+					"At the height of our civilisation",
+					"At the height of our civilisation",
+					"At the height of our civilisation"
+				],
+				"nextcue": 381
+			},
+
+			{"texts":
+				[
+					"a bold and radical plan",
+					"a radical plan to forge a global alliance",
+					"a dangerous intercontinental plan",
+					"a dangerous incursionary plan"
+				],
+				"nextcue": 400
+			},
+
+			{"texts":
+				[
+					"was developed by Sealand tribesfolk.",
+					"was developed by Sealand tribesfolk.",
+					"was hatched by certain tribesfolk amongst us.",
+					"was hatched by Sealand Officals."
+				],
+				"nextcue": 420
+			},
+
+			{"texts":
+				[
+					"Their aim: to weld Sealand to Mainland",
+					"Their aim: to bridge the gulf between Sealand and Mainland",
+					"Their aim: to weld Sealand to Mainland",
+					"Their aim: to weld Sealand to Mainland"
+				],
+				"nextcue": 445
+			},
+
+			{"texts":
+				[
+					"By draining the ocean between them"
+				],
+				"nextcue": 495
+			},
+
+			{"texts":
+				[
+					"However ...%the tribesfolk were met with fierce resistance from rebel elders",
+					"However ...%our forbears were met with fierce resistance from Sealand elders",
+					"However ...%many among us fought back against the forces of disruption",
+					"However ...%our tribesfolk fought back against these internal agressors"
+				],
+				"nextcue": 526
+			},
+
+			{"texts":
+				[
+					"There followed a long and bloody civil war"
+				],
+				"nextcue": 548
+			},
+
+			{"texts":
+				[
+					"The Resistance mobilised to re-flood the newly created borderlands ...",
+					"The elders mobilised to re-flood the newly created borderlands ...",
+					"We mobilised to re-flood the newly created borderlands ...",
+					"We mobilised to re-flood the newly created borderlands ..."
+				],
+				"nextcue": 575
+			},
+
+			{"texts":
+				[
+					"But the clash between the two sides had severe repercussions",
+					"But the clash between the two sides had severe repercussions",
+					"But the clash between us had certain repercussions",
+					"But the clash between us had severe repercussions"
 				]
 			},
-			{"audio": {"path" : "misty/misty", "loop": "false", "in" : 0.1, "out" : 0.1, "amp" : 0.2, "solo": "true", "pos" : 40 }, "img": "section_2/sandy-boots.jpg",
-				"texts":
+
+			{"texts":
 				[
-					"Test text"
+					"The fight for resources resulted in mutual destruction",
+					"The fight for resources resulted in mutual destruction",
+					"Miscalculations resulted in our mutual destruction",
+					"The fight for resources resulted in mutual destruction"
+				]
+			},
+
+			{"texts":
+				[
+					"and soon all of Sealand was drowned."
+				]
+			},
+
+			{"texts":
+				[
+					"Yet there has been one further discovery ...",
+					"Yet for some there was partial salvation ...",
+					"Yet for some there was partial salvation ...",
+					"Yet for some there was partial salvation ..."
+				]
+			},
+
+			{"texts":
+				[
+					"Not far from where Sealand drowned"
+				]
+			},
+
+			{"texts":
+				[
+					"A trace remains ...",
+					"Our people and struggle survive ...",
+					"Our names live on ...",
+					"Our people survive ..."
+				]
+			},
+
+			{"texts":
+				[
+					"A tiny outpost afloat",
+					"In the hour of our near-destruction a stronghold was built",
+					"In the hour of our near-destruction a stronghold was built",
+					"In the hour of our near-destruction a stronghold was built"
+				]
+			},
+
+			{"texts":
+				[
+					"Constructed either by Sealand tribesfolk or elders",
+					"To house those on our side we could save",
+					"To house those on our side we could save",
+					"To house those on our side we could save"
+				]
+			},
+
+			{"texts":
+				[
+					"and until now completely unknown",
+					"Having strengthened ourselves and regrouped",
+					"Having gathered our strength",
+					"Having long lain low"
+				]
+			},
+
+			{"texts":
+				[
+					"Yet newly emerging evidence",
+					"We now tentatively prepare ...",
+					"We're preparing to re-establish ourselves",
+					"We are now tentatively preparing ..."
+				]
+			},
+
+			{"texts":
+				[
+					"has suggested that Sealand may be attempting to re-establish itself",
+					"to re-establish contact with Mainland",
+					"our resurgence starts now",
+					"to re-establish our lost world"
+				]
+			},
+
+			{"texts":
+				[
+					"In our era of great uncertainty we must remain vigilant",
+					"In our era of great uncertainty we must strive to forge alliances",
+					"In our era of great uncertainty we must fight for our name",
+					"In our era of great uncertainty we strive to live within our means"
+				]
+			},
+
+			{"texts":
+				[
+					"We keep watch for further developments",
+					"We cast our net wide towards our tomorrows",
+					"We move to the next stage in our history",
+					"We prepare for further developments"
 				]
 			}
+
 		]
 	},
 
