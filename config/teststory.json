@@ -31,39 +31,22 @@
 
 			{"texts":
 				[
-					"Not long ago ..."
-				],
-				"nextcue": 100
-			},
-
-			{"texts":
-				[
-					"a trawler not far off the coast of Mainland",
-					"a trawler not far off the coast of Mainland",
-					"a trawler not far off the coast of Mainland",
-					"Control sent out a pathfinder trawler "
+					"Not long ago ...%a trawler not far off the coast of Mainland",
+					"Not long ago ...%a trawler not far off the coast of Mainland",
+					"Not long ago ...%a trawler not far off the coast of Mainland",
+					"Not long ago ...%control sent out a pathfinder trawler"
 				],
 				"nextcue": 115
 			},
 
 			{"texts":
 				[
-					"made an unexpected discovery ... ",
-					"was despatched by our Central Control",
-					"was traced by our Central Control",
-					"not far from the coast of Mainland,"
+					"made an unexpected discovery ... %relics from a land long-forgotten",
+					"was despatched by our Central Control%its mission: to gather the evidence of our past",
+					"was traced by our Central Control%its mission, we believe: to gather the evidence of our past",
+					"not far from the coast of Mainland%its mission: to gather the evidence of our past"
 				],
-				"nextcue": 135
-			},
-
-			{"texts":
-				[
-					"relics from a land long-forgotten,",
-					"its mission: to gather the evidence of our past",
-					"its mission, we believe: to gather the evidence of our past",
-					"its mission: to gather the evidence of our past"
-				],
-				"nextcue": 135
+				"nextcue": 140
 			},
 
 			{"texts":
@@ -201,7 +184,7 @@
 					"We mobilised to re-flood the newly created borderlands ...",
 					"We mobilised to re-flood the newly created borderlands ..."
 				],
-				"nextcue": 575
+				"nextcue": 600
 			},
 
 			{"texts":
@@ -210,23 +193,30 @@
 					"But the clash between the two sides had severe repercussions",
 					"But the clash between us had certain repercussions",
 					"But the clash between us had severe repercussions"
-				]
+				],
+				"nextcue": 615
 			},
 
 			{"texts":
 				[
-					"The fight for resources resulted in mutual destruction",
-					"The fight for resources resulted in mutual destruction",
-					"Miscalculations resulted in our mutual destruction",
-					"The fight for resources resulted in mutual destruction"
-				]
+					"The fight for resources resulted in mutual destruction%and soon all of Sealand was drowned.",
+					"The fight for resources resulted in mutual destruction%and soon all of Sealand was drowned.",
+					"Miscalculations resulted in our mutual destruction%and soon all of Sealand was drowned.",
+					"The fight for resources resulted in mutual destruction%and soon all of Sealand was drowned."
+				],
+				"nextcue": 630
 			},
 
 			{"texts":
 				[
-					"and soon all of Sealand was drowned."
-				]
+					"The people themselves surely perished",
+					"Our people themselves largely perished",
+					"Our people themselves largely perished",
+					"Our people themselves largely perished"
+				],
+				"nextcue": 635
 			},
+
 
 			{"texts":
 				[
@@ -234,13 +224,15 @@
 					"Yet for some there was partial salvation ...",
 					"Yet for some there was partial salvation ...",
 					"Yet for some there was partial salvation ..."
-				]
+				],
+				"nextcue": 660
 			},
 
 			{"texts":
 				[
 					"Not far from where Sealand drowned"
-				]
+				],
+				"nextcue": 680
 			},
 
 			{"texts":
@@ -249,7 +241,8 @@
 					"Our people and struggle survive ...",
 					"Our names live on ...",
 					"Our people survive ..."
-				]
+				],
+				"nextcue": 710
 			},
 
 			{"texts":
@@ -258,7 +251,8 @@
 					"In the hour of our near-destruction a stronghold was built",
 					"In the hour of our near-destruction a stronghold was built",
 					"In the hour of our near-destruction a stronghold was built"
-				]
+				],
+				"nextcue": 730
 			},
 
 			{"texts":
@@ -267,7 +261,8 @@
 					"To house those on our side we could save",
 					"To house those on our side we could save",
 					"To house those on our side we could save"
-				]
+				],
+				"nextcue": 750
 			},
 
 			{"texts":
@@ -276,7 +271,8 @@
 					"Having strengthened ourselves and regrouped",
 					"Having gathered our strength",
 					"Having long lain low"
-				]
+				],
+				"nextcue": 760
 			},
 
 			{"texts":
@@ -285,7 +281,8 @@
 					"We now tentatively prepare ...",
 					"We're preparing to re-establish ourselves",
 					"We are now tentatively preparing ..."
-				]
+				],
+				"nextcue": 780
 			},
 
 			{"texts":
@@ -294,7 +291,8 @@
 					"to re-establish contact with Mainland",
 					"our resurgence starts now",
 					"to re-establish our lost world"
-				]
+				],
+				"nextcue": 800
 			},
 
 			{"texts":
@@ -303,7 +301,8 @@
 					"In our era of great uncertainty we must strive to forge alliances",
 					"In our era of great uncertainty we must fight for our name",
 					"In our era of great uncertainty we strive to live within our means"
-				]
+				],
+				"nextcue": 820
 			},
 
 			{"texts":
