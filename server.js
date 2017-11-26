@@ -5,6 +5,8 @@ var admincmds = require('./admincmds.js');
 var displaycmds = require('./displaycmds.js');
 var playercmds = require('./playercmds.js');
 
+var path = require('path');
+
 //check the various collections exist if not create them
 
 globals.Presets.findOne({type: "love", name: "default"}).then((doc)=> {
@@ -42,7 +44,7 @@ setTimeout(function()
 
 //We define a route handler / that gets called when we hit our website home.
 
-globals.app.use("/admin",express.static(__dirname + "/admin"));
+globals.app.use("/admin",express.static(path.join(__dirname + "/admin")));
 globals.app.use("/style",express.static(__dirname + "/style"));
 globals.app.use("/libs",express.static(__dirname + "/libs"));
 globals.app.use("/player",express.static(__dirname + "/player"));
