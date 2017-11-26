@@ -76,7 +76,7 @@ globals.admin.on('connection', admincmds.response);
 globals.display.on('connection', displaycmds.response);
 globals.players.on('connection', playercmds.response);
 
-//We make the http server listen on port 3000.
-http.listen(3000, function(){
-	console.log('listening on *:3000');
+//We make the http server listen
+server.listen(globals.port, function () {
+  console.log('Server listening at port %d', globals.port);
 });
