@@ -1,8 +1,13 @@
 
+var globals;
+
+$.getJSON("/config/settings.json", function(json) {
+    globals = json;
+});
+
 
 Player = function(isDummy)
 {
-
 	this.lastCheckin = Date.now();
 
 	this.isDummy = (isDummy == undefined) ? false: true;

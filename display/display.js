@@ -1,3 +1,9 @@
+var globals;
+
+$.getJSON("/config/settings.json", function(json) {
+    globals = json;
+});
+
 
 love = undefined;
 
@@ -109,7 +115,7 @@ function story(msg)
 			vidProgRoutine = undefined
 		}
 		$('#displayscreen').empty();
-		$('#displayscreen').append("<div id='storyContainer'><img src=" + globals.mediaURL + msg.img + "></div>");
+		$('#displayscreen').append("<div id='storyContainer'><img src=" + msg.img + "></div>");
 	}
 	else if (msg.video)
 	{
@@ -119,7 +125,7 @@ function story(msg)
 			vidProgRoutine = undefined
 		}
 		$('#displayscreen').empty();
-		$('#displayscreen').append("<video id='vidPlayer'><source src='" + globals.mediaURL + msg.video + "' type='video/mp4'></video>");
+		$('#displayscreen').append("<video id='vidPlayer'><source src='" + msg.video + "' type='video/mp4'></video>");
 		$('#vidPlayer').attr('width',window.innerWidth);
 		$('#vidPlayer').get(0).play();
 

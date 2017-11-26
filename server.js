@@ -53,6 +53,7 @@ globals.app.use("/display",express.static(path.join(__dirname, "/display")));
 globals.app.use("/samples",express.static(path.join(__dirname, "/samples")));
 globals.app.use("/images",express.static(path.join(__dirname,"/images")));
 globals.app.use("/videos",express.static(path.join(__dirname, "/videos")));
+globals.app.use("/config",express.static(path.join(__dirname, "/config")));
 globals.app.use("/socket.io",express.static(path.join(__dirname, "/socket.io")));
 
 
