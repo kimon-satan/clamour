@@ -12,6 +12,7 @@
     "monk": "^6.0.5",
     "osc": "^2.2.0",
     "path": "^0.12.7",
+    "random-words": "0.0.1",
     "socket.io": "^2.0.4"
   },
   "scripts": {
