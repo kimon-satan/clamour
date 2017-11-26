@@ -77,6 +77,6 @@ globals.display.on('connection', displaycmds.response);
 globals.players.on('connection', playercmds.response);
 
 //We make the http server listen
-server.listen(globals.port, function () {
+globals.app.listen(globals.port, function () {
   console.log('Server listening at port %d', globals.port);
 });
