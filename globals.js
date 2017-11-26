@@ -5,6 +5,8 @@ exports.app = express();
 http = require('http').Server(exports.app);
 io = require('socket.io')(http);
 
+exports.mediaURL = "http://igor.gold.ac.uk/~skata001/clamour"
+
 //exports.DEBUG = true;
 
 exports.port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,

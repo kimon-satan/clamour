@@ -44,10 +44,10 @@ Sound.prototype.init = function(){
   //for each reaction load the sound file
   for(var s in this.reactions)
   {
-    this.loadSample("samples/" + this.reactions[s].file.value);
+    this.loadSample(globals.mediaURL + "samples/" + this.reactions[s].file.value);
   }
 
-  this.loadSample("samples/" + "232211_spit.wav");
+  this.loadSample(globals.mediaURL + "samples/" + "232211_spit.wav");
 
 
 }
