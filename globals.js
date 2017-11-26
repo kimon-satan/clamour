@@ -37,7 +37,7 @@ if(typeof(mongoURL) == "undefined")
 	exports.URL = "localhost:27017/ConditionalLove";
 }
 else {
-	exports.URL = mongoURL + "/ConditionalLove";
+	exports.URL = mongoURL;
 }
 
 //simple db using monk & mongodb
