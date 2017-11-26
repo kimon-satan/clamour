@@ -51,6 +51,8 @@ globals.app.use("/display",express.static(__dirname + "/display"));
 globals.app.use("/samples",express.static(__dirname + "/samples"));
 globals.app.use("/images",express.static(__dirname + "/images"));
 globals.app.use("/videos",express.static(__dirname + "/videos"));
+globals.app.use("/socket.io",express.static(__dirname + "/socket.io"));
+
 
 //three types of user
  globals.app.get('/admin', function(req, res){

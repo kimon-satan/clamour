@@ -32,9 +32,8 @@
 			{"texts":
 				[
 					"Not long ago ...%a trawler not far off the coast of Mainland",
-					"Not long ago ...%a trawler not far off the coast of Mainland",
-					"Not long ago ...%a trawler not far off the coast of Mainland",
-					"Not long ago ...%control sent out a pathfinder trawler"
+					"Not long ago ...%a trawler not far off the coast of Sealand"
+
 				],
 				"nextcue": 115
 			},
@@ -42,9 +41,7 @@
 			{"texts":
 				[
 					"made an unexpected discovery ... %relics from a land long-forgotten",
-					"was despatched by our Central Control%its mission: to gather the evidence of our past",
-					"was traced by our Central Control%its mission, we believe: to gather the evidence of our past",
-					"not far from the coast of Mainland%its mission: to gather the evidence of our past"
+					"made an unexpected discovery ... %relics from a past long-forgotten"
 				],
 				"nextcue": 140
 			},
@@ -52,18 +49,13 @@
 			{"texts":
 				[
 					"a place we know only as Sealand.",
-					"and the home we remember as Sealand",
-					"and the home we remember as Sealand",
-					"and the home we call Sealand"
+					"and of our homeland destroyed"
 				],
 				"nextcue": 160
 			},
 
 			{"texts":
 				[
-					"Now...%researchers are starting to piece together",
-					"Now...%researchers are starting to piece together",
-					"Now...%their researchers are trying to piece together",
 					"Now...%researchers are starting to piece together"
 				],
 				"nextcue": 180
@@ -78,20 +70,16 @@
 
 			{"texts":
 				[
-					"A unique survey of the territory%and its people - the Sealanders",
-					"A vital survey of our land%and of our forbears - the early Sealanders",
-					"A survey of our once great land%and of our forbears - the early Sealanders",
-					"A vital survey of our land%and of our forbears - the early Sealanders"
+					"a unique survey of the territory%and its people - the Sealanders",
+					"a vital survey of our former home%and the bravery of our forbears"
 				],
 				"nextcue": 240
 			},
 
 			{"texts":
 				[
-					"The founders of a peculiar civilisation%that we are only beginning to understand.",
-					"The architects of our very civilisation%about whom we strive to know more.",
-					"The architects of our proud civilisation%about whom these Mainlanders struggle to understand.",
-					"The architects of our doomed civilisation%about whom we strive to understand."
+					"The founders of a curious society%that we are only beginning to understand.",
+					"The architects of our very civilisation%about whom we strive to know more."
 				],
 				"nextcue": 286
 			},
@@ -105,49 +93,37 @@
 
 			{"texts":
 				[
-					"have revealed a secret history.",
-					"have confirmed the tales long passed down.",
-					"have revealed a dark chapter of history.",
-					"have confirmed the tales passed down."
+					"have revealed a bloody past"
 				],
 				"nextcue": 350
 			},
 
 			{"texts":
 				[
-					"At the height of its civilisation",
-					"At the height of our civilisation",
-					"At the height of our civilisation",
-					"At the height of our civilisation"
+					"At the height of our civilisation ... "
 				],
 				"nextcue": 381
 			},
 
 			{"texts":
 				[
-					"a bold and radical plan",
-					"a radical plan to forge a global alliance",
-					"a dangerous intercontinental plan",
-					"a dangerous incursionary plan"
+					"we devised a radical plan",
+					"a hostile plan"
 				],
 				"nextcue": 400
 			},
 
 			{"texts":
 				[
-					"was developed by Sealand tribesfolk.",
-					"was developed by Sealand tribesfolk.",
-					"was hatched by certain tribesfolk amongst us.",
-					"was hatched by Sealand Officals."
+					"to forge a global alliance",
+					"was hatched by the Mainlanders"
 				],
 				"nextcue": 420
 			},
 
 			{"texts":
 				[
-					"Their aim: to weld Sealand to Mainland",
-					"Their aim: to bridge the gulf between Sealand and Mainland",
-					"Their aim: to weld Sealand to Mainland",
+					"Out aim: to unify Mainland and Sealand",
 					"Their aim: to weld Sealand to Mainland"
 				],
 				"nextcue": 445
@@ -155,82 +131,80 @@
 
 			{"texts":
 				[
-					"By draining the ocean between them"
+					"by draining the ocean between us"
 				],
 				"nextcue": 495
 			},
 
 			{"texts":
 				[
-					"However ...%the tribesfolk were met with fierce resistance from rebel elders",
-					"However ...%our forbears were met with fierce resistance from Sealand elders",
-					"However ...%many among us fought back against the forces of disruption",
-					"However ...%our tribesfolk fought back against these internal agressors"
+					"However ...%our mission was met with hostile force",
+					"However ...%our forbears courageously resisted"
 				],
 				"nextcue": 526
 			},
 
 			{"texts":
 				[
-					"There followed a long and bloody civil war"
+					"from Sealand militias",
+					"Mobilising our defence forces"
 				],
 				"nextcue": 548
 			},
 
 			{"texts":
 				[
-					"The Resistance mobilised to re-flood the newly created borderlands ...",
-					"The elders mobilised to re-flood the newly created borderlands ...",
-					"We mobilised to re-flood the newly created borderlands ...",
-					"We mobilised to re-flood the newly created borderlands ..."
+					"They conspired to re-flood the newly created land",
+					"We resolved to re-flood the newly created land"
 				],
 				"nextcue": 600
 			},
 
 			{"texts":
 				[
-					"But the clash between the two sides had severe repercussions",
-					"But the clash between the two sides had severe repercussions",
-					"But the clash between us had certain repercussions",
-					"But the clash between us had severe repercussions"
+					"But their sabotage had severe repercussions",
+					"But our struggle had severe repercussions"
 				],
 				"nextcue": 615
 			},
 
 			{"texts":
 				[
-					"The fight for resources resulted in mutual destruction%and soon all of Sealand was drowned.",
-					"The fight for resources resulted in mutual destruction%and soon all of Sealand was drowned.",
-					"Miscalculations resulted in our mutual destruction%and soon all of Sealand was drowned.",
-					"The fight for resources resulted in mutual destruction%and soon all of Sealand was drowned."
+					"They ultimately authored their own destruction.",
+					"The Mainlanders enacted a callous retribution."
 				],
 				"nextcue": 630
 			},
 
 			{"texts":
 				[
-					"The people themselves surely perished",
-					"Our people themselves largely perished",
-					"Our people themselves largely perished",
-					"Our people themselves largely perished"
+					"and soon all of Sealand was drowned."
 				],
 				"nextcue": 635
 			},
+
+			{"texts":
+				[
+					"The people themselves surely perished.",
+					"Our people themeselves largely perished."
+				],
+				"nextcue": 645
+			},
+
 
 
 			{"texts":
 				[
 					"Yet there has been one further discovery ...",
-					"Yet for some there was partial salvation ...",
-					"Yet for some there was partial salvation ...",
-					"Yet for some there was partial salvation ..."
+					"Yet for some there was salvation ..."
 				],
 				"nextcue": 660
 			},
 
 			{"texts":
 				[
-					"Not far from where Sealand drowned"
+					"Not far from where Sealand drowned",
+					"Not far from where our homeland drowned"
 				],
 				"nextcue": 680
 			},
@@ -238,8 +212,6 @@
 			{"texts":
 				[
 					"A trace remains ...",
-					"Our people and struggle survive ...",
-					"Our names live on ...",
 					"Our people survive ..."
 				],
 				"nextcue": 710
@@ -247,9 +219,7 @@
 
 			{"texts":
 				[
-					"A tiny outpost afloat",
-					"In the hour of our near-destruction a stronghold was built",
-					"In the hour of our near-destruction a stronghold was built",
+					"In the hour of their near-destruction a stronghold was built",
 					"In the hour of our near-destruction a stronghold was built"
 				],
 				"nextcue": 730
@@ -257,9 +227,7 @@
 
 			{"texts":
 				[
-					"Constructed either by Sealand tribesfolk or elders",
-					"To house those on our side we could save",
-					"To house those on our side we could save",
+					"To house those on their side they could save",
 					"To house those on our side we could save"
 				],
 				"nextcue": 750
@@ -267,50 +235,37 @@
 
 			{"texts":
 				[
-					"and until now completely unknown",
-					"Having strengthened ourselves and regrouped",
-					"Having gathered our strength",
-					"Having long lain low"
+					"Having now rediscovered our past"
 				],
 				"nextcue": 760
 			},
 
 			{"texts":
 				[
-					"Yet newly emerging evidence",
-					"We now tentatively prepare ...",
-					"We're preparing to re-establish ourselves",
-					"We are now tentatively preparing ..."
+					"we must protect the Sealanders from themselves",
+					"we must protect future generations from Mainland aggression"
 				],
 				"nextcue": 780
 			},
 
 			{"texts":
 				[
-					"has suggested that Sealand may be attempting to re-establish itself",
-					"to re-establish contact with Mainland",
-					"our resurgence starts now",
-					"to re-establish our lost world"
+					"by drafting a constitution"
 				],
 				"nextcue": 800
 			},
 
 			{"texts":
 				[
-					"In our era of great uncertainty we must remain vigilant",
-					"In our era of great uncertainty we must strive to forge alliances",
-					"In our era of great uncertainty we must fight for our name",
-					"In our era of great uncertainty we strive to live within our means"
+					"Order must be established",
+					"Independance must be safeguarded"
 				],
 				"nextcue": 820
 			},
 
 			{"texts":
 				[
-					"We keep watch for further developments",
-					"We cast our net wide towards our tomorrows",
-					"We move to the next stage in our history",
-					"We prepare for further developments"
+					"In our era of great uncertainty we must remain vigilant"
 				]
 			}
 
