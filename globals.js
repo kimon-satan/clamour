@@ -3,6 +3,7 @@ console.log("importing globals");
 express = require('express');
 exports.app = express();
 http = require('http').Server(exports.app);
+io = require('socket.io')(http);
 
 //exports.DEBUG = true;
 
@@ -31,10 +32,16 @@ if (mongoURL == null && process.env.DATABASE_SERVICE_NAME) {
   }
 }
 
-console.log(mongoURL);
+if(typeof(mongoURL) == "undefined")
+{
+	exports.URL = "localhost:27017/ConditionalLove";
+}
+else {
+	exports.URL = mongoURL + "/ConditionalLove";
+}
 
 //simple db using monk & mongodb
-exports.URL = mongoURL;
+
 exports.MONK = require('monk');
 exports.DB = exports.MONK(exports.URL);
 
@@ -91,7 +98,7 @@ exports.storyRooms = [];
 
 exports.currentVotes = {};
 
-io = require('socket.io')(http);
+
 exports.admin = io.of('/admin');
 exports.display = io.of('/display');
 exports.players = io.of('/player');

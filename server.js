@@ -44,16 +44,16 @@ setTimeout(function()
 
 //We define a route handler / that gets called when we hit our website home.
 
-globals.app.use("/admin",express.static(path.join(__dirname + "/admin")));
-globals.app.use("/style",express.static(__dirname + "/style"));
-globals.app.use("/libs",express.static(__dirname + "/libs"));
-globals.app.use("/player",express.static(__dirname + "/player"));
-globals.app.use("/tests",express.static(__dirname + "/tests"));
-globals.app.use("/display",express.static(__dirname + "/display"));
-globals.app.use("/samples",express.static(__dirname + "/samples"));
-globals.app.use("/images",express.static(__dirname + "/images"));
-globals.app.use("/videos",express.static(__dirname + "/videos"));
-globals.app.use("/socket.io",express.static(__dirname + "/socket.io"));
+globals.app.use("/admin",express.static(path.join(__dirname, "/admin")));
+globals.app.use("/style",express.static(path.join(__dirname, "/style")));
+globals.app.use("/libs",express.static(path.join(__dirname, "/libs")));
+globals.app.use("/player",express.static(path.join(__dirname, "/player")));
+globals.app.use("/tests",express.static(path.join(__dirname, "/tests")));
+globals.app.use("/display",express.static(path.join(__dirname, "/display")));
+globals.app.use("/samples",express.static(path.join(__dirname, "/samples")));
+globals.app.use("/images",express.static(path.join(__dirname,"/images")));
+globals.app.use("/videos",express.static(path.join(__dirname, "/videos")));
+globals.app.use("/socket.io",express.static(path.join(__dirname, "/socket.io")));
 
 
 //three types of user
