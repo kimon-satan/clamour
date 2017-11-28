@@ -2,6 +2,7 @@ var globals = require('./globals.js');
 var helpers = require('./helpers.js');
 require('./libs/utils.js'); //just for generateTempId
 
+
 exports.response = function(socket)
 {
 	console.log('an admin connected');
@@ -240,6 +241,7 @@ exports.response = function(socket)
 		{
 			//TODO finish this
 			var displayStr = "mode: " + globals.DisplayState.mode + "\n";
+			displayStr += "resources loaded: " + globals.DisplayState.videoLoadProgress + "\n";
 
 			if(globals.DisplayState.mode == "story")
 			{

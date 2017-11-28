@@ -53,7 +53,8 @@ exports.DB.then(() => {
 exports.DisplayState = {
 	mode: "instruct",
 	storyMedia: "blank",
-	videoProgress: 0
+	videoProgress: 0,
+	videoLoadProgress: 0
 }
 
 exports.UserData = exports.DB.get('UserData');

@@ -9,6 +9,7 @@ love = undefined;
 
 var lastFrameTime, framePeriod, fps, mode;
 var vidProgRoutine;
+var myVid;// make a video element
 
 lastFrameTime = 0;
 
@@ -17,6 +18,16 @@ var socket = io('/display');
 $('document').ready(function(){
 
 	setupInstructions();
+
+	myVid = $("<video id='vidPlayer'><source preload=true src='" + globals.videoPath + "intro.mp4" + "'type='video/mp4'></vid>");
+	myVid[0].onprogress = function()
+	{
+		socket.emit("vidLoading", myVid[0].readyState);
+	};
+	myVid[0].oncanplaythrough = function()
+	{
+		socket.emit("vidLoaded");
+	};
 })
 
 
@@ -124,8 +135,10 @@ function story(msg)
 			window.clearInterval(vidProgRoutine);
 			vidProgRoutine = undefined
 		}
+
+		myVid[0].currentTime = 0;
 		$('#displayscreen').empty();
-		$('#displayscreen').append("<video id='vidPlayer'><source src='" + msg.video + "' type='video/mp4'></video>");
+		$('#displayscreen').append(myVid[0]);
 		$('#vidPlayer').attr('width',window.innerWidth);
 		$('#vidPlayer').get(0).play();
 
