@@ -1,8 +1,6 @@
 var globals;
 
-$.getJSON("/config/settings.json", function(json) {
-    globals = json;
-});
+
 
 
 love = undefined;
@@ -19,15 +17,20 @@ $('document').ready(function(){
 
 	setupInstructions();
 
-	myVid = $("<video id='vidPlayer'><source preload=true src='" + globals.videoPath + "intro.mp4" + "'type='video/mp4'></vid>");
-	myVid[0].onprogress = function()
-	{
-		socket.emit("vidLoading", myVid[0].readyState);
-	};
-	myVid[0].oncanplaythrough = function()
-	{
-		socket.emit("vidLoaded");
-	};
+	$.getJSON("/config/settings.json", function(json) {
+	    globals = json;
+
+			myVid = $("<video id='vidPlayer'><source preload=true src='" + globals.videoPath + "intro.mp4" + "'type='video/mp4'></vid>");
+			myVid[0].onprogress = function()
+			{
+				socket.emit("vidLoading", myVid[0].readyState);
+			};
+			myVid[0].oncanplaythrough = function()
+			{
+				socket.emit("vidLoaded");
+			};
+	});
+
 })
 
 
