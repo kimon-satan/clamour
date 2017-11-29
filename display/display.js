@@ -98,12 +98,11 @@ function setupInstructions()
 	$('#displayscreen').empty();
 	$('#displayscreen').append( " \
 		<div id='displayInstructions'> \
-		<h1>Conditional Love - Instructions</h1> \
+		<h1>Clamour - Instructions</h1> \
 		<h3>1. Take out your phone or laptop</h3> \
-		<h3>2. Join the wifi network ConditionalLove</h3> \
-		<h3>3. Open a browser</h3> \
-		<h3>4. Type the address love.local (no www.)</h3> \
-		<h3><i>Ask for help if it doesn't work</i></h3></div>"
+		<h3>2. Open a browser</h3> \
+		<h3>3. Type the address https://goo.gl/1Cahy5</h3> \
+		<h3><i>Tell us if it doesn't work</i></h3></div>"
 	);
 
 	mode = "instruct";
