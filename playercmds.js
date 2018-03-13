@@ -17,6 +17,8 @@ exports.response = function(socket)
 		usrobj.colSeed = Math.random();
 		usrobj.colMode = Math.floor(Math.random() * 4);
 		usrobj.blobSeed = Math.random();
+		usrobj.voiceNum = Math.floor(Math.random() * 8);
+		usrobj.voicePan = -1 + Math.random() * 2;
 
 		if(msg == "new")
 		{
@@ -96,7 +98,15 @@ exports.response = function(socket)
 		{
 			console.log("null msg");
 		}
-		var p = globals.Votes.findOne({_id: msg.id});
+
+		var usrobj;
+		var p = globals.UserData.findOne(id);
+
+		p = p.then((data)=>
+		{
+			usrobj = data;
+			return globals.Votes.findOne({_id: msg.id});
+		})
 
 		p = p.then((data)=>
 		{
@@ -105,11 +115,10 @@ exports.response = function(socket)
 				throw "vote " + msg.id + " could not be found ";
 			}
 			data.scores[msg.choice] += 1.0/data.population;
-			//TODO trigger the audio sample
 
 			globals.udpPort.send({
 					address: "/speakPhrase",
-					args: [String(data._id), msg.choice] //Could include voice here
+					args: [String(data._id), msg.choice, usrobj.voiceNum]
 			}, "127.0.0.1", 57120);
 
 			return globals.Votes.update({_id: data._id}, {$push: {voted: id}, $pull: {voting: id}, $set:{scores: data.scores}});

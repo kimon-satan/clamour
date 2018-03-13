@@ -20,19 +20,17 @@ globals.udpPort.on('message', (msg, rinfo) => {
 
 				data.available[msg.args[1]].push(msg.args[2])
 				globals.Votes.update(data._id,{$set: {available: data.available}});
-				if(data.available[0].length > 0 && data.available[1].length > 0)
+				//We're ready to start a vote
+				var i = globals.pendingVotes.indexOf(String(data._id));
+				//Check that this is a pending vote
+				if(i > -1)
 				{
-					//We're ready to start a vote
-					var i = globals.pendingVotes.indexOf(String(data._id));
-					//Check that this is a pending vote
-					if(i > -1)
-					{
-						console.log("start vote")
-						globals.pendingVotes.splice(i,1);
-						//WARNING: possibility of race condition ...
-						exports.sendVote(data, data.num);
-					}
+					//console.log("start vote")
+					globals.pendingVotes.splice(i,1);
+					//WARNING: possibility of race condition ...
+					exports.sendVote(data, data.num);
 				}
+
 
 			})
 
@@ -534,7 +532,7 @@ exports.playSound = function(options)
 		globals.udpPort.send(
 		{
 			address: "/playStereo",
-			args: args
+			args: argsVote
 		},
 		"127.0.0.1", 57120);
 }
@@ -604,7 +602,8 @@ exports.loadDictionary = function(cb)
 exports.sendVote = function(data, num)
 {
 	var omsg = {pair: data.pair, id: data._id};
-	var p = globals.UserData.find({_id: {$in: data.notvoted}, currentVoteId: -1});
+	//TODO add a voice field to UserData - only select voices which are currently in the available category
+	var p = globals.UserData.find({_id: {$in: data.notvoted}, currentVoteId: -1, voiceNum: {$in: data.available[0], $in: data.available[1]}});
 	if(num == undefined)num = 1;
 
 	p = p.then((docs)=>
