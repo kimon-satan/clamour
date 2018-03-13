@@ -2,6 +2,45 @@ var globals = require('./globals.js');
 var randomWords = require('random-words');
 var fs = require('fs');
 
+//Handle incoming OSC
+
+globals.udpPort.on('message', (msg, rinfo) => {
+
+		if(msg.address == "/poll")
+		{
+			 globals.display.emit('cmd', { type: 'update', id: msg.args[0], val: msg.args[1]});
+		}
+
+		if(msg.address == "/phraseComplete")
+		{
+			console.log(msg);
+
+			globals.Votes.findOne(msg.args[0]).then((data)=>
+			{
+
+				data.available[msg.args[1]].push(msg.args[2])
+				globals.Votes.update(data._id,{$set: {available: data.available}});
+				if(data.available[0].length > 0 && data.available[1].length > 0)
+				{
+					//We're ready to start a vote
+					var i = globals.pendingVotes.indexOf(String(data._id));
+					//Check that this is a pending vote
+					if(i > -1)
+					{
+						console.log("start vote")
+						globals.pendingVotes.splice(i,1);
+						//WARNING: possibility of race condition ...
+						exports.sendVote(data, data.num);
+					}
+				}
+
+			})
+
+		}
+
+});
+
+///////////////////////////////////////////////////////////////////////////////////////
 
 exports.choose = function(list)
 {
@@ -577,6 +616,7 @@ exports.sendVote = function(data, num)
 			{
 				if(docs.length == 0)
 				{
+					//we ran out of voters before the pool could be complete
 					//TODO probably store and kill these on reset just to be safe
 					setTimeout(function()
 					{
@@ -601,6 +641,7 @@ exports.sendVote = function(data, num)
 		}
 		else
 		{
+			//No voters currently available
 			//TODO probably store and kill these on reset just to be safe
 			setTimeout(function()
 			{

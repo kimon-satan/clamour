@@ -106,6 +106,12 @@ exports.response = function(socket)
 			}
 			data.scores[msg.choice] += 1.0/data.population;
 			//TODO trigger the audio sample
+
+			globals.udpPort.send({
+					address: "/speakPhrase",
+					args: [String(data._id), msg.choice] //Could include voice here
+			}, "127.0.0.1", 57120);
+
 			return globals.Votes.update({_id: data._id}, {$push: {voted: id}, $pull: {voting: id}, $set:{scores: data.scores}});
 		})
 

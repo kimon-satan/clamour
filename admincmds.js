@@ -446,10 +446,14 @@ exports.response = function(socket)
 			helpers.parseOptions(msg.args, function(options)
 			{
 
-				var r = "choice: ";
+
 				var t = (options.type != undefined) ? options.type : helpers.choose(Object.keys(globals.dictionary.wordPairs));
-				var num = (options.num != undefined) ? options.num : 1;
 				var p = helpers.choose(globals.dictionary.wordPairs[t]);
+
+				var num = (options.num != undefined) ? options.num : 1;  // we need this for the helper
+
+
+				var r = "choice: ";
 
 				for(var i = 0; i < p.length; i++)
 				{
@@ -462,13 +466,30 @@ exports.response = function(socket)
 
 					promise = promise.then((docs)=>
 					{
-						globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
-						return globals.Votes.insert({ pair: p, type: t, scores: [0,0], voting: [], voted: [], notvoted: docs[0].population, population: docs[0].population.length});
+						return globals.Votes.insert(
+							{ pair: p,
+								type: t,
+								available: [[],[]],
+								scores: [0,0],
+								voting: [],
+								voted: [],
+								notvoted: docs[0].population,
+								population: docs[0].population.length,
+								num: num });
 					})
 
 					promise = promise.then((data)=>
 					{
-						helpers.sendVote(data, num);
+
+						//Tell SC to record the phrases
+						globals.udpPort.send({
+								address: "/recordPhrases",
+								args: [String(data._id), p[0],p[1]],
+						}, "127.0.0.1", 57120);
+
+						globals.pendingVotes.push(String(data._id));
+						globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
+
 					});
 
 				});

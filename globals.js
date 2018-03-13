@@ -56,8 +56,6 @@ exports.storyCurrText = [""];
 exports.storyNumChars = 0;
 exports.storyRooms = [];
 
-exports.currentVotes = {};
-
 io = require('socket.io')(http);
 exports.admin = io.of('/admin');
 exports.display = io.of('/display');
@@ -65,6 +63,7 @@ exports.players = io.of('/player');
 exports.sockets = {};
 exports.checkins = {};
 exports.procs = {};
+exports.pendingVotes = [];
 
 
 var osc = require("osc");
@@ -76,16 +75,7 @@ exports.udpPort = new osc.UDPPort({
 
 exports.udpPort.open();
 
-//update the graphics
 
-exports.udpPort.on('message', (msg, rinfo) => {
-
-		if(msg.address == "/poll")
-		{
-			 exports.display.emit('cmd', { type: 'update', id: msg.args[0], val: msg.args[1]});
-		}
-
-});
 
 
 
