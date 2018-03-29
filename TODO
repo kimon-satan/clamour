@@ -1,12 +1,12 @@
 TODO
 
-- Don't initiate vote till SC callback
-
-- votes initial pool size
-- votes implement timeouts for real client
-- votes audio
+- votes implement timeouts for real client ???
 - votes deal with concluded Votes
-- then stage two
+- individual pan and rate for voices
+- later individual fonts and colours ?
+- display votes
+- then stage two on conclusion of votes
+	- joining phrases together
 
 - try / catch for admin commands
 - story stuff will need refactoring into a different place

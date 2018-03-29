@@ -121,6 +121,28 @@ exports.response = function(socket)
 					args: [String(data._id), msg.choice, usrobj.voiceNum]
 			}, "127.0.0.1", 57120);
 
+			//assign to the next empty slot
+			//naieve version
+			if(globals.voteDisplayIndexes[data._id] == undefined)
+			{
+				var k = Object.keys(globals.voteDisplayIndexes);
+				var slots = [0,0,0,0,0,0,0,0]; //TODO maybe make this a global
+
+				for(var i = 0; i < k.length; i++)
+				{
+					console.log(k[i])
+					slots[globals.voteDisplayIndexes[k[i]]] = k[i];
+
+				}
+				globals.voteDisplayIndexes[data._id] = (slots.indexOf(0) == 0) ?  0 : slots.indexOf(0);
+				console.log(globals.voteDisplayIndexes)
+			}
+
+			globals.display.emit('cmd', {
+				type: "vote", cmd: "displayVote" ,
+				val: {text: data.pair[msg.choice], dispIdx: globals.voteDisplayIndexes[data._id]
+				}});
+
 			return globals.Votes.update({_id: data._id}, {$push: {voted: id}, $pull: {voting: id}, $set:{scores: data.scores}});
 		})
 
@@ -147,12 +169,17 @@ exports.response = function(socket)
 			}
 		});
 
+		p.then((data)=>{
+			globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
+		})
+
 		p.catch((reason)=>{
 			console.log("Error - voted " + reason) ;
 		})
 
 		//reset this users vote
-		globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
+
+
 	})
 
 	socket.on('update_user', function(msg)

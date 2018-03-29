@@ -1,6 +1,8 @@
 
 love = undefined;
 
+var voteDisplayer;
+
 var lastFrameTime, framePeriod, fps, mode;
 
 lastFrameTime = 0;
@@ -27,6 +29,18 @@ socket.on('cmd', function(msg){
 	else if (msg.type == "story" )
 	{
 		story(msg.img);
+	}
+	else if (msg.type == "vote" )
+	{
+		if(msg.cmd == "reset" || msg.cmd == "new")
+		{
+			$('#displayscreen').empty();
+			voteDisplayer = new VoteDisplayer();
+		}
+		else
+		{
+			voteDisplayer.cmd(msg);
+		}
 	}
 	else if (msg.type == "end")
 	{
@@ -95,9 +109,10 @@ function story(img)
 	{
 		$('#displayscreen').append("<div id='storyContainer'><img src=" + img + "></div>");
 	}
-	
+
 	mode = "story";
 }
+
 
 ///////////////////////////////////////LOVE//////////////////////////////////////////
 

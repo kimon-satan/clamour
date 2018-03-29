@@ -10,6 +10,7 @@ http = require('http').Server(exports.app);
 exports.URL = 'localhost:27017/ConditionalLove';
 exports.MONK = require('monk');
 exports.DB = exports.MONK(exports.URL);
+exports.DB .addMiddleware(require('monk-middleware-debug'))
 
 exports.DB.then(() => {
 	console.log('Connected correctly to server')
@@ -56,6 +57,8 @@ exports.storyCurrText = [""];
 exports.storyNumChars = 0;
 exports.storyRooms = [];
 
+
+
 io = require('socket.io')(http);
 exports.admin = io.of('/admin');
 exports.display = io.of('/display');
@@ -63,7 +66,9 @@ exports.players = io.of('/player');
 exports.sockets = {};
 exports.checkins = {};
 exports.procs = {};
+
 exports.pendingVotes = [];
+exports.voteDisplayIndexes = {};
 
 
 var osc = require("osc");

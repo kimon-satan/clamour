@@ -15,9 +15,10 @@ globals.udpPort.on('message', (msg, rinfo) => {
 		{
 			console.log(msg);
 
-			globals.Votes.findOne(msg.args[0]).then((data)=>
+			var p = globals.Votes.findOne(msg.args[0]).then((data)=>
 			{
 
+				console.log("found");
 				data.available[msg.args[1]].push(msg.args[2])
 				globals.Votes.update(data._id,{$set: {available: data.available}});
 				//We're ready to start a vote
@@ -32,6 +33,10 @@ globals.udpPort.on('message', (msg, rinfo) => {
 				}
 
 
+			})
+
+			p.catch((reason)=>{
+				console.log("phrase complete" + reason + msg);
 			})
 
 		}
@@ -602,12 +607,15 @@ exports.loadDictionary = function(cb)
 exports.sendVote = function(data, num)
 {
 	var omsg = {pair: data.pair, id: data._id};
+
+	if(num == undefined)num = 1;
+
 	//TODO add a voice field to UserData - only select voices which are currently in the available category
 	var p = globals.UserData.find({_id: {$in: data.notvoted}, currentVoteId: -1, voiceNum: {$in: data.available[0], $in: data.available[1]}});
-	if(num == undefined)num = 1;
 
 	p = p.then((docs)=>
 	{
+		console.log("sendVote")
 		if(docs.length > 0)
 		{
 

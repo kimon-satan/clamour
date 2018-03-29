@@ -357,6 +357,7 @@ exports.response = function(socket)
 				globals.sockets = {};
 				globals.UserData.remove({});
 				globals.Votes.remove({});
+				globals.voteDisplayIndexes = {};
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: "all databases reset", room: ""});
 				globals.players.emit('whoareyou'); //causes any connected players to reset
 				Object.keys(globals.procs).forEach(function(id)
@@ -443,15 +444,16 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "vnew")
 		{
+			var dispIdx;
+
 			helpers.parseOptions(msg.args, function(options)
 			{
-
 
 				var t = (options.type != undefined) ? options.type : helpers.choose(Object.keys(globals.dictionary.wordPairs));
 				var p = helpers.choose(globals.dictionary.wordPairs[t]);
 
 				var num = (options.num != undefined) ? options.num : 1;  // we need this for the helper
-
+				dispIdx = options.dispIdx;
 
 				var r = "choice: ";
 
@@ -466,6 +468,7 @@ exports.response = function(socket)
 
 					promise = promise.then((docs)=>
 					{
+						//TODO assign a display slot to the vote .. either here or when the first vote is made
 						return globals.Votes.insert(
 							{ pair: p,
 								type: t,
@@ -475,12 +478,17 @@ exports.response = function(socket)
 								voted: [],
 								notvoted: docs[0].population,
 								population: docs[0].population.length,
-								num: num });
+								num: num
+							});
 					})
 
 					promise = promise.then((data)=>
 					{
 
+						if(dispIdx != undefined)
+						{
+							globals.voteDisplayIndexes[data._id] = dispIdx;
+						}
 						//Tell SC to record the phrases
 						globals.udpPort.send({
 								address: "/recordPhrases",
@@ -491,6 +499,10 @@ exports.response = function(socket)
 						globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
 
 					});
+
+					promise.catch((reason)=>{
+						console.log("Error - vnew " + reason) ;
+					})
 
 				});
 
@@ -566,6 +578,12 @@ exports.response = function(socket)
 		else if(msg.cmd == "dlove")
 		{
 			globals.display.emit("cmd", {type: "love"});
+			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
+		}
+		else if(msg.cmd == "dvote")
+		{
+			globals.display.emit("cmd", {type: "vote", cmd: "new"});
+			globals.voteDisplayIndexes = {};
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
 		else if(msg.cmd == "dstory")

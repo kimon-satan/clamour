@@ -66,6 +66,7 @@ var cmdList = [
 	"dinstruct",
 	"dlove",
 	"dstory",
+	"dvote",
 	"dclear",
 	"dtransform",
 	"dsplat"
