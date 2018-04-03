@@ -15,12 +15,11 @@ globals.udpPort.on('message', (msg, rinfo) => {
 		{
 			console.log(msg);
 
-			var p = globals.Votes.findOne(msg.args[0]).then((data)=>
+			var p = globals.Votes.findOne({_id: String(msg.args[0])}).then((data)=>
 			{
 
-				console.log("found");
 				data.available[msg.args[1]].push(msg.args[2])
-				globals.Votes.update(data._id,{$set: {available: data.available}});
+				globals.Votes.update({_id : data._id},{$set: {available: data.available}});
 				//We're ready to start a vote
 				var i = globals.pendingVotes.indexOf(String(data._id));
 				//Check that this is a pending vote
@@ -28,7 +27,7 @@ globals.udpPort.on('message', (msg, rinfo) => {
 				{
 					//console.log("start vote")
 					globals.pendingVotes.splice(i,1);
-					//WARNING: possibility of race condition ...
+					//WARNING: possibility of race condition ... ? probably not as SC records phrases one by one
 					exports.sendVote(data, data.num);
 				}
 
@@ -615,7 +614,6 @@ exports.sendVote = function(data, num)
 
 	p = p.then((docs)=>
 	{
-		console.log("sendVote")
 		if(docs.length > 0)
 		{
 
@@ -641,8 +639,8 @@ exports.sendVote = function(data, num)
 				var player = docs[idx];
 				docs.splice(idx, 1);
 				globals.players.to(player._id).emit('cmd',{cmd: 'new_vote', value: omsg});
-				globals.Votes.update(omsg.id, {$push: {voting: player._id}, $pull: {notvoted: player._id}});
-				globals.UserData.update(player._id,{$set: {currentVoteId: player._id, currentVotePair: player.pair }});
+				globals.Votes.update({_id: omsg.id}, {$push: {voting: player._id}, $pull: {notvoted: player._id}});
+				globals.UserData.update({_id: player._id},{$set: {currentVoteId: player._id, currentVotePair: player.pair }});
 
 			}
 		}

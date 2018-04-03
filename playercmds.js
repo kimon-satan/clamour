@@ -125,17 +125,33 @@ exports.response = function(socket)
 			//naieve version
 			if(globals.voteDisplayIndexes[data._id] == undefined)
 			{
+				//assign a new slot !
 				var k = Object.keys(globals.voteDisplayIndexes);
 				var slots = [0,0,0,0,0,0,0,0]; //TODO maybe make this a global
 
 				for(var i = 0; i < k.length; i++)
 				{
-					console.log(k[i])
-					slots[globals.voteDisplayIndexes[k[i]]] = k[i];
+					//console.log(k[i])
+					slots[Number(globals.voteDisplayIndexes[k[i]])] = k[i];
 
 				}
-				globals.voteDisplayIndexes[data._id] = (slots.indexOf(0) == 0) ?  0 : slots.indexOf(0);
-				console.log(globals.voteDisplayIndexes)
+
+				if(slots.indexOf(0) == -1)
+				{
+					//all slots taken go back to zero
+					globals.voteDisplayIndexes[data._id] = 0;
+				}
+				else
+				{
+					globals.voteDisplayIndexes[data._id] = slots.indexOf(0);
+					//update display
+					globals.display.emit('cmd', {
+						type: "vote", cmd: "setNumSlots" ,
+						val: {numSlots: Object.keys(globals.voteDisplayIndexes).length
+						}});
+				}
+
+
 			}
 
 			globals.display.emit('cmd', {
