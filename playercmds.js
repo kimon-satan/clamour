@@ -19,6 +19,10 @@ exports.response = function(socket)
 		usrobj.blobSeed = Math.random();
 		usrobj.voiceNum = Math.floor(Math.random() * 8);
 		usrobj.voicePan = -1 + Math.random() * 2;
+		usrobj.voicePitch = 0.75 + Math.random() * 0.5;
+		//TODO this would work better with 15 * 15 and indexed permutations (guaranteed difference)
+		usrobj.fontNum = Math.floor(Math.random() * 8);
+		usrobj.fontCol = Math.random(); //TODO quantize
 
 		if(msg == "new")
 		{
@@ -118,7 +122,7 @@ exports.response = function(socket)
 
 			globals.udpPort.send({
 					address: "/speakPhrase",
-					args: [String(data._id), msg.choice, usrobj.voiceNum]
+					args: [String(data._id), msg.choice, usrobj.voiceNum, usrobj.voicePan, usrobj.voicePitch]
 			}, "127.0.0.1", 57120);
 
 			//assign to the next empty slot
@@ -144,7 +148,10 @@ exports.response = function(socket)
 				else
 				{
 					globals.voteDisplayIndexes[data._id] = slots.indexOf(0);
-					//update display
+
+					//update display -
+					//NB. This might not be the eventual point of making this change
+					// we might want to put the admin in charge
 					globals.display.emit('cmd', {
 						type: "vote", cmd: "setNumSlots" ,
 						val: {numSlots: Object.keys(globals.voteDisplayIndexes).length
@@ -156,8 +163,15 @@ exports.response = function(socket)
 
 			globals.display.emit('cmd', {
 				type: "vote", cmd: "displayVote" ,
-				val: {text: data.pair[msg.choice], dispIdx: globals.voteDisplayIndexes[data._id]
-				}});
+				val: {
+					choice: msg.choice,
+					text: data.pair[msg.choice],
+					fontNum: usrobj.fontNum,
+					fontCol: usrobj.fontCol,
+					dispIdx: globals.voteDisplayIndexes[data._id],
+					score: data.scores
+				}
+				});
 
 			return globals.Votes.update({_id: data._id}, {$push: {voted: id}, $pull: {voting: id}, $set:{scores: data.scores}});
 		})

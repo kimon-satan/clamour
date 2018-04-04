@@ -1,18 +1,14 @@
 TODO
 
+- later individual fonts and colours ?
 - votes implement timeouts for real client ???
 - votes deal with concluded Votes
-- individual pan and rate for voices
-- later individual fonts and colours ?
-- display votes
-- then stage two on conclusion of votes
+
+- stage two on conclusion of votes
 	- joining phrases together
 
 - try / catch for admin commands
 - story stuff will need refactoring into a different place
-- investigate text to speech options
-- fadeIn and fadeOut for images ?
-
 
 - display data persistence
 - asynchronous error logging (maybe...)

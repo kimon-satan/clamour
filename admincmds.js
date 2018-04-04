@@ -468,7 +468,6 @@ exports.response = function(socket)
 
 					promise = promise.then((docs)=>
 					{
-						//TODO assign a display slot to the vote .. either here or when the first vote is made
 						return globals.Votes.insert(
 							{ pair: p,
 								type: t,
