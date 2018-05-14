@@ -10,7 +10,7 @@ Player = function(isDummy)
 	this.data = {};
 	this.mode = "";
 	this.iface = undefined;
-	this.previousVotes = {};
+	this.voteManager = new VoteManager(this);
 
 	this.checkAlive = setInterval(function(){
 		if(Date.now() - this.lastCheckin > 8000)
@@ -138,7 +138,8 @@ Player = function(isDummy)
 			{
 				this.data.currentVoteId = msg.value.id;
 				this.data.currentVotePair = msg.value.pair;
-				createVote();
+				this.voteManager.createVote(msg.value);
+				//createVote(); TODO
 			}
 		}
 
@@ -425,16 +426,20 @@ Player = function(isDummy)
 			if(mode == "vote")
 			{
 				$('#container').empty();
-				$('#container').append( '<div id="voteContainer"></div>' ); //TODO make this canvas
+				$('#container').append( '<canvas id="voteCanvas"></canvas>' );
+				$('#voteCanvas').attr('width', window.innerWidth);
+				$('#voteCanvas').attr('height', window.innerHeight);
+				this.voteManager.startDrawing();
+				//voteManager.wait();
 
-				if(this.data.currentVoteId == -1) //TODO
-				{
-					$('#voteContainer').html( '<h1>Waiting ...</h1>' );
-				}
-				else
-				{
-					createVote();
-				}
+				// if(this.data.currentVoteId == -1) //TODO
+				// {
+				// 	$('#voteContainer').html( '<h1>Waiting ...</h1>' );
+				// }
+				// else
+				// {
+				// 	createVote();
+				// }
 			}
 
 			if(mode == "wait")
@@ -485,4 +490,16 @@ function getCook(cookiename)
 	var cookiestring=RegExp(""+cookiename+"[^;]+").exec(document.cookie);
 	// Return everything after the equal sign, or an empty string if the cookie name not found
 	return unescape(!!cookiestring ? cookiestring.toString().replace(/^[^=]+./,"") : "");
+}
+
+function webglAvailable() {
+	try {
+		var canvas = document.createElement( 'canvas' );
+		return !!( window.WebGLRenderingContext && (
+			canvas.getContext( 'webgl' ) ||
+			canvas.getContext( 'experimental-webgl' ) )
+		);
+	} catch ( e ) {
+		return false;
+	}
 }
