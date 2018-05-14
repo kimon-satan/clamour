@@ -46,6 +46,27 @@ exports.LoveParameters =
 		death: 0
 }
 
+exports.fonts = [
+	"AlexBrush",
+	"Pacifico",
+	"Chunkfive",
+	"KaushanScript",
+	"Ostrich",
+	"Oswald",
+	"Arial",
+	"Times"];
+
+exports.fontColours = [
+	"255,0,0",
+	"0,255,0",
+	"255,255,0",
+	"255,0,255",
+	"0,255,255",
+	"255,180,0",
+	"0,150,0",
+	"100,100,255"
+];
+
 var k = Object.keys(exports.LoveParameters);
 
 for(var i = 0; i < k.length; i++)

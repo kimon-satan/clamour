@@ -1,17 +1,20 @@
 TODO
 
-- later individual fonts and colours ?
+- client votes using canvas not keyframes
+
 - votes implement timeouts for real client ???
 - votes deal with concluded Votes
 
 - stage two on conclusion of votes
 	- joining phrases together
 
-- try / catch for admin commands
+- try / catch for admin commands (50%)
 - story stuff will need refactoring into a different place
 
 - display data persistence
 - asynchronous error logging (maybe...)
+
+- deal with client vote refresh
 
 
 FIXES (in order of importance)

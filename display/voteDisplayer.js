@@ -49,19 +49,13 @@ function VoteDisplayer()
 
 		var i = Number(vote.dispIdx);
 		var f = this.activeFades[i];
-		console.log(vote.fontCol, vote.fontNum);
 		//TODO 12 colours and 12 fonts styles
 
-		f.push({text: vote.text, alpha: 1.0});
+		f.push({text: vote.text, alpha: 1.0, font: vote.font, col: vote.col});
 
-		//TODO adjust for clarity
-		//bias towards the winner
-		//normalise sum
-		//square result
-		//multiply down
-
-		this.staticFades[i][0].alpha = vote.score[0];
-		this.staticFades[i][1].alpha = vote.score[1];
+		//bias fade towards the winner
+		this.staticFades[i][0].alpha = Math.pow(vote.score[0],2);
+		this.staticFades[i][1].alpha = Math.pow(vote.score[1],2);
 
 		//FIXME this is all a bit messy
 		this.staticFades[i][vote.choice].text = vote.text;
@@ -75,6 +69,7 @@ function VoteDisplayer()
 		//clear the background
 		ctx.fillStyle = "rgba(0,0,0,1.0)";
 		ctx.fillRect(0,0,innerWidth,innerHeight);
+
 
 		//draw the static state of each vote
 		ctx.font = "100px Arial";
@@ -96,9 +91,9 @@ function VoteDisplayer()
 
 
 				//draw the text
-				//TODO add font and colour
-				ctx.fillStyle = "rgba(255,255,255," + String(this.activeFades[i][j].alpha) + ")";
-				ctx.font = "100px Arial";
+				//console.log(this.activeFades[i][j]);
+				ctx.fillStyle = "rgba(" + this.activeFades[i][j].col + "," + String(this.activeFades[i][j].alpha) + ")";
+				ctx.font = "100px " + this.activeFades[i][j].font;
 				ctx.fillText(this.activeFades[i][j].text, this.positions[i].x, this.positions[i].y);
 
 				//decrement the fades

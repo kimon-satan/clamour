@@ -15,20 +15,28 @@ globals.udpPort.on('message', (msg, rinfo) => {
 		{
 			console.log(msg);
 
-			var p = globals.Votes.findOne({_id: String(msg.args[0])}).then((data)=>
-			{
+			var p = globals.Votes.findOne({_id: String(msg.args[0])});
 
-				data.available[msg.args[1]].push(msg.args[2])
-				globals.Votes.update({_id : data._id},{$set: {available: data.available}});
-				//We're ready to start a vote
-				var i = globals.pendingVotes.indexOf(String(data._id));
-				//Check that this is a pending vote
-				if(i > -1)
+			p = p.then((data)=>
+			{
+				if(data != null)
 				{
-					//console.log("start vote")
-					globals.pendingVotes.splice(i,1);
-					//WARNING: possibility of race condition ... ? probably not as SC records phrases one by one
-					exports.sendVote(data, data.num);
+					data.available[msg.args[1]].push(msg.args[2])
+					globals.Votes.update({_id : data._id},{$set: {available: data.available}});
+					//We're ready to start a vote
+					var i = globals.pendingVotes.indexOf(String(data._id));
+					//Check that this is a pending vote
+					if(i > -1)
+					{
+						//console.log("start vote")
+						globals.pendingVotes.splice(i,1);
+						//WARNING: possibility of race condition ... ? probably not as SC records phrases one by one
+						exports.sendVote(data, data.num);
+					}
+				}
+				else
+				{
+					console.error("null result")
 				}
 
 
@@ -609,10 +617,10 @@ exports.sendVote = function(data, num)
 
 	if(num == undefined)num = 1;
 
-	//TODO add a voice field to UserData - only select voices which are currently in the available category
+	//only select voices which are currently in the available category
 	var p = globals.UserData.find({_id: {$in: data.notvoted}, currentVoteId: -1, voiceNum: {$in: data.available[0], $in: data.available[1]}});
 
-	p = p.then((docs)=>
+	p.then((docs)=>
 	{
 		if(docs.length > 0)
 		{
@@ -625,12 +633,18 @@ exports.sendVote = function(data, num)
 					//TODO probably store and kill these on reset just to be safe
 					setTimeout(function()
 					{
-						globals.Votes.findOne(omsg.id).then((res)=>
+						globals.Votes.findOne({_id: omsg.id})
+
+						.then((res)=>
 						{
 							if(res.notvoted.length > 0)
 							{
 								exports.sendVote(res,i);
 							}
+						})
+
+						.catch((err)=>{
+							console.log(err);
 						})
 					}, 500); // call the function again
 					break;
@@ -638,6 +652,8 @@ exports.sendVote = function(data, num)
 				var idx = Math.floor(Math.random() * docs.length);
 				var player = docs[idx];
 				docs.splice(idx, 1);
+
+
 				globals.players.to(player._id).emit('cmd',{cmd: 'new_vote', value: omsg});
 				globals.Votes.update({_id: omsg.id}, {$push: {voting: player._id}, $pull: {notvoted: player._id}});
 				globals.UserData.update({_id: player._id},{$set: {currentVoteId: player._id, currentVotePair: player.pair }});
@@ -650,11 +666,15 @@ exports.sendVote = function(data, num)
 			//TODO probably store and kill these on reset just to be safe
 			setTimeout(function()
 			{
-				globals.Votes.findOne(omsg.id).then((res)=>{
+				globals.Votes.findOne({_id: omsg.id})
+				.then((res)=>{
 					if(res.notvoted.length > 0)
 					{
 						exports.sendVote(res,num);
 					}
+				})
+				.catch((err)=>{
+					console.error(err);
 				})
 			}, 500); // call the function again
 		}

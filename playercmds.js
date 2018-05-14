@@ -21,8 +21,8 @@ exports.response = function(socket)
 		usrobj.voicePan = -1 + Math.random() * 2;
 		usrobj.voicePitch = 0.75 + Math.random() * 0.5;
 		//TODO this would work better with 15 * 15 and indexed permutations (guaranteed difference)
-		usrobj.fontNum = Math.floor(Math.random() * 8);
-		usrobj.fontCol = Math.random(); //TODO quantize
+		usrobj.font = globals.fonts[Math.floor(Math.random() * globals.fonts.length)];
+		usrobj.fontCol = globals.fontColours[Math.floor(Math.random() * globals.fontColours.length)];
 
 		if(msg == "new")
 		{
@@ -166,8 +166,8 @@ exports.response = function(socket)
 				val: {
 					choice: msg.choice,
 					text: data.pair[msg.choice],
-					fontNum: usrobj.fontNum,
-					fontCol: usrobj.fontCol,
+					font: usrobj.font,
+					col: usrobj.fontCol,
 					dispIdx: globals.voteDisplayIndexes[data._id],
 					score: data.scores
 				}

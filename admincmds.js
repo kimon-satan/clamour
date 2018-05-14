@@ -369,6 +369,13 @@ exports.response = function(socket)
 			globals.display.emit('cmd', {type: 'clear_display'});
 			globals.storyChapter = 0;
 			globals.storyClip = 0;
+
+			globals.udpPort.send(
+			{
+					address: "/resetPhrases",
+					args: []
+			},
+			"127.0.0.1", 57120);
 		}
 		else if(msg.cmd == "stats")
 		{
@@ -451,6 +458,7 @@ exports.response = function(socket)
 
 				var t = (options.type != undefined) ? options.type : helpers.choose(Object.keys(globals.dictionary.wordPairs));
 				var p = helpers.choose(globals.dictionary.wordPairs[t]);
+
 
 				var num = (options.num != undefined) ? options.num : 1;  // we need this for the helper
 				dispIdx = options.dispIdx;
