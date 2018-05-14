@@ -136,10 +136,7 @@ Player = function(isDummy)
 			}
 			else if(msg.cmd == 'new_vote' && this.mode == "vote")
 			{
-				this.data.currentVoteId = msg.value.id;
-				this.data.currentVotePair = msg.value.pair;
 				this.voteManager.createVote(msg.value);
-				//createVote(); TODO
 			}
 		}
 
