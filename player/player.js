@@ -112,7 +112,7 @@ Player = function(isDummy)
 			}
 			else if(msg.cmd == 'new_vote' && this.mode == "vote")
 			{
-				createTestVote(msg); //TODO implement the same for real vote
+				this.voteManager.createTestVote(msg.value);
 			}
 		}
 		else
@@ -146,43 +146,6 @@ Player = function(isDummy)
 	}.bind(this));
 
 	//private functions
-
-	var createTestVote = function(msg)
-	{
-
-		if(this.previousVotes[msg.value.id] != undefined)
-		{
-			console.log("duplicate vote");
-			return;
-		}
-
-		if(this.data.currentVoteId != -1)
-		{
-			window.setTimeout(function()
-			{
-				console.log("waiting, " +  msg.value.id);
-				createTestVote(msg);
-			},1000); //try again in 1 sec
-			return;
-		}
-
-		this.previousVotes[msg.value.id] = true;
-		this.data.currentVoteId = msg.value.id;
-		this.data.currentVotePair = msg.value.pair;
-
-		window.setTimeout(function()
-		{
-			var o = Math.round(Math.random());
-			this.socket.emit('voted', {choice: o, id: this.data.currentVoteId });
-			this.data.currentVoteId = -1;
-			this.data.currentVotePair = ["",""];
-			this.updateTable(this.tableid, this.data);
-
-		}.bind(this), 1500 + Math.random() * 5000);
-
-		this.updateTable(this.tableid, this.data);
-
-	}.bind(this);
 
 
 
@@ -223,7 +186,6 @@ Player = function(isDummy)
 			{
 				this.data[k] = msg[k];
 				resp[k] = this.data[k];
-				console.log(k);
 			}
 			else if(msg[k] != undefined && k != "_id" && k != "mode" && k != "rooms")
 			{

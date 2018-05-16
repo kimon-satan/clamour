@@ -79,8 +79,6 @@ VoteManager.prototype.startDrawing = function()
 		}
 	}.bind(this), false);
 
-
-
 }
 
 VoteManager.prototype.voted = function(choice)
@@ -125,9 +123,39 @@ VoteManager.prototype.createVote = function(vote)
 }
 
 
-VoteManager.createTestVote = function(vote)
+VoteManager.prototype.createTestVote = function(vote)
 {
+	if(this.previousVotes[vote.id] != undefined)
+	{
+		console.log("duplicate vote");
+		return;
+	}
 
+	if(this.parent.data.currentVoteId != -1)
+	{
+		window.setTimeout(function()
+		{
+			console.log("waiting, " +  vote.id);
+			this.createTestVote(msg);
+		},1000); //try again in 1 sec
+		return;
+	}
+
+	this.previousVotes[vote.id] = true;
+	this.parent.data.currentVoteId = vote.id;
+	this.parent.data.currentVotePair = vote.pair;
+
+	window.setTimeout(function()
+	{
+		var o = Math.round(Math.random());
+		this.parent.socket.emit('voted', {choice: o, id: this.parent.data.currentVoteId });
+		this.parent.data.currentVoteId = -1;
+		this.parent.data.currentVotePair = ["",""];
+		this.parent.updateTable(this.parent.tableid, this.parent.data);
+
+	}.bind(this), 1500 + Math.random() * 5000);
+
+	this.parent.updateTable(this.parent.tableid, this.parent.data);
 }
 
 ///////////////HELPER CLASSES////////////////
