@@ -4,8 +4,9 @@ VoteManager = function(parent)
 	//maybe reduce size to improve performance
 	this.parent = parent;
 	this.previousVotes = {};
-	this.currentVotePair = null;
 	this.isWaiting = true;
+	this.buttons = null;
+
 
 	this.draw = function()
 	{
@@ -24,49 +25,16 @@ VoteManager = function(parent)
 		else
 		{
 			//draw the votes here
-			this.context.fillStyle = "rgba(80,80,80,1.0)";
-			this.context.fillRect(
-				innerWidth * 0.05,
-				innerHeight * 0.05,
-				innerWidth * 0.9,
-				innerHeight * 0.85/2);
-
-			this.context.fillRect(
-				innerWidth * 0.05,
-				innerHeight * 0.55,
-				innerWidth * 0.9,
-				innerHeight * 0.85/2
-			);
-
-
-			this.context.font = "60pt " + this.parent.data.font;
-
-			this.context.fillStyle = "rgba(" + this.parent.data.fontCol + ",1.0)";
-			this.context.fillText(
-				this.parent.data.currentVotePair[0],
-				innerWidth * 0.5,
-				innerHeight * 0.25
-			);
-
-			this.context.fillStyle = "rgba(" + this.parent.data.fontCol + ",1.0)";
-
-			var txt = this.fitText(
-				this.parent.data.currentVotePair[1],
-				innerWidth * 0.85,
-				70);
-
-			// this.context.fillText(
-			// 	this.parent.data.currentVotePair[1],
-			// 	innerWidth * 0.5,
-			// 	innerHeight * 0.75
-			// );
+			for(var i = 0; i < this.buttons.length; i++)
+			{
+				this.buttons[i].draw(this.context);
+			}
 
 		}
 
 		requestAnimationFrame(this.draw);
 	}.bind(this);
 
-	//TODO touchReleased event
 
 }
 
@@ -75,6 +43,36 @@ VoteManager.prototype.startDrawing = function()
 	this.canvas = $('#voteCanvas')[0];
 	this.context = this.canvas.getContext("2d");
 	this.draw();
+
+	//event handling
+	//mouse events should do for both
+
+	// this.canvas.addEventListener("touchstart", function (e)
+	// {
+	// 	console.log("ts");
+	// }, false);
+
+
+	this.canvas.addEventListener("mousedown", function (e)
+	{
+		if(this.buttons != null)
+		{
+			var x = e.clientX;
+			var y = e.clientY;
+			for(var i = 0; i < this.buttons.length; i++)
+			{
+				if(this.buttons[i].isInside(x,y))
+				{
+					this.buttons[i].trigger(true);
+					this.buttons[(i+1)%2].trigger(false);
+					break;
+				}
+			}
+		}
+	}.bind(this), false);
+
+
+
 }
 
 VoteManager.prototype.wait = function(){
@@ -88,59 +86,112 @@ VoteManager.prototype.createVote = function(vote)
 	this.parent.data.currentVotePair = vote.pair;
 	this.isWaiting = false;
 
-}
+	var buttonDims = [
+		{x: innerWidth * 0.05, y: innerHeight * 0.05, w: innerWidth * 0.9, h: innerHeight * 0.85/2},
+		{x: innerWidth * 0.05, y: innerHeight * 0.55, w: innerWidth * 0.9, h: innerHeight * 0.85/2},
+	]
 
-VoteManager.prototype.fitText = function(text, maxWidth, fontSize)
-{
-	this.context.font = fontSize + "pt " + this.parent.data.font;
-	var words = text.split(' ');
+	this.buttons = [];
 
-	//reduce fontSize to fit longest word
-	for(var i = 0; i < words.length; i++)
+	for(var i = 0; i < buttonDims.length; i++)
 	{
-		var metrics = this.context.measureText(words[i]);
-		while(metrics.width > maxWidth)
-		{
-			fontSize -= 1; //reduce the fontSize a bit
-			this.context.font = fontSize + "pt " + this.parent.data.font;
-			metrics = this.context.measureText(words[i]);
-		}
+		this.buttons.push(new Button(
+						buttonDims[i],
+						this.parent.data.currentVotePair[i],
+						this.parent.data.font,
+						this.parent.data.fontCol
+					)
+		)
 	}
 
-	var line = words[0];
-	var lines = [];
-	var numWords = 1;
-
-	while(words.length > 1)
-	{
-		var testLine = line + ' ' + words[1];
-		var metrics = this.context.measureText(testLine);
-		if (metrics.width > maxWidth)
-		{
-			lines.push(line); //add whatever we had before
-			line = words[1];
-			numWords = 1;
-		}
-		else
-		{
-			line = testLine;
-			numWords++;
-		}
-		words.splice(0,1);
-		if(words.length <= 1)
-		{
-			lines.push(line);
-		}
-	}
-
-	//TODO fit the text into the box
-
-	return lines;
-
-
 }
+
 
 VoteManager.createTestVote = function(vote)
 {
+
+}
+
+///////////////HELPER CLASSES////////////////
+
+Button = function(dims,text,font,fontCol)
+{
+	this.dims = dims;
+	this.text = text;
+	this.font = font;
+	this.fontCol = fontCol;
+	this.backShade = 80;
+	this.isSelected = false;
+	this.isFading = false;
+	this.fade = 1.0;
+
+	this.draw = function(context)
+	{
+		if(this.isFading)
+		{
+			if(this.isSelected)
+			{
+				this.fade -= 0.01;
+			}
+			else
+			{
+				this.fade -= 0.05;
+			}
+
+			if(this.fade == 0)this.isFading = false;
+		}
+
+		//set the colour
+		context.fillStyle = "rgba("
+		+ this.backShade + ","
+		+ this.backShade + ","
+		+ this.backShade + ","
+		+ this.fade + ")";
+
+		//draw the background rect
+		context.fillRect(
+			this.dims.x,
+			this.dims.y,
+			this.dims.w,
+			this.dims.h
+		);
+
+		context.fillStyle = "rgba("
+		+ this.fontCol + ","
+		+ this.fade + ")";
+
+		//set alignment
+		context.textAlign = 'center';
+		context.textBaseline = 'middle';
+
+		//fit the text - NB. could be a bit slow
+		fitText(
+			this.text, //text to fit
+			this.dims, //rect
+			this.font,
+			70,//starting font size
+			context //the canvas context
+		);
+	}
+
+	this.isInside = function(x,y)
+	{
+		if(x > this.dims.x && x < this.dims.x + this.dims.w)
+		{
+			if(y > this.dims.y && y < this.dims.y + this.dims.h)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	this.trigger = function(isSelected)
+	{
+		this.isSelected = isSelected;
+		this.isFading = true;
+		if(isSelected)this.backShade = 255;
+	}
 
 }

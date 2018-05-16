@@ -275,3 +275,73 @@ hslToRgb = function(h, s, l){
 }
 
 Math.fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecision(8)); };
+
+fitText = function(text, dims, font, fontSize, context)
+{
+	//fits and centers text into rectangle
+
+	context.font = fontSize + "pt " + font;
+	var words = text.split(' ');
+
+	//reduce fontSize to fit longest word
+	for(var i = 0; i < words.length; i++)
+	{
+		var metrics = context.measureText(words[i]);
+		while(metrics.width > dims.w * 0.95)
+		{
+			fontSize -= 1; //reduce the fontSize a bit
+			context.font = fontSize + "pt " + font;
+			metrics = context.measureText(words[i]);
+		}
+	}
+
+	//text wrapping
+	var line = words[0];
+	var lines = [];
+	var numWords = 1;
+
+	while(words.length > 1)
+	{
+		var testLine = line + ' ' + words[1];
+		var metrics = context.measureText(testLine);
+		if (metrics.width > dims.w * 0.95)
+		{
+			lines.push(line); //add whatever we had before
+			line = words[1];
+			numWords = 1;
+		}
+		else
+		{
+			line = testLine;
+			numWords++;
+		}
+		words.splice(0,1);
+		if(words.length <= 1)
+		{
+			lines.push(line);
+		}
+	}
+
+	var testSize = (dims.h * 0.9)/(1.5 * lines.length);
+
+	if(testSize < fontSize)
+	{
+		//run the process again recursively
+		fitText(text, dims, font, testSize, context);
+	}
+	else
+	{
+		var vSpace = fontSize * 1.5;
+		var vTotal = vSpace * lines.length;
+
+		//calculate starting y based on number of lines
+		var vStart = dims.y + dims.h/2 - vSpace * 0.5 * (lines.length - 1);
+
+		//iterate and draw text
+		for(var i = 0; i < lines.length; i++)
+		{
+			context.fillText(lines[i], dims.x + dims.w/2, vStart + i * vSpace);
+		}
+	}
+
+}
