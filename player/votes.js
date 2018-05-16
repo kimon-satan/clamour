@@ -25,9 +25,16 @@ VoteManager = function(parent)
 		else
 		{
 			//draw the votes here
+			var isDone = true;
 			for(var i = 0; i < this.buttons.length; i++)
 			{
 				this.buttons[i].draw(this.context);
+				if(this.buttons[i].fade > 0)isDone = false;
+			}
+
+			if(isDone)
+			{
+				this.wait();
 			}
 
 		}
@@ -149,7 +156,7 @@ Button = function(dims,text,font,fontCol)
 				this.fade -= 0.05;
 			}
 
-			if(this.fade == 0)this.isFading = false;
+			if(this.fade <= 0)this.isFading = false;
 		}
 
 		//set the colour
