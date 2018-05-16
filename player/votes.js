@@ -65,6 +65,7 @@ VoteManager.prototype.startDrawing = function()
 				{
 					this.buttons[i].trigger(true);
 					this.buttons[(i+1)%2].trigger(false);
+					this.voted(i);
 					break;
 				}
 			}
@@ -75,15 +76,25 @@ VoteManager.prototype.startDrawing = function()
 
 }
 
+VoteManager.prototype.voted = function(choice)
+{
+	if(this.parent.data.currentVoteId == -1) return; //you already voted !
+	this.parent.socket.emit('voted', {choice: choice, id: this.parent.data.currentVoteId });
+	this.parent.data.currentVoteId = -1;
+}
+
 VoteManager.prototype.wait = function(){
 	this.isWaiting = true;
 }
 
 VoteManager.prototype.createVote = function(vote)
 {
-	//TODO persistence on refresh
-	this.parent.data.currentVoteId = vote.id;
-	this.parent.data.currentVotePair = vote.pair;
+	if(typeof(vote) != "undefined")
+	{
+		this.parent.data.currentVoteId = vote.id;
+		this.parent.data.currentVotePair = vote.pair;
+	}
+
 	this.isWaiting = false;
 
 	var buttonDims = [
@@ -163,6 +174,10 @@ Button = function(dims,text,font,fontCol)
 		//set alignment
 		context.textAlign = 'center';
 		context.textBaseline = 'middle';
+
+		context.fillStyle = "rgba("
+		+ this.fontCol + ","
+		+ this.fade + ")";
 
 		//fit the text - NB. could be a bit slow
 		fitText(

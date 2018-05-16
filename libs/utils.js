@@ -316,11 +316,18 @@ fitText = function(text, dims, font, fontSize, context)
 			numWords++;
 		}
 		words.splice(0,1);
-		if(words.length <= 1)
+		if(words.length == 1)
 		{
 			lines.push(line);
+			words.splice(0,1);
 		}
 	}
+
+	if(lines.length == 0) //there was only one word
+	{
+		lines.push(words[0]);
+	}
+
 
 	var testSize = (dims.h * 0.9)/(1.5 * lines.length);
 
@@ -342,6 +349,8 @@ fitText = function(text, dims, font, fontSize, context)
 		{
 			context.fillText(lines[i], dims.x + dims.w/2, vStart + i * vSpace);
 		}
+
+
 	}
 
 }

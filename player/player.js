@@ -117,6 +117,8 @@ Player = function(isDummy)
 		}
 		else
 		{
+			//real version
+
 			if (msg.cmd == "chat_update")
 			{
 				$('#chatContainer>div.largeText:last-child').remove();
@@ -137,6 +139,7 @@ Player = function(isDummy)
 			else if(msg.cmd == 'new_vote' && this.mode == "vote")
 			{
 				this.voteManager.createVote(msg.value);
+				parseMsgParams(msg.value);
 			}
 		}
 
@@ -181,87 +184,7 @@ Player = function(isDummy)
 
 	}.bind(this);
 
-	var createVote = function()
-	{
 
-		$('#voteContainer').empty();
-
-
-		for(var i = 0; i < 2; i++)
-		{
-			var d = $("<div class='mbut noselect'/>");
-			var tc = $("<div class='textContainer'></div>");
-
-			d.attr("id", "option" + i);
-			d.attr("name", this.data.currentVotePair[i]);
-			tc.css("font-family", this.data.font);
-			tc.css("color", "rgb(" + this.data.fontCol + ")");
-			//console.log(this.data);
-
-
-
-			//text resizing according to content ...
-			var w = this.data.currentVotePair[i].split(" ");
-			var fs = Math.min(Math.max(0.5, this.data.currentVotePair[i].length/60), 1.0);
-			for(var j = 0; j < w.length; j++)
-			{
-				if(w[j].length > 0)
-				{
-					fs = Math.max(w[j].length/15, fs);
-				}
-			}
-			fs = Math.min(Math.max(0.5, fs), 1.0);
-
-			tc.html(this.data.currentVotePair[i]);
-			d.append(tc);
-			$('#voteContainer').append(d);
-			$('#option' + i).fitText(fs);
-
-		}
-
-		//looks like we don't need touchstart
-		//$(".mbut").on("touchstart", voted);
-
-		$(".mbut").on("click", voted);
-
-	}.bind(this);
-
-	var voted = function(e)
-	{
-		if(this.data.currentVoteId == -1) return; //you already voted !
-
-
-		$.keyframe.define([{
-			name: 'vote_anim',
-			'0%':{'background-color': "#333333"},
-			'7%':{'background-color': "#FFFFFF"},
-			'50%':{'background-color': "#333333"},
-			'50%':{'background-color': "#000000"}
-		}]);
-
-		$.keyframe.define([{
-			name: 'reject_anim',
-			'0%':{'background-color': "#333333"},
-			'100%':{'background-color': "#000000"}
-		}]);
-		//************ something happened here ************
-		var r = /option(\d)/;
-		var o = parseInt(r.exec(e.target.id)[1]);
-		$('#option' + o).playKeyframe({
-	    name: 'vote_anim',
-	    duration: 3000
-		});
-
-		$('#option' + (o+1)%2).playKeyframe({
-	    name: 'reject_anim',
-	    duration: 700
-		});
-		this.socket.emit('voted', {choice: o, id: this.data.currentVoteId });
-		this.data.currentVoteId = -1;
-		e.preventDefault();
-		e.stopPropagation();
-
-	}.bind(this);
 
 	var setupIface = function (callback)
 	{
@@ -300,6 +223,7 @@ Player = function(isDummy)
 			{
 				this.data[k] = msg[k];
 				resp[k] = this.data[k];
+				console.log(k);
 			}
 			else if(msg[k] != undefined && k != "_id" && k != "mode" && k != "rooms")
 			{
@@ -427,16 +351,15 @@ Player = function(isDummy)
 				$('#voteCanvas').attr('width', window.innerWidth);
 				$('#voteCanvas').attr('height', window.innerHeight);
 				this.voteManager.startDrawing();
-				//voteManager.wait();
 
-				// if(this.data.currentVoteId == -1) //TODO
-				// {
-				// 	$('#voteContainer').html( '<h1>Waiting ...</h1>' );
-				// }
-				// else
-				// {
-				// 	createVote();
-				// }
+				if(this.data.currentVoteId == -1)
+				{
+					this.voteManager.wait();
+				}
+				else
+				{
+					this.voteManager.createVote();
+				}
 			}
 
 			if(mode == "wait")
