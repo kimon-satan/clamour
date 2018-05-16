@@ -13,7 +13,6 @@ globals.udpPort.on('message', (msg, rinfo) => {
 
 		if(msg.address == "/phraseComplete")
 		{
-			console.log(msg);
 
 			var p = globals.Votes.findOne({_id: String(msg.args[0])});
 
@@ -655,6 +654,7 @@ exports.sendVote = function(data, num)
 
 
 				globals.players.to(player._id).emit('cmd',{cmd: 'new_vote', value: omsg});
+				console.log("vote sent")
 				globals.Votes.update({_id: omsg.id}, {$push: {voting: player._id}, $pull: {notvoted: player._id}});
 				globals.UserData.update({_id: player._id},{$set: {currentVoteId: player._id, currentVotePair: player.pair }});
 
@@ -662,6 +662,7 @@ exports.sendVote = function(data, num)
 		}
 		else
 		{
+			console.log("no voters available")
 			//No voters currently available
 			//TODO probably store and kill these on reset just to be safe
 			setTimeout(function()
@@ -684,4 +685,33 @@ exports.sendVote = function(data, num)
 		console.log("Error - sendVote: " + reason);
 	})
 
+}
+
+
+exports.concludeVote = function(data)
+{
+	//get the winner
+	var winnerIdx = (data.scores[0] > data.scores[1]) ? 0 : 1;
+
+	//Optional: pause all votes
+
+	//1. send a message to SC and display with the winner
+	setTimeout(function()
+	{
+		globals.udpPort.send({
+				address: "/voteComplete",
+				args: [String(data._id), winnerIdx]
+		}, "127.0.0.1", 57120);
+
+		globals.display.emit('cmd', {
+			type: "vote", cmd: "concludeVote" ,
+			val: {
+				winner: winnerIdx,
+				dispIdx: globals.voteDisplayIndexes[data._id],
+			}
+		});
+
+	},1500);
+
+	//2. update the vote as concluded with the winner
 }

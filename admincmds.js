@@ -369,6 +369,11 @@ exports.response = function(socket)
 			globals.display.emit('cmd', {type: 'clear_display'});
 			globals.storyChapter = 0;
 			globals.storyClip = 0;
+			var oldProcs = Object.keys(globals.procs);
+			for(var i = 0; i < oldProcs.length; i++)
+			{
+				clearInterval(globals.procs[globals.procs[oldProcs[i]]]);
+			}
 
 			globals.udpPort.send(
 			{

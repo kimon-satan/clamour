@@ -28,6 +28,10 @@ function VoteDisplayer()
 		{
 			this.setNumSlots(msg.val.numSlots);
 		}
+		else if (msg.cmd == "concludeVote")
+		{
+			this.concludeVote(msg.val);
+		}
 
 	}.bind(this);
 
@@ -62,6 +66,17 @@ function VoteDisplayer()
 
 	}.bind(this);
 
+	this.concludeVote = function(vote)
+	{
+
+		var i = Number(vote.dispIdx);
+		var w = Number(vote.winner);
+		this.staticFades[i][w].alpha = 1.0;
+		this.staticFades[i][(w + 1)%2].alpha = 0.0;
+
+	}.bind(this);
+
+
 
 	this.draw = function()
 	{
@@ -77,9 +92,13 @@ function VoteDisplayer()
 		{
 			for(var j = 0; j < 2; j ++)
 			{
-				ctx.fillStyle = "rgba(255,255,255," + String(this.staticFades[i][j].alpha) + ")";
-				ctx.fillText(this.staticFades[i][j].text,
-					this.positions[i].x, this.positions[i].y);
+
+				if(this.staticFades[i][j].alpha > 0)
+				{
+					ctx.fillStyle = "rgba(255,255,255," + String(this.staticFades[i][j].alpha) + ")";
+					ctx.fillText(this.staticFades[i][j].text,
+						this.positions[i].x, this.positions[i].y);
+				}
 			}
 		}
 

@@ -1,9 +1,11 @@
 TODO
 
-- client votes using canvas not keyframes
+- votes
+	- implement timeouts for real client ???
+	- choosing vote options
+	- deal with concluded Votes
+	- offering user input
 
-- votes implement timeouts for real client ???
-- votes deal with concluded Votes
 
 - stage two on conclusion of votes
 	- joining phrases together
@@ -14,7 +16,6 @@ TODO
 - display data persistence
 - asynchronous error logging (maybe...)
 
-- deal with client vote refresh
 
 
 FIXES (in order of importance)

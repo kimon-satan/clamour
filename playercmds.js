@@ -189,8 +189,8 @@ exports.response = function(socket)
 			}
 			if(data.voted.length == data.population)
 			{
-				//TODO resolve the vote if there are no voters left
-				console.log("vote concluded, " + data._id)
+				//resolve the vote if there are no voters left
+				helpers.concludeVote(data);
 			}
 			else
 			{
