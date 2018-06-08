@@ -6,6 +6,13 @@ VoteManager = function(parent)
 	this.previousVotes = {};
 	this.isWaiting = true;
 	this.buttons = null;
+	this.isPaused = false;
+	this.pauseMessage = "";
+	this.parent.data.state = "waiting";
+
+	//TODO why is this not happening ????
+	if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
+
 
 
 	this.draw = function()
@@ -15,11 +22,33 @@ VoteManager = function(parent)
 		this.context.textAlign = 'center';
 		this.context.textBaseline = 'middle'
 
-		if(this.isWaiting)
+
+		if(this.isPaused)
+		{
+
+			var dims = {
+				x: innerWidth * 0.05,
+				y: innerHeight * 0.05,
+				w: innerWidth * 0.9,
+				h: innerHeight * 0.85
+			};
+
+			this.context.fillStyle = '#FFFFFF';
+			this.context.font = "75pt Arial";
+			fitText(
+				this.pauseMessage, //text to fit
+				dims, //rect
+				"Arial",
+				75,//starting font size
+				this.context //the canvas context
+			);
+		}
+		else if(this.isWaiting)
 		{
 
 			this.context.fillStyle = '#FFFFFF';
 			this.context.font = "75pt Arial";
+
 			this.context.fillText('Waiting', this.canvas.width/2, this.canvas.height/2);
 		}
 		else
@@ -88,8 +117,11 @@ VoteManager.prototype.voted = function(choice)
 	this.parent.data.currentVoteId = -1;
 }
 
-VoteManager.prototype.wait = function(){
+VoteManager.prototype.wait = function()
+{
+	this.parent.data.state = "waiting";
 	this.isWaiting = true;
+	this.parent.updateTable(this.parent.tableid, this.parent.data);
 }
 
 VoteManager.prototype.createVote = function(vote)
@@ -120,11 +152,30 @@ VoteManager.prototype.createVote = function(vote)
 		)
 	}
 
+
+
+}
+
+VoteManager.prototype.pauseVote = function(screenTxt)
+{
+	this.isPaused = true;
+	this.pauseMessage = screenTxt;
+	this.parent.data.state = "paused";
+	this.parent.updateTable(this.parent.tableid, this.parent.data);
+
+	window.setTimeout(function()
+	{
+		this.parent.data.state = "";
+		this.isPaused = false;
+		this.parent.updateTable(this.parent.tableid, this.parent.data);
+
+	}.bind(this),5000);
 }
 
 
 VoteManager.prototype.createTestVote = function(vote)
 {
+
 	if(this.previousVotes[vote.id] != undefined)
 	{
 		console.log("duplicate vote");
@@ -144,16 +195,28 @@ VoteManager.prototype.createTestVote = function(vote)
 	this.previousVotes[vote.id] = true;
 	this.parent.data.currentVoteId = vote.id;
 	this.parent.data.currentVotePair = vote.pair;
+	this.parent.data.state = "waiting";
 
-	window.setTimeout(function()
+	console.log(this.parent.data);
+
+	var makeChoice = function()
 	{
-		var o = Math.round(Math.random());
-		this.parent.socket.emit('voted', {choice: o, id: this.parent.data.currentVoteId });
-		this.parent.data.currentVoteId = -1;
-		this.parent.data.currentVotePair = ["",""];
-		this.parent.updateTable(this.parent.tableid, this.parent.data);
+		if(!this.isPaused)
+		{
+			var o = Math.round(Math.random());
+			this.parent.socket.emit('voted', {choice: o, id: this.parent.data.currentVoteId });
+			this.parent.data.currentVoteId = -1;
+			this.parent.data.currentVotePair = ["",""];
+			this.parent.updateTable(this.parent.tableid, this.parent.data);
+		}
+		else
+		{
+			window.setTimeout(makeChoice, 1000); //try again in a second
+		}
 
-	}.bind(this), 1500 + Math.random() * 5000);
+	}.bind(this);
+
+	window.setTimeout(makeChoice, 1500 + Math.random() * 5000);
 
 	this.parent.updateTable(this.parent.tableid, this.parent.data);
 }

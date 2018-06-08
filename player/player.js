@@ -114,6 +114,10 @@ Player = function(isDummy)
 			{
 				this.voteManager.createTestVote(msg.value);
 			}
+			else if(msg.cmd == 'vote_concluded' && this.mode == "vote")
+			{
+				this.voteManager.pauseVote(msg.value);
+			}
 		}
 		else
 		{
@@ -140,6 +144,10 @@ Player = function(isDummy)
 			{
 				this.voteManager.createVote(msg.value);
 				parseMsgParams(msg.value);
+			}
+			else if(msg.cmd == 'vote_concluded' && this.mode == "vote")
+			{
+				this.voteManager.pauseVote(msg.value);
 			}
 		}
 

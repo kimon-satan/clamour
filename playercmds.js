@@ -185,15 +185,17 @@ exports.response = function(socket)
 		{
 			if(typeof(data) != "object")
 			{
-				throw "oops";
+				throw "oops"; //FIXME
 			}
 			if(data.voted.length == data.population)
 			{
 				//resolve the vote if there are no voters left
+				//TODO broken promise here
 				helpers.concludeVote(data);
 			}
 			else
 			{
+				//TODO broken promise here
 				//initiate the next voter if there is one
 				helpers.sendVote(data);
 			}

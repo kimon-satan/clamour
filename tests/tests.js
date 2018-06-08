@@ -26,6 +26,6 @@ function updateTable (tableid , data)
 	else if(this.data.mode == "vote")
 	{
 		$('#' + tableid).append('<td>' + data.currentVoteId + ': '+
-		data.currentVotePair[0] + ',' +data.currentVotePair[1] + '</td>')
+		data.currentVotePair[0] + ',' +data.currentVotePair[1] + "," + data.state + '</td>' );
 	}
 }

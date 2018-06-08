@@ -1,14 +1,10 @@
 TODO
 
 - votes
-	- implement timeouts for real client ???
-	- choosing vote options
-	- deal with concluded Votes
+	- fucking test bug ... why no updateTable ???
+	- deal with concluded Votes in manipulable data structure.
+	- choosing / combining vote commands
 	- offering user input
-
-
-- stage two on conclusion of votes
-	- joining phrases together
 
 - try / catch for admin commands (50%)
 - story stuff will need refactoring into a different place

@@ -693,13 +693,13 @@ exports.concludeVote = function(data)
 	//get the winner
 	var winnerIdx = (data.scores[0] > data.scores[1]) ? 0 : 1;
 
-	//Optional: pause all votes
+	//TODO pause all votes
 
 	//1. send a message to SC and display with the winner
 	setTimeout(function()
 	{
 		globals.udpPort.send({
-				address: "/voteComplete",
+				address: "/voteComplete", //TODO. pause audio in SC
 				args: [String(data._id), winnerIdx]
 		}, "127.0.0.1", 57120);
 
@@ -711,7 +711,11 @@ exports.concludeVote = function(data)
 			}
 		});
 
+		//pause the room
+		globals.players.to(data.room).emit('cmd',{cmd: 'vote_concluded', value: data.pair[winnerIdx]});
+
 	},1500);
 
 	//2. update the vote as concluded with the winner
+
 }

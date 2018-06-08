@@ -490,7 +490,8 @@ exports.response = function(socket)
 								voted: [],
 								notvoted: docs[0].population,
 								population: docs[0].population.length,
-								num: num
+								num: num,
+								room: rm
 							});
 					})
 
@@ -502,10 +503,25 @@ exports.response = function(socket)
 							globals.voteDisplayIndexes[data._id] = dispIdx;
 						}
 						//Tell SC to record the phrases
-						globals.udpPort.send({
-								address: "/recordPhrases",
-								args: [String(data._id), p[0],p[1]],
-						}, "127.0.0.1", 57120);
+						if(globals.NO_SC)
+						{
+							//just trigger the function
+							data.available = [[ 0, 1, 2, 3, 4, 5, 6, 7 ], [ 0, 1, 2, 3, 4, 5, 6, 7 ]];
+							globals.Votes.update({_id : data._id},{$set: {available: data.available}})
+							.then(_=>
+							{
+								helpers.sendVote(data, data.num);
+							})
+
+						}
+						else
+						{
+							globals.udpPort.send({
+									address: "/recordPhrases",
+									args: [String(data._id), p[0],p[1]],
+							}, "127.0.0.1", 57120);
+						}
+
 
 						globals.pendingVotes.push(String(data._id));
 						globals.admin.emit('server_report', {id: msg.cli_id, msg: r});

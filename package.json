@@ -8,6 +8,7 @@
     "monk": "^6.0.1",
     "monk-middleware-debug": "^0.2.0",
     "osc": "^2.2.0",
+    "random-words": "^1.1.0",
     "socket.io": "^2.0.3"
   }
 }
