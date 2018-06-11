@@ -9,7 +9,8 @@ $(document).ready(function()
 		n.tableid = 'player_' + i;
 		n.updateTable = updateTable;
 		players.push(n);
-		$('#usertable').append('<tr id ="' + n.tableid + '" ><td>'+ i +'</td></tr>')
+		$('#usertable').append('<tr id ="' + n.tableid + '" ><td>'+ i +'</td></tr>');
+		n.updateTable(n.tableid, n.data);
 	}
 
 });

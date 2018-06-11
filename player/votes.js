@@ -10,10 +10,6 @@ VoteManager = function(parent)
 	this.pauseMessage = "";
 	this.parent.data.state = "waiting";
 
-	//TODO why is this not happening ????
-	if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
-
-
 
 	this.draw = function()
 	{
@@ -121,7 +117,7 @@ VoteManager.prototype.wait = function()
 {
 	this.parent.data.state = "waiting";
 	this.isWaiting = true;
-	this.parent.updateTable(this.parent.tableid, this.parent.data);
+	if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
 }
 
 VoteManager.prototype.createVote = function(vote)
@@ -161,13 +157,13 @@ VoteManager.prototype.pauseVote = function(screenTxt)
 	this.isPaused = true;
 	this.pauseMessage = screenTxt;
 	this.parent.data.state = "paused";
-	this.parent.updateTable(this.parent.tableid, this.parent.data);
+	if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
 
 	window.setTimeout(function()
 	{
-		this.parent.data.state = "";
+		this.parent.data.state = (this.isWaiting) ? "waiting" : "voting";
 		this.isPaused = false;
-		this.parent.updateTable(this.parent.tableid, this.parent.data);
+		if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
 
 	}.bind(this),5000);
 }
@@ -186,7 +182,6 @@ VoteManager.prototype.createTestVote = function(vote)
 	{
 		window.setTimeout(function()
 		{
-			console.log("waiting, " +  vote.id);
 			this.createTestVote(msg);
 		},1000); //try again in 1 sec
 		return;
@@ -195,9 +190,8 @@ VoteManager.prototype.createTestVote = function(vote)
 	this.previousVotes[vote.id] = true;
 	this.parent.data.currentVoteId = vote.id;
 	this.parent.data.currentVotePair = vote.pair;
-	this.parent.data.state = "waiting";
-
-	console.log(this.parent.data);
+	this.parent.data.state = "voting";
+	this.parent.updateTable(this.parent.tableid, this.parent.data);
 
 	var makeChoice = function()
 	{
@@ -206,8 +200,8 @@ VoteManager.prototype.createTestVote = function(vote)
 			var o = Math.round(Math.random());
 			this.parent.socket.emit('voted', {choice: o, id: this.parent.data.currentVoteId });
 			this.parent.data.currentVoteId = -1;
-			this.parent.data.currentVotePair = ["",""];
-			this.parent.updateTable(this.parent.tableid, this.parent.data);
+			this.parent.data.currentVotePair = ["0","0"];
+			this.wait();
 		}
 		else
 		{
@@ -218,7 +212,6 @@ VoteManager.prototype.createTestVote = function(vote)
 
 	window.setTimeout(makeChoice, 1500 + Math.random() * 5000);
 
-	this.parent.updateTable(this.parent.tableid, this.parent.data);
 }
 
 ///////////////HELPER CLASSES////////////////

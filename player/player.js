@@ -142,8 +142,8 @@ Player = function(isDummy)
 			}
 			else if(msg.cmd == 'new_vote' && this.mode == "vote")
 			{
-				this.voteManager.createVote(msg.value);
 				parseMsgParams(msg.value);
+				this.voteManager.createVote(msg.value);
 			}
 			else if(msg.cmd == 'vote_concluded' && this.mode == "vote")
 			{
@@ -350,6 +350,20 @@ Player = function(isDummy)
 				$('#container').empty();
 			}
 
+		}
+		else
+		{
+			if(mode == "vote")
+			{
+				if(this.data.currentVoteId == -1)
+				{
+					this.voteManager.wait();
+				}
+				else
+				{
+					this.voteManager.createVote();
+				}
+			}
 		}
 
 		this.mode = mode;

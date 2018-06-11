@@ -1,7 +1,6 @@
 TODO
 
 - votes
-	- fucking test bug ... why no updateTable ???
 	- deal with concluded Votes in manipulable data structure.
 	- choosing / combining vote commands
 	- offering user input
