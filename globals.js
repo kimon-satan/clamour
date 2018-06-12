@@ -5,7 +5,7 @@ exports.app = express();
 http = require('http').Server(exports.app);
 
 //exports.DEBUG = true;
-exports.NO_SC = true;
+//exports.NO_SC = true;
 
 //simple db using monk & mongodb
 exports.URL = 'localhost:27017/ConditionalLove';
@@ -118,7 +118,11 @@ setInterval(function()
 			if(delta > 20000) //20 secs = dormant
 			{
 				if(exports.DEBUG)console.log(k + " is dormant");
-				exports.UserData.update({_id: k},{$set: {connected: false}});
+				exports.UserData.update({_id: k},{$set: {connected: false}})
+				.catch((err)=>{
+					console.log("Error - checkins : " + err);
+					exports.checkins[k];
+				});
 				delete exports.checkins[k];
 			}
 	})

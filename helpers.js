@@ -15,34 +15,40 @@ globals.udpPort.on('message', (msg, rinfo) => {
 		{
 
 			var p = globals.Votes.findOne({_id: String(msg.args[0])});
+			var vote;
 
 			p = p.then((data)=>
 			{
-				if(data != null)
+				if(data != null && exports.validateId(data._id))
 				{
-					data.available[msg.args[1]].push(msg.args[2])
-					globals.Votes.update({_id : data._id},{$set: {available: data.available}});
-					//We're ready to start a vote
-					var i = globals.pendingVotes.indexOf(String(data._id));
-					//Check that this is a pending vote
-					if(i > -1)
-					{
-						//console.log("start vote")
-						globals.pendingVotes.splice(i,1);
-						//WARNING: possibility of race condition ... ? probably not as SC records phrases one by one
-						exports.sendVote(data, data.num);
-					}
+					vote = data;
+					data.available[msg.args[1]].push(msg.args[2]);
+					return globals.Votes.update({_id : vote._id},{$set: {available: data.available}});
 				}
 				else
 				{
-					console.error("null result")
+					return Promise.reject("vote not found");
 				}
+			})
 
+			p = p.then(_=>
+			{
+				//We're ready to start a vote
+				var i = globals.pendingVotes.indexOf(String(vote._id));
+				//Check that this is a pending vote
+				if(i > -1)
+				{
+					//console.log("start vote")
+					globals.pendingVotes.splice(i,1);
+					//WARNING: possibility of race condition ... ? probably not as SC records phrases one by one
+					exports.sendVote(vote, vote.num);
+					return Promise.resolve();
+				}
 
 			})
 
 			p.catch((reason)=>{
-				console.log("phrase complete" + reason + msg);
+				console.log("Error - phraseComplete: " + reason);
 			})
 
 		}
@@ -50,6 +56,24 @@ globals.udpPort.on('message', (msg, rinfo) => {
 });
 
 ///////////////////////////////////////////////////////////////////////////////////////
+
+exports.validateId = function(id)
+{
+	if(typeof(id) != "string")
+	{
+		id = String(id);
+	}
+
+	if(id.length != 24)
+	{
+		return false;
+	}
+	else
+	{
+		return id;
+	}
+
+}
 
 exports.choose = function(list)
 {
@@ -617,67 +641,100 @@ exports.sendVote = function(data, num)
 	if(num == undefined)num = 1;
 
 	//only select voices which are currently in the available category
-	var p = globals.UserData.find({_id: {$in: data.notvoted}, currentVoteId: -1, voiceNum: {$in: data.available[0], $in: data.available[1]}});
+	var p = globals.UserData.find(
+		{_id: {$in: data.notvoted},
+		currentVoteId: -1,
+		 voiceNum: {$in: data.available[0], $in: data.available[1]}}
+	 );
 
-	p.then((docs)=>
+	p = p.then((docs)=>
 	{
-		if(docs.length > 0)
+
+		let r = Math.max(num - docs.length, 0); // remainder
+		let promises = [];
+
+		if(r > 0)
 		{
-
-			for(var i = num; i > 0; i--)
+			console.log( r + " too few voters for the pool " , num, docs.length );
+			//we ran out of voters before the pool could be complete
+			//store and kill these on reset just to be safe
+			globals.procs[omsg.id + "_" + generateTempId(5)] = setTimeout(function()
 			{
-				if(docs.length == 0)
-				{
-					//we ran out of voters before the pool could be complete
-					//TODO probably store and kill these on reset just to be safe
-					setTimeout(function()
-					{
-						globals.Votes.findOne({_id: omsg.id})
 
-						.then((res)=>
+				if(exports.validateId(omsg.id))
+				{
+					var pp = globals.Votes.findOne({_id: omsg.id}); //findOne sends an error immediately for bad id input
+
+					pp.then((res)=>
+					{
+						if(res) //otherwise the vote must have expired ... terminate the process
 						{
+							console.log(res.notvoted.length + " voters remaining");
 							if(res.notvoted.length > 0)
 							{
-								exports.sendVote(res,i);
+								exports.sendVote(res,r);
 							}
-						})
+						}
+					});
 
-						.catch((err)=>{
-							console.log(err);
-						})
-					}, 500); // call the function again
-					break;
+					pp.catch((err)=>{
+						console.log("Error: sendVote timeout - " + err);
+					})
 				}
-				var idx = Math.floor(Math.random() * docs.length);
-				var player = docs[idx];
-				docs.splice(idx, 1);
 
+
+			},
+			500); // call the function again
+		}
+
+		for(var i = 0; i < num - r; i++)
+		{
+
+			var idx = Math.floor(Math.random() * docs.length);
+			var player = docs[idx];
+			docs.splice(idx, 1);
+
+			if(exports.validateId(player._id) && exports.validateId(omsg.id))
+			{
 
 				globals.players.to(player._id).emit('cmd',{cmd: 'new_vote', value: omsg});
-				console.log("vote sent")
-				globals.Votes.update({_id: omsg.id}, {$push: {voting: player._id}, $pull: {notvoted: player._id}});
-				globals.UserData.update({_id: player._id},{$set: {currentVoteId: player._id, currentVotePair: player.pair }});
+
+				promises.push(
+					globals.Votes.update({_id: omsg.id}, {$push: {voting: player._id}, $pull: {notvoted: player._id}})
+				);
+				promises.push(
+					globals.UserData.update({_id: player._id},{$set: {currentVoteId: player._id, currentVotePair: player.pair }})
+				);
 
 			}
+
 		}
-		else
+
+		return Promise.all(promises);
+
+	})
+
+	p = p.then(_=>
+	{
+		if(exports.validateId(omsg.id))
 		{
-			console.log("no voters available")
-			//No voters currently available
-			//TODO probably store and kill these on reset just to be safe
-			setTimeout(function()
-			{
-				globals.Votes.findOne({_id: omsg.id})
-				.then((res)=>{
-					if(res.notvoted.length > 0)
-					{
-						exports.sendVote(res,num);
-					}
-				})
-				.catch((err)=>{
-					console.error(err);
-				})
-			}, 500); // call the function again
+			return globals.Votes.findOne({_id: omsg.id});
+		}
+	});
+
+	p = p.then((res)=>{
+		if(res) //otherwise the vote must have expired ... terminate the process
+		{
+			console.log(
+				"nv:  " + res.notvoted.length,
+				" voting: " + res.voting.length,
+				" voted: " + res.voted.length,
+				" sum: " + (res.notvoted.length + res.voting.length + res.voted.length));
+
+				if(res.notvoted.length + res.voting.length + res.voted.length != res.population)
+				{
+					return Promise.reject(res.population);
+				}
 		}
 	})
 
@@ -693,7 +750,6 @@ exports.concludeVote = function(data)
 	//get the winner
 	var winnerIdx = (data.scores[0] > data.scores[1]) ? 0 : 1;
 
-	//TODO pause all votes
 
 	//1. send a message to SC and display with the winner
 	setTimeout(function()
@@ -711,7 +767,7 @@ exports.concludeVote = function(data)
 			}
 		});
 
-		//pause the room
+		//pause the room - FIXME perhaps this should be all players on vote ?
 		globals.players.to(data.room).emit('cmd',{cmd: 'vote_concluded', value: data.pair[winnerIdx]});
 
 	},1500);

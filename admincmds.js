@@ -360,19 +360,16 @@ exports.response = function(socket)
 				globals.voteDisplayIndexes = {};
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: "all databases reset", room: ""});
 				globals.players.emit('whoareyou'); //causes any connected players to reset
-				Object.keys(globals.procs).forEach(function(id)
-				{
-					clearInterval(globals.procs);
-				});
+
 			})
 			globals.display.emit("cmd", {type: "instruct"});
 			globals.display.emit('cmd', {type: 'clear_display'});
 			globals.storyChapter = 0;
 			globals.storyClip = 0;
-			var oldProcs = Object.keys(globals.procs);
-			for(var i = 0; i < oldProcs.length; i++)
+			var keys = Object.keys(globals.procs);
+			for(var i = 0; i < keys.length; i++)
 			{
-				clearInterval(globals.procs[globals.procs[oldProcs[i]]]);
+				clearInterval(globals.procs[keys[i]]);
 			}
 
 			globals.udpPort.send(

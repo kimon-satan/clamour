@@ -1,9 +1,11 @@
 TODO
 
 - votes
+	- pause audio for concluded votes
 	- deal with concluded Votes in manipulable data structure.
 	- choosing / combining vote commands
 	- offering user input
+	- trace that bug
 
 - try / catch for admin commands (50%)
 - story stuff will need refactoring into a different place

@@ -195,6 +195,8 @@ VoteManager.prototype.createTestVote = function(vote)
 
 	var makeChoice = function()
 	{
+		if(this.parent.data.currentVoteId == -1)return;
+
 		if(!this.isPaused)
 		{
 			var o = Math.round(Math.random());

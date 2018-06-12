@@ -142,7 +142,7 @@ Player = function(isDummy)
 			}
 			else if(msg.cmd == 'new_vote' && this.mode == "vote")
 			{
-				parseMsgParams(msg.value);
+				//parseMsgParams(msg.value);
 				this.voteManager.createVote(msg.value);
 			}
 			else if(msg.cmd == 'vote_concluded' && this.mode == "vote")
