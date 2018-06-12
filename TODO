@@ -1,11 +1,12 @@
 TODO
 
 - votes
-	- pause audio for concluded votes
+	- pause audio for concluded votes (50%)
 	- deal with concluded Votes in manipulable data structure.
-	- choosing / combining vote commands
+	- trace that bug (90%) - still not catching it entirely.
+	- choosing / combining vote commands - see notes
 	- offering user input
-	- trace that bug
+
 
 - try / catch for admin commands (50%)
 - story stuff will need refactoring into a different place

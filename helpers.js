@@ -14,7 +14,13 @@ globals.udpPort.on('message', (msg, rinfo) => {
 		if(msg.address == "/phraseComplete")
 		{
 
-			var p = globals.Votes.findOne({_id: String(msg.args[0])});
+			if(!exports.validateId(msg.args[0]))
+			{
+				console.log("Error /phraseComplete: Invalid argument msg.args[0] " + msg.args[0]);
+				return;
+			}
+
+			var p = globals.Votes.findOne({_id: msg.args[0]});
 			var vote;
 
 			p = p.then((data)=>
