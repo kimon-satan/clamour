@@ -114,9 +114,13 @@ Player = function(isDummy)
 			{
 				this.voteManager.createTestVote(msg.value);
 			}
-			else if(msg.cmd == 'vote_concluded' && this.mode == "vote")
+			else if(msg.cmd == 'pause_vote' && this.mode == "vote")
 			{
 				this.voteManager.pauseVote(msg.value);
+			}
+			else if(msg.cmd == 'resume_vote' && this.mode == "vote")
+			{
+				this.voteManager.resumeVote();
 			}
 		}
 		else

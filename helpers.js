@@ -14,49 +14,67 @@ globals.udpPort.on('message', (msg, rinfo) => {
 		if(msg.address == "/phraseComplete")
 		{
 
-			if(!exports.validateId(msg.args[0]))
+			try
 			{
-				console.log("Error /phraseComplete: Invalid argument msg.args[0] " + msg.args[0]);
-				return;
+
+				var id = exports.validateId(msg.args[0]);
+
+				if(!id)
+				{
+					console.log("Error /phraseComplete: Invalid argument msg.args[0] " + msg.args[0]);
+					return;
+				}
+
+				var p = globals.Votes.findOne({_id: id});
+				var vote;
+
+				p = p.then((data)=>
+				{
+					if(data != null && exports.validateId(data._id))
+					{
+						vote = data;
+						data.available[msg.args[1]].push(msg.args[2]);
+						return globals.Votes.update({_id : vote._id},{$set: {available: data.available}});
+					}
+					else
+					{
+						return Promise.reject("vote not found");
+					}
+				})
+
+				p = p.then(_=>
+				{
+					//We're ready to start a vote
+					var i = globals.pendingVotes.indexOf(String(vote._id));
+					//Check that this is a pending vote
+					if(i > -1)
+					{
+						//console.log("start vote")
+						globals.pendingVotes.splice(i,1);
+						//WARNING: possibility of race condition ... ? probably not as SC records phrases one by one
+						exports.sendVote(vote, vote.num);
+						return Promise.resolve();
+					}
+
+				})
+
+				p.catch((reason)=>{
+					console.log("Error - phraseComplete: " + reason);
+				});
+
+			}
+			catch(e)
+			{
+				console.log("Error caught /phraseComplete: " + e);
 			}
 
-			var p = globals.Votes.findOne({_id: msg.args[0]});
-			var vote;
 
-			p = p.then((data)=>
-			{
-				if(data != null && exports.validateId(data._id))
-				{
-					vote = data;
-					data.available[msg.args[1]].push(msg.args[2]);
-					return globals.Votes.update({_id : vote._id},{$set: {available: data.available}});
-				}
-				else
-				{
-					return Promise.reject("vote not found");
-				}
-			})
+		}
 
-			p = p.then(_=>
-			{
-				//We're ready to start a vote
-				var i = globals.pendingVotes.indexOf(String(vote._id));
-				//Check that this is a pending vote
-				if(i > -1)
-				{
-					//console.log("start vote")
-					globals.pendingVotes.splice(i,1);
-					//WARNING: possibility of race condition ... ? probably not as SC records phrases one by one
-					exports.sendVote(vote, vote.num);
-					return Promise.resolve();
-				}
-
-			})
-
-			p.catch((reason)=>{
-				console.log("Error - phraseComplete: " + reason);
-			})
-
+		if(msg.address == "/resumeVote")
+		{
+			console.log("/resumeVote");
+			globals.players.emit('cmd',{cmd: 'resume_vote'});
 		}
 
 });
@@ -112,9 +130,11 @@ exports.joinRoom = function(uids, roomName, cb)
 
 	//add the room to UserData
 	//remove old versions first
-	globals.UserData.update({_id: { $in: uids} }, {$pull : {rooms: roomName}}, {multi: true}, function(){
+	globals.UserData.update({_id: { $in: uids} }, {$pull : {rooms: roomName}}, {multi: true})
+	.then(_=>
+	{
 		globals.UserData.update({_id: { $in: uids} },{ $push : {rooms: roomName}}, {multi: true});
-	})
+	});
 
 
 }
@@ -642,111 +662,121 @@ exports.loadDictionary = function(cb)
 
 exports.sendVote = function(data, num)
 {
-	var omsg = {pair: data.pair, id: data._id};
-
-	if(num == undefined)num = 1;
-
-	//only select voices which are currently in the available category
-	var p = globals.UserData.find(
-		{_id: {$in: data.notvoted},
-		currentVoteId: -1,
-		 voiceNum: {$in: data.available[0], $in: data.available[1]}}
-	 );
-
-	p = p.then((docs)=>
+	try
 	{
 
-		let r = Math.max(num - docs.length, 0); // remainder
-		let promises = [];
 
-		if(r > 0)
+		var omsg = {pair: data.pair, id: data._id};
+
+		if(num == undefined)num = 1;
+
+		//only select voices which are currently in the available category
+		var p = globals.UserData.find(
+			{_id: {$in: data.notvoted},
+			currentVoteId: -1,
+			 voiceNum: {$in: data.available[0], $in: data.available[1]}}
+		 );
+
+		p = p.then((docs)=>
 		{
-			console.log( r + " too few voters for the pool " , num, docs.length );
-			//we ran out of voters before the pool could be complete
-			//store and kill these on reset just to be safe
-			globals.procs[omsg.id + "_" + generateTempId(5)] = setTimeout(function()
-			{
 
-				if(exports.validateId(omsg.id))
+			let r = Math.max(num - docs.length, 0); // remainder
+			let promises = [];
+
+			if(r > 0)
+			{
+				console.log( r + " too few voters for the pool " , num, docs.length );
+				//we ran out of voters before the pool could be complete
+				//store and kill these on reset just to be safe
+				globals.procs[omsg.id + "_" + generateTempId(5)] = setTimeout(function()
 				{
-					var pp = globals.Votes.findOne({_id: omsg.id}); //findOne sends an error immediately for bad id input
 
-					pp.then((res)=>
+					if(exports.validateId(omsg.id))
 					{
-						if(res) //otherwise the vote must have expired ... terminate the process
+						var pp = globals.Votes.findOne({_id: omsg.id}); //findOne sends an error immediately for bad id input
+
+						pp.then((res)=>
 						{
-							console.log(res.notvoted.length + " voters remaining");
-							if(res.notvoted.length > 0)
+							if(res) //otherwise the vote must have expired ... terminate the process
 							{
-								exports.sendVote(res,r);
+								console.log(res.notvoted.length + " voters remaining");
+								if(res.notvoted.length > 0)
+								{
+									exports.sendVote(res,r);
+								}
 							}
-						}
-					});
+						});
 
-					pp.catch((err)=>{
-						console.log("Error: sendVote timeout - " + err);
-					})
-				}
+						pp.catch((err)=>{
+							console.log("Error: sendVote timeout - " + err);
+						})
+					}
 
 
-			},
-			500); // call the function again
-		}
+				},
+				500); // call the function again
+			}
 
-		for(var i = 0; i < num - r; i++)
-		{
-
-			var idx = Math.floor(Math.random() * docs.length);
-			var player = docs[idx];
-			docs.splice(idx, 1);
-
-			if(exports.validateId(player._id) && exports.validateId(omsg.id))
+			for(var i = 0; i < num - r; i++)
 			{
 
-				globals.players.to(player._id).emit('cmd',{cmd: 'new_vote', value: omsg});
+				var idx = Math.floor(Math.random() * docs.length);
+				var player = docs[idx];
+				docs.splice(idx, 1);
 
-				promises.push(
-					globals.Votes.update({_id: omsg.id}, {$push: {voting: player._id}, $pull: {notvoted: player._id}})
-				);
-				promises.push(
-					globals.UserData.update({_id: player._id},{$set: {currentVoteId: player._id, currentVotePair: player.pair }})
-				);
+				if(exports.validateId(player._id) && exports.validateId(omsg.id))
+				{
+
+					globals.players.to(player._id).emit('cmd',{cmd: 'new_vote', value: omsg});
+
+					promises.push(
+						globals.Votes.update({_id: omsg.id}, {$push: {voting: player._id}, $pull: {notvoted: player._id}})
+					);
+					promises.push(
+						globals.UserData.update({_id: player._id},{$set: {currentVoteId: player._id, currentVotePair: player.pair }})
+					);
+
+				}
 
 			}
 
-		}
+			return Promise.all(promises);
 
-		return Promise.all(promises);
+		})
 
-	})
+		p = p.then(_=>
+		{
+			if(exports.validateId(omsg.id))
+			{
+				return globals.Votes.findOne({_id: omsg.id});
+			}
+		});
 
-	p = p.then(_=>
+		p = p.then((res)=>{
+			if(res) //otherwise the vote must have expired ... terminate the process
+			{
+				console.log(
+					"nv:  " + res.notvoted.length,
+					" voting: " + res.voting.length,
+					" voted: " + res.voted.length,
+					" sum: " + (res.notvoted.length + res.voting.length + res.voted.length));
+
+					if(res.notvoted.length + res.voting.length + res.voted.length != res.population)
+					{
+						return Promise.reject(res.population);
+					}
+			}
+		})
+
+		p.catch((reason)=>{
+			console.log("Error - sendVote: " + reason);
+		})
+
+	}
+	catch (e)
 	{
-		if(exports.validateId(omsg.id))
-		{
-			return globals.Votes.findOne({_id: omsg.id});
-		}
-	});
-
-	p = p.then((res)=>{
-		if(res) //otherwise the vote must have expired ... terminate the process
-		{
-			console.log(
-				"nv:  " + res.notvoted.length,
-				" voting: " + res.voting.length,
-				" voted: " + res.voted.length,
-				" sum: " + (res.notvoted.length + res.voting.length + res.voted.length));
-
-				if(res.notvoted.length + res.voting.length + res.voted.length != res.population)
-				{
-					return Promise.reject(res.population);
-				}
-		}
-	})
-
-	p.catch((reason)=>{
-		console.log("Error - sendVote: " + reason);
-	})
+		console.log("Error caught - sendVote: " + e);
+	}
 
 }
 
@@ -773,8 +803,7 @@ exports.concludeVote = function(data)
 			}
 		});
 
-		//pause the room - FIXME perhaps this should be all players on vote ?
-		globals.players.to(data.room).emit('cmd',{cmd: 'vote_concluded', value: data.pair[winnerIdx]});
+		globals.players.emit('cmd',{cmd: 'pause_vote', value: data.pair[winnerIdx]});
 
 	},1500);
 

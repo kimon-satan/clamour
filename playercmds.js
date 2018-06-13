@@ -128,131 +128,137 @@ exports.response = function(socket)
 			return;
 		}
 
+		try{
 
-		var usrobj;
-		var p = globals.UserData.findOne({_id: id});
+			var usrobj;
+			var p = globals.UserData.findOne({_id: id});
 
-		p = p.then((data)=>
-		{
-			usrobj = data;
-			return globals.Votes.findOne({_id: msg.id});
-		})
-
-		p = p.then((data)=>
-		{
-			if(data == null)
+			p = p.then((data)=>
 			{
-				return Promise.reject("vote " + msg.id + " could not be found ");
-			}
-			else if(!helpers.validateId(data._id))
+				usrobj = data;
+				return globals.Votes.findOne({_id: msg.id});
+			})
+
+			p = p.then((data)=>
 			{
-				return Promise.reject("vote " + msg.id + " return invalid id");
-			}
-
-			data.scores[msg.choice] += 1.0/data.population;
-
-			globals.udpPort.send({
-					address: "/speakPhrase",
-					args: [String(data._id), msg.choice, usrobj.voiceNum, usrobj.voicePan, usrobj.voicePitch]
-			}, "127.0.0.1", 57120);
-
-			//assign to the next empty slot
-			//naieve version
-			if(globals.voteDisplayIndexes[data._id] == undefined)
-			{
-				//assign a new slot !
-				var k = Object.keys(globals.voteDisplayIndexes);
-				var slots = [0,0,0,0,0,0,0,0]; //TODO maybe make this a global
-
-				for(var i = 0; i < k.length; i++)
+				if(data == null)
 				{
-					//console.log(k[i])
-					slots[Number(globals.voteDisplayIndexes[k[i]])] = k[i];
+					return Promise.reject("vote " + msg.id + " could not be found ");
+				}
+				else if(!helpers.validateId(data._id))
+				{
+					return Promise.reject("vote " + msg.id + " return invalid id");
+				}
+
+				data.scores[msg.choice] += 1.0/data.population;
+
+				globals.udpPort.send({
+						address: "/speakPhrase",
+						args: [String(data._id), msg.choice, usrobj.voiceNum, usrobj.voicePan, usrobj.voicePitch]
+				}, "127.0.0.1", 57120);
+
+				//assign to the next empty slot
+				//naieve version
+				if(globals.voteDisplayIndexes[data._id] == undefined)
+				{
+					//assign a new slot !
+					var k = Object.keys(globals.voteDisplayIndexes);
+					var slots = [0,0,0,0,0,0,0,0]; //TODO maybe make this a global
+
+					for(var i = 0; i < k.length; i++)
+					{
+						//console.log(k[i])
+						slots[Number(globals.voteDisplayIndexes[k[i]])] = k[i];
+
+					}
+
+					if(slots.indexOf(0) == -1)
+					{
+						//all slots taken go back to zero
+						globals.voteDisplayIndexes[data._id] = 0;
+					}
+					else
+					{
+						globals.voteDisplayIndexes[data._id] = slots.indexOf(0);
+
+						//update display -
+						//NB. This might not be the eventual point of making this change
+						// we might want to put the admin in charge
+						globals.display.emit('cmd', {
+							type: "vote", cmd: "setNumSlots" ,
+							val: {numSlots: Object.keys(globals.voteDisplayIndexes).length
+							}});
+					}
+
 
 				}
 
-				if(slots.indexOf(0) == -1)
+				globals.display.emit('cmd', {
+					type: "vote", cmd: "displayVote" ,
+					val: {
+						choice: msg.choice,
+						text: data.pair[msg.choice],
+						font: usrobj.font,
+						col: usrobj.fontCol,
+						dispIdx: globals.voteDisplayIndexes[data._id],
+						score: data.scores
+					}
+				});
+
+				return globals.Votes.update({_id: data._id},
+				{$push: {voted: id},
+				$pull: {voting: id},
+				$set:{scores: data.scores}
+				});
+			})
+
+			p = p.then((data)=>
+			{
+				//NB. perhaps needs try catch
+				return globals.Votes.findOne({_id: msg.id});
+			})
+
+			p = p.then((data)=>
+			{
+				if(typeof(data) != "object")
 				{
-					//all slots taken go back to zero
-					globals.voteDisplayIndexes[data._id] = 0;
+					return Promise.reject("oops");
+				}
+
+				if(data.voted.length == data.population)
+				{
+					//resolve the vote if there are no voters left
+					//TODO broken promise here
+					helpers.concludeVote(data);
+
 				}
 				else
 				{
-					globals.voteDisplayIndexes[data._id] = slots.indexOf(0);
-
-					//update display -
-					//NB. This might not be the eventual point of making this change
-					// we might want to put the admin in charge
-					globals.display.emit('cmd', {
-						type: "vote", cmd: "setNumSlots" ,
-						val: {numSlots: Object.keys(globals.voteDisplayIndexes).length
-						}});
+					//TODO broken promise here
+					//initiate the next voter if there is one
+					helpers.sendVote(data);
 				}
 
+				return Promise.resolve();
 
-			}
-
-			globals.display.emit('cmd', {
-				type: "vote", cmd: "displayVote" ,
-				val: {
-					choice: msg.choice,
-					text: data.pair[msg.choice],
-					font: usrobj.font,
-					col: usrobj.fontCol,
-					dispIdx: globals.voteDisplayIndexes[data._id],
-					score: data.scores
-				}
 			});
 
-			return globals.Votes.update({_id: data._id},
-			{$push: {voted: id},
-			$pull: {voting: id},
-			$set:{scores: data.scores}
-			});
-		})
-
-		p = p.then((data)=>
-		{
-			//NB. perhaps needs try catch
-			return globals.Votes.findOne({_id: msg.id});
-		})
-
-		p = p.then((data)=>
-		{
-			if(typeof(data) != "object")
+			p = p.then(_=>
 			{
-				return Promise.reject("oops");
-			}
+				//NB. perhaps needs try catch
+				return globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
+			})
 
-			if(data.voted.length == data.population)
+			p.catch((reason)=>
 			{
-				//resolve the vote if there are no voters left
-				//TODO broken promise here
-				helpers.concludeVote(data);
+				console.log("Error - voted " + reason) ;
+			})
 
-			}
-			else
-			{
-				//TODO broken promise here
-				//initiate the next voter if there is one
-				helpers.sendVote(data);
-			}
-
-			return Promise.resolve();
-
-		});
-
-		p = p.then(_=>
+		}
+		catch(e)
 		{
-			//NB. perhaps needs try catch
-			return globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
-		})
-
-		p.catch((reason)=>
-		{
-			console.log("Error - voted " + reason) ;
-		})
-
+			console.log("Caught Error - voted" + e);
+		}
 		//reset this users vote
 
 
@@ -296,14 +302,21 @@ exports.response = function(socket)
 	{
 		if(globals.DEBUG)console.log('a player disconnected ' + id);
 
-		if(helpers.validateId(id))
+		try
 		{
-			globals.UserData.update({_id: id},{$set: {connected: false}})
-			.catch((err)=>{
-				console.log("Error - disconnect: " + err);
-			});
-			delete globals.checkins[id];
-			clearInterval(globals.procs[id]);
+			if(helpers.validateId(id))
+			{
+				globals.UserData.update({_id: id},{$set: {connected: false}})
+				.catch((err)=>{
+					console.log("Error - disconnect: " + err);
+				});
+				delete globals.checkins[id];
+				clearInterval(globals.procs[id]);
+			}
+		}
+		catch(e)
+		{
+			console.log("Error - disconnect" + e);
 		}
 	});
 
