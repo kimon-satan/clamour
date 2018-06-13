@@ -1,12 +1,12 @@
 TODO
 
 - votes
-	- pause audio for concluded votes (50%)
+
 	- deal with concluded Votes in manipulable data structure.
-	- trace that bug (90%) - still not catching it entirely.
 	- choosing / combining vote commands - see notes
 	- offering user input
-
+	- bug narrowed down to checkins - why are clients returning null values ?
+	- deal with reset client issues
 
 - try / catch for admin commands (50%)
 - story stuff will need refactoring into a different place
@@ -14,6 +14,9 @@ TODO
 - display data persistence
 - asynchronous error logging (maybe...)
 
+- Some thoughts ...
+// seems like multi-threaded design is vulnerable to dropped messages
+// consider refactoring vote system to a single thread with intervalic manager
 
 
 FIXES (in order of importance)

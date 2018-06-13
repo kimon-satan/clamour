@@ -152,20 +152,17 @@ VoteManager.prototype.createVote = function(vote)
 
 }
 
-VoteManager.prototype.pauseVote = function(screenTxt)
+VoteManager.prototype.pauseVote = function()
 {
 	this.isPaused = true;
-	this.pauseMessage = screenTxt;
+	this.pauseMessage = "...";
 	this.parent.data.state = "paused";
 	if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
+}
 
-	// window.setTimeout(function()
-	// {
-	// 	this.parent.data.state = (this.isWaiting) ? "waiting" : "voting";
-	// 	this.isPaused = false;
-	// 	if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
-	//
-	// }.bind(this),5000);
+VoteManager.prototype.displayWinner = function(msg)
+{
+	this.pauseMessage = msg;
 }
 
 VoteManager.prototype.resumeVote = function()

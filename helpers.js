@@ -2,7 +2,7 @@ var globals = require('./globals.js');
 var randomWords = require('random-words');
 var fs = require('fs');
 
-//Handle incoming OSC
+//Handle incoming OSC - TODO move to server.js
 
 globals.udpPort.on('message', (msg, rinfo) => {
 
@@ -71,10 +71,29 @@ globals.udpPort.on('message', (msg, rinfo) => {
 
 		}
 
-		if(msg.address == "/resumeVote")
+		if(msg.address == "/resumeVote") //TODO change name
 		{
-			console.log("/resumeVote");
 			globals.players.emit('cmd',{cmd: 'resume_vote'});
+			//allows other votes to happen
+			globals.currentConcludedVote = null;
+		}
+
+		if(msg.address == "/winSampleDone")
+		{
+
+			globals.display.emit('cmd', {
+				type: "vote", cmd: "concludeVote" ,
+				val: {
+					winner: globals.currentConcludedVote.winnerIdx,
+					dispIdx: globals.voteDisplayIndexes[globals.currentConcludedVote._id],
+				}
+			});
+
+			globals.players.emit('cmd',{
+				cmd: "display_winner",
+				value: globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx]
+			});
+
 		}
 
 });
@@ -664,8 +683,6 @@ exports.sendVote = function(data, num)
 {
 	try
 	{
-
-
 		var omsg = {pair: data.pair, id: data._id};
 
 		if(num == undefined)num = 1;
@@ -784,28 +801,29 @@ exports.sendVote = function(data, num)
 exports.concludeVote = function(data)
 {
 	//get the winner
-	var winnerIdx = (data.scores[0] > data.scores[1]) ? 0 : 1;
-
+	data.winnerIdx = (data.scores[0] > data.scores[1]) ? 0 : 1;
 
 	//1. send a message to SC and display with the winner
-	setTimeout(function()
+
+	var triggerVoteComplete = function()
 	{
+		if(globals.currentConcludedVote != null)
+		{
+			globals.procs[data._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete,1500);
+			return;
+		}
+
 		globals.udpPort.send({
 				address: "/voteComplete", //TODO. pause audio in SC
-				args: [String(data._id), winnerIdx]
+				args: [String(data._id), data.winnerIdx]
 		}, "127.0.0.1", 57120);
 
-		globals.display.emit('cmd', {
-			type: "vote", cmd: "concludeVote" ,
-			val: {
-				winner: winnerIdx,
-				dispIdx: globals.voteDisplayIndexes[data._id],
-			}
-		});
+		globals.currentConcludedVote = data;
+		globals.players.emit('cmd',{cmd: 'pause_vote'});
 
-		globals.players.emit('cmd',{cmd: 'pause_vote', value: data.pair[winnerIdx]});
+	}
 
-	},1500);
+	globals.procs[data._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete,1500);
 
 	//2. update the vote as concluded with the winner
 

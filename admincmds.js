@@ -358,6 +358,7 @@ exports.response = function(socket)
 				globals.UserData.remove({});
 				globals.Votes.remove({});
 				globals.voteDisplayIndexes = {};
+				globals.checkins = {};
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: "all databases reset", room: ""});
 				globals.players.emit('whoareyou'); //causes any connected players to reset
 
@@ -370,6 +371,7 @@ exports.response = function(socket)
 			for(var i = 0; i < keys.length; i++)
 			{
 				clearInterval(globals.procs[keys[i]]);
+				clearTimeout(globals.procs[keys[i]]);
 			}
 
 			globals.udpPort.send(

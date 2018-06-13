@@ -116,7 +116,7 @@ Player = function(isDummy)
 			}
 			else if(msg.cmd == 'pause_vote' && this.mode == "vote")
 			{
-				this.voteManager.pauseVote(msg.value);
+				this.voteManager.pauseVote();
 			}
 			else if(msg.cmd == 'resume_vote' && this.mode == "vote")
 			{
@@ -146,12 +146,19 @@ Player = function(isDummy)
 			}
 			else if(msg.cmd == 'new_vote' && this.mode == "vote")
 			{
-				//parseMsgParams(msg.value);
 				this.voteManager.createVote(msg.value);
 			}
-			else if(msg.cmd == 'vote_concluded' && this.mode == "vote")
+			else if(msg.cmd == 'pause_vote' && this.mode == "vote")
 			{
-				this.voteManager.pauseVote(msg.value);
+				this.voteManager.pauseVote();
+			}
+			else if(msg.cmd == 'display_winner' && this.mode == "vote")
+			{
+				this.voteManager.displayWinner(msg.value);
+			}
+			else if(msg.cmd == 'resume_vote' && this.mode == "vote")
+			{
+				this.voteManager.resumeVote();
 			}
 		}
 

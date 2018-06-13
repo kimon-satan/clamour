@@ -117,7 +117,10 @@ exports.response = function(socket)
 		// 	return;
 		// }
 
-		if(!helpers.validateId(msg.id))
+		msg.id = helpers.validateId(msg.id);
+
+
+		if(!msg.id)
 		{
 			console.log("incorrect msg id: " + msg.id);
 			return;
@@ -131,7 +134,7 @@ exports.response = function(socket)
 		try{
 
 			var usrobj;
-			var p = globals.UserData.findOne({_id: id});
+			var p = globals.UserData.findOne({_id: String(id)});
 
 			p = p.then((data)=>
 			{
@@ -141,11 +144,13 @@ exports.response = function(socket)
 
 			p = p.then((data)=>
 			{
+				data._id = helpers.validateId(data._id);
+
 				if(data == null)
 				{
 					return Promise.reject("vote " + msg.id + " could not be found ");
 				}
-				else if(!helpers.validateId(data._id))
+				else if(!data._id)
 				{
 					return Promise.reject("vote " + msg.id + " return invalid id");
 				}
@@ -246,7 +251,12 @@ exports.response = function(socket)
 			p = p.then(_=>
 			{
 				//NB. perhaps needs try catch
-				return globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
+				try{
+					return globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
+				}
+				catch(e){
+					console.log(e);
+				}
 			})
 
 			p.catch((reason)=>
@@ -325,7 +335,10 @@ exports.response = function(socket)
 	{
 		socket.emit('checkAlive',function(data)
 		{
-			globals.checkins[data] = Date.now();
+			if(data != null)
+			{
+				globals.checkins[data] = Date.now();
+			}
 		});
 	},5000)
 

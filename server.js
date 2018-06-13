@@ -40,6 +40,47 @@ setTimeout(function()
 
 },3000);
 
+setInterval(function()
+{
+
+	time = Date.now();
+	var k = Object.keys(globals.checkins);
+	for(var i = 0; i < k.length; i++)
+	{
+			var delta = time - globals.checkins[k[i]];
+			if(globals.DEBUG)console.log(k[i], delta);
+			if(delta > 20000) //20 secs = dormant
+			{
+				if(globals.DEBUG)console.log(k[i] + " is dormant");
+				try
+				{
+					if(helpers.validateId(k[i]))
+					{
+						globals.UserData.update({_id: k[i]},{$set: {connected: false}})
+						.catch((err)=>{
+							console.log("Error - checkins : " + err);
+							globals.checkins[k[i]];
+						});
+						delete globals.checkins[k[i]];
+					}
+					else
+					{
+						// delete globals.checkins[k[i]];
+						console.log(globals.checkins[k[i]]);
+						throw k[i] + " is not a valid id";
+					}
+				}
+				catch (e)
+				{
+					console.log("Error - checkins: " + e);
+				}
+
+			}
+	}
+
+
+}, 5000);
+
 //We define a route handler / that gets called when we hit our website home.
 
 globals.app.use("/admin",express.static(__dirname + "/admin"));
