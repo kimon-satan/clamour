@@ -280,14 +280,17 @@ function evaluateCommand(cmd,  cli){
 	cmd = cmd.replace(/\(\s/g, "(");
 	cmd = cmd.replace(/\s\)/g, ")");
 
-	r = /-(\w*)\s?([^-^\s]*)\s?([^-^\s]*)/g; //0-2 sub-parameters
+
+
+	r = /-(\w*)\s?([\[\(].*[\]\)]|[^-^\s]*)\s?([\[\(].*[\]\)]|[^-^\s]*)/g; //0-2 sub-parameters
 	match = " ";
 
 	while (match != null)
 	{
 		match = r.exec(cmd);
-	if(match != null)args.push([match[1], match[2], match[3]]);
+		if(match != null)args.push([match[1], match[2], match[3]]);
 	}
+
 
 	r = cmd.match(/_\w*/);
 	if(r != null)

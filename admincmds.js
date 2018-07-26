@@ -460,9 +460,15 @@ exports.response = function(socket)
 			helpers.parseOptions(msg.args, function(options)
 			{
 
-				var t = (options.type != undefined) ? options.type : helpers.choose(Object.keys(globals.dictionary.wordPairs));
-				var p = helpers.choose(globals.dictionary.wordPairs[t]);
-
+				if(options.choice == undefined)
+				{
+					var t = (options.type != undefined) ? options.type : helpers.choose(Object.keys(globals.dictionary.wordPairs));
+					var p = helpers.choose(globals.dictionary.wordPairs[t]);
+				}
+				else
+				{
+					p = options.choice;
+				}
 
 				var num = (options.num != undefined) ? options.num : 1;  // we need this for the helper
 				dispIdx = options.dispIdx;

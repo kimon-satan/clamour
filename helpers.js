@@ -384,8 +384,15 @@ exports.parseOptions = function(args, cb)
 				if(args[i][1].match(/\[.*?\]/)) //as many args
 				{
 					//repackage as an array
-					var str = args[i][1].match(/\[(.*?)\]/)[1];
-					options[args[i][0]] = str.split(",");
+					try
+					{
+						options[args[i][0]] = JSON.parse(args[i][1]);
+					}
+					catch(e)
+					{
+						console.log(e);
+					}
+
 				}
 				else if(args[i][1].match(/\([^,],[^,]\)/)) //only two args
 				{
@@ -772,11 +779,11 @@ exports.sendVote = function(data, num)
 		p = p.then((res)=>{
 			if(res) //otherwise the vote must have expired ... terminate the process
 			{
-				console.log(
-					"nv:  " + res.notvoted.length,
-					" voting: " + res.voting.length,
-					" voted: " + res.voted.length,
-					" sum: " + (res.notvoted.length + res.voting.length + res.voted.length));
+				// console.log(
+				// 	"nv:  " + res.notvoted.length,
+				// 	" voting: " + res.voting.length,
+				// 	" voted: " + res.voted.length,
+				// 	" sum: " + (res.notvoted.length + res.voting.length + res.voted.length));
 
 					if(res.notvoted.length + res.voting.length + res.voted.length != res.population)
 					{
