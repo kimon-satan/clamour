@@ -2,9 +2,10 @@ TODO
 
 - votes
 
-	- admin input for votes
+	- deal with concluded Votes in manipulable data structure (50%)
+		- rewrite display to deal with new structure so far
 	- prevent duplicates in SC
-	- deal with concluded Votes in manipulable data structure.
+
 	- choosing / combining vote commands - see notes
 	- offering user input
 	- bug narrowed down to checkins - why are clients returning null values ? (is this solved)

@@ -90,7 +90,14 @@ exports.checkins = {};
 exports.procs = {}; //all timeout and interval processes
 
 exports.pendingVotes = [];
-exports.voteDisplayIndexes = {};
+exports.voteDisplayIndexes = {}; //TODO this should go
+
+exports.voteDisplaySlots =
+{
+	a: [0,0,0,0],
+	b: [0,0,0,0]
+};
+
 exports.currentConcludedVote = null;
 
 var osc = require("osc");

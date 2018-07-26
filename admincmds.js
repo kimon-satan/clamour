@@ -471,7 +471,29 @@ exports.response = function(socket)
 				}
 
 				var num = (options.num != undefined) ? options.num : 1;  // we need this for the helper
-				dispIdx = options.dispIdx;
+				var pos = options.pos;
+
+				if(pos == undefined)
+				{
+					//try to find an empty slot
+					var a = globals.voteDisplaySlots.a.indexOf(0);
+					var b  = globals.voteDisplaySlots.b.indexOf(0);
+					if(a != -1)
+					{
+						pos = "a" + a;
+					}
+					else if(b != -1)
+					{
+						pos = "b" + b;
+					}
+					else
+					{
+						globals.admin.emit('server_report', {id: msg.cli_id, msg: "No free display slots for vote"});
+						return;
+					}
+
+
+				}
 
 				var r = "choice: ";
 
@@ -496,17 +518,16 @@ exports.response = function(socket)
 								notvoted: docs[0].population,
 								population: docs[0].population.length,
 								num: num,
-								room: rm
+								room: rm,
+								pos: pos
 							});
 					})
 
 					promise = promise.then((data)=>
 					{
 
-						if(dispIdx != undefined)
-						{
-							globals.voteDisplayIndexes[data._id] = dispIdx;
-						}
+						globals.voteDisplaySlots[pos[0]][Number(pos[1])] = data._id;
+						console.log(globals.voteDisplaySlots);
 						//Tell SC to record the phrases
 						if(globals.NO_SC)
 						{

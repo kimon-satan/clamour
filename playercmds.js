@@ -164,39 +164,40 @@ exports.response = function(socket)
 
 				//assign to the next empty slot
 				//naieve version
-				if(globals.voteDisplayIndexes[data._id] == undefined)
-				{
-					//assign a new slot !
-					var k = Object.keys(globals.voteDisplayIndexes);
-					var slots = [0,0,0,0,0,0,0,0]; //TODO maybe make this a global
-
-					for(var i = 0; i < k.length; i++)
-					{
-						//console.log(k[i])
-						slots[Number(globals.voteDisplayIndexes[k[i]])] = k[i];
-
-					}
-
-					if(slots.indexOf(0) == -1)
-					{
-						//all slots taken go back to zero
-						globals.voteDisplayIndexes[data._id] = 0;
-					}
-					else
-					{
-						globals.voteDisplayIndexes[data._id] = slots.indexOf(0);
-
-						//update display -
-						//NB. This might not be the eventual point of making this change
-						// we might want to put the admin in charge
-						globals.display.emit('cmd', {
-							type: "vote", cmd: "setNumSlots" ,
-							val: {numSlots: Object.keys(globals.voteDisplayIndexes).length
-							}});
-					}
-
-
-				}
+				// if(globals.voteDisplayIndexes[data._id] == undefined)
+				// {
+				// 	//assign a new slot !
+				// 	console.log(globals.voteDisplayIndexes);
+				// 	var k = Object.keys(globals.voteDisplayIndexes);
+				// 	var slots = [0,0,0,0,0,0,0,0]; //TODO maybe make this a global
+				//
+				// 	for(var i = 0; i < k.length; i++)
+				// 	{
+				// 		//console.log(k[i])
+				// 		slots[Number(globals.voteDisplayIndexes[k[i]])] = k[i];
+				//
+				// 	}
+				//
+				// 	if(slots.indexOf(0) == -1)
+				// 	{
+				// 		//all slots taken go back to zero
+				// 		globals.voteDisplayIndexes[data._id] = 0;
+				// 	}
+				// 	else
+				// 	{
+				// 		globals.voteDisplayIndexes[data._id] = slots.indexOf(0);
+				//
+				// 		//update display -
+				// 		//NB. This might not be the eventual point of making this change
+				// 		// we might want to put the admin in charge
+				// 		globals.display.emit('cmd', {
+				// 			type: "vote", cmd: "setNumSlots" ,
+				// 			val: {numSlots: Object.keys(globals.voteDisplayIndexes).length
+				// 			}});
+				// 	}
+				//
+				//
+				// }
 
 				globals.display.emit('cmd', {
 					type: "vote", cmd: "displayVote" ,
@@ -205,8 +206,9 @@ exports.response = function(socket)
 						text: data.pair[msg.choice],
 						font: usrobj.font,
 						col: usrobj.fontCol,
-						dispIdx: globals.voteDisplayIndexes[data._id],
-						score: data.scores
+						score: data.scores,
+						pos: data.pos,
+						slots: globals.voteDisplaySlots //Indicates the current state of the slots
 					}
 				});
 
