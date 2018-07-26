@@ -144,6 +144,7 @@ exports.response = function(socket)
 
 			p = p.then((data)=>
 			{
+				console.log(data._id);
 				data._id = helpers.validateId(data._id);
 
 				if(data == null)

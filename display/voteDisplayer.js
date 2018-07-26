@@ -1,13 +1,16 @@
 function VoteDisplayer()
 {
-	this.positions = [];
-	this.staticFades = [];
-	this.activeFades = [];
+	this.positions = {ax: 0, bx: 0, y: [0,0,0,0]};
+	this.staticFades = {a: [], b: []};
+	this.activeFades = {a: [], b: []};
+	this.slots = {a: [0,0,0,0], b: [0,0,0,0]};
 
-	for(var i = 0; i < 8; i++)
+	for(var i = 0; i < 4; i++)
 	{
-		this.staticFades.push([{text: "option 1", alpha: 0},{text: "option 2", alpha: 0}]);
-		this.activeFades.push([]);
+		this.staticFades.a.push([{text: "option 1", alpha: 0},{text: "option 2", alpha: 0}]);
+		this.staticFades.b.push([{text: "option 1", alpha: 0},{text: "option 2", alpha: 0}]);
+		this.activeFades.a.push([]);
+		this.activeFades.b.push([]);
 	}
 
 	$('#displayscreen').append("<canvas id='voteContainer' width='" + innerWidth + "px' height='" + innerHeight + "px'></canvas>");
@@ -19,10 +22,7 @@ function VoteDisplayer()
 	{
 		if(msg.cmd == "displayVote")
 		{
-			if(msg.val.dispIdx >= 0)
-			{
-				this.displayVote(msg.val);
-			}
+			this.displayVote(msg.val);
 		}
 		else if(msg.cmd == "setNumSlots")
 		{
@@ -35,40 +35,108 @@ function VoteDisplayer()
 
 	}.bind(this);
 
-	this.setNumSlots = function(numSlots)
+	this.updatePositions = function(slots)
 	{
 		//update the positions
-		this.positions = [];
-		for(var i = 0; i < numSlots; i++)
+		var k = ["a","b"];
+		var isNeedsUpdate = false;
+
+		for(var j = 0; j < k.length; j++)
 		{
-			this.positions.push({x: innerWidth/3, y: innerHeight * (i+1)/(numSlots+2)});
+			for(var i = 0; i < slots[k[j]].length; i++)
+			{
+				if(
+					(slots[k[j]][i] != 0 && this.slots[k[j]][i] == 0)
+				|| (slots[k[j]][i] == 0 && this.slots[k[j]][i] != 0)
+				)
+				{
+					isNeedsUpdate = true;
+					this.slots = slots;
+					break;
+				}
+			}
+			if(isNeedsUpdate)break;
 		}
 
-		//TODO only works for upto 4 slots - create an eight slot version
+		if(!isNeedsUpdate)
+		{
+			return;
+		}
+
+		console.log(this.slots);
+
+		this.positions = {ax: 0, bx: 0, y: [0,0,0,0]};
+
+		var maxRow = 0;
+		var colsUsed = {a: false, b: false};
+
+		//check what is being used
+		for(var j = 0; j < k.length; j++)
+		{
+			for(var i = 0; i < this.slots[k[j]].length; i++)
+			{
+				if(this.slots[k[j]][i] != 0)
+				{
+					maxRow = Math.max(maxRow, i);
+					colsUsed[k[j]] = true;
+				}
+			}
+		}
+
+		console.log(maxRow, colsUsed);
+
+		if(!colsUsed.b && colsUsed.a)
+		{
+			this.positions.ax = innerWidth/2;
+			this.positions.bx = 0;
+		}
+		else if(!colsUsed.a && colsUsed.b)
+		{
+			this.positions.bx = innerWidth/2;
+			this.positions.ax = 0;
+		}
+		else
+		{
+			this.positions.ax = innerWidth * 3/8;
+			this.positions.bx = innerWidth * 5/8;
+		}
+
+		var incr = (innerHeight * 0.875)/(maxRow+2)
+		for(var i = 0; i < (maxRow + 1); i++)
+		{
+			this.positions.y[i] = innerHeight * 0.125 + incr * (i+1)
+		}
+
 
 	}.bind(this);
 
 	this.displayVote = function(vote)
 	{
 
-		var i = Number(vote.dispIdx);
-		var f = this.activeFades[i];
+		var col = vote.pos[0];
+		var row = Number(vote.pos[1]);
+
+		var f = this.activeFades[col][row];
 		//TODO 12 colours and 12 fonts styles
 
 		f.push({text: vote.text, alpha: 1.0, font: vote.font, col: vote.col});
 
 		//bias fade towards the winner
-		this.staticFades[i][0].alpha = Math.pow(vote.score[0],2);
-		this.staticFades[i][1].alpha = Math.pow(vote.score[1],2);
+		this.staticFades[col][row][0].alpha = Math.pow(vote.score[0],2);
+		this.staticFades[col][row][1].alpha = Math.pow(vote.score[1],2);
 
 		//FIXME this is all a bit messy
-		this.staticFades[i][vote.choice].text = vote.text;
+		this.staticFades[col][row][vote.choice].text = vote.text;
+
+		this.updatePositions(vote.slots);
+
 
 	}.bind(this);
 
 	this.concludeVote = function(vote)
 	{
 
+		return;
 		var i = Number(vote.dispIdx);
 		var w = Number(vote.winner);
 		this.staticFades[i][w].alpha = 1.0;
@@ -85,47 +153,52 @@ function VoteDisplayer()
 		ctx.fillStyle = "rgba(0,0,0,1.0)";
 		ctx.fillRect(0,0,innerWidth,innerHeight);
 
-
 		//draw the static state of each vote
 		ctx.font = "100px Arial";
-		for(var i = 0; i < this.positions.length; i++)
+
+		var cols = ["a", "b"]
+
+		for(var i = 0; i < cols.length; i++)
 		{
-			for(var j = 0; j < 2; j ++)
+			for(var j = 0; j < this.slots[cols[i]].length; j++)
 			{
-
-				if(this.staticFades[i][j].alpha > 0)
+				if(this.slots[cols[i]][j] != 0)
 				{
-					ctx.fillStyle = "rgba(255,255,255," + String(this.staticFades[i][j].alpha) + ")";
-					ctx.fillText(this.staticFades[i][j].text,
-						this.positions[i].x, this.positions[i].y);
+					//do the drawing
+					for(var k = 0; k < 2; k ++)
+					{
+						if(this.staticFades[cols[i]][j][k].alpha > 0)
+						{
+							ctx.fillStyle = "rgba(255,255,255," + String(this.staticFades[cols[i]][j][k].alpha) + ")";
+							ctx.fillText(this.staticFades[cols[i]][j][k].text,
+								this.positions[cols[i]+"x"], this.positions.y[j]);
+						}
+					}
+
+					for(var k = 0; k < this.activeFades[cols[i]][j].length; k++)
+					{
+						//draw the text
+						//console.log(this.activeFades[i][j]);
+						ctx.fillStyle = "rgba(" + this.activeFades[cols[i]][j][k].col + "," + String(this.activeFades[cols[i]][j][k].alpha) + ")";
+						ctx.font = "100px " + this.activeFades[cols[i]][j][k].font;
+						ctx.fillText(this.activeFades[cols[i]][j][k].text,
+							this.positions[cols[i] + "x"], this.positions.y[j]);
+					}
+
+
 				}
-			}
-		}
 
-		//okay now we can draw the active state
-		for(var i = 0; i < this.positions.length; i++)
-		{
-			for(var j = 0; j < this.activeFades[i].length; j++)
-			{
-
-
-				//draw the text
-				//console.log(this.activeFades[i][j]);
-				ctx.fillStyle = "rgba(" + this.activeFades[i][j].col + "," + String(this.activeFades[i][j].alpha) + ")";
-				ctx.font = "100px " + this.activeFades[i][j].font;
-				ctx.fillText(this.activeFades[i][j].text, this.positions[i].x, this.positions[i].y);
-
-				//decrement the fades
-				this.activeFades[i][j].alpha -= 0.01;
-			}
-
-			//remove any fadedout activeFades
-			for(var j = this.activeFades[i].length -1; j >= 0; j--)
-			{
-				if(this.activeFades[i][j].alpha <= 0)
+				//remove any fadedout activeFades
+				for(var k = this.activeFades[cols[i]][j].length -1; k >= 0; k--)
 				{
-					this.activeFades[i].splice(j,1);
+					//decrement the fades
+					this.activeFades[cols[i]][j][k].alpha -= 0.01; // decrement separately
+					if(this.activeFades[cols[i]][j][k].alpha <= 0)
+					{
+						this.activeFades[cols[i]][j].splice(k,1);
+					}
 				}
+
 			}
 
 		}
@@ -135,7 +208,6 @@ function VoteDisplayer()
 
 	}.bind(this)
 
-	this.setNumSlots(1);
 	requestAnimationFrame(this.draw);
 
 }
