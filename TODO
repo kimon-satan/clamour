@@ -2,19 +2,26 @@ TODO
 
 - votes
 
-	- deal with concluded Votes in manipulable data structure (70%)
-		- deal with overwriting slots ?
-		- deal with prematurely concluding votes / missing voters
+	- deal with concluded Votes in manipulable data structure (80%)
 		- choosing / combining vote commands - see notes
+		- command to conclude stalled votes
+		- lvotes and ivotes
+		- prevent overwriting slots !
+		- more font colour combinations ?
 	- prevent sample duplicates in SC
 
 
 	- offering user input
-	- bug narrowed down to checkins - why are clients returning null values ? (is this solved)
+	- bug narrowed down to checkins - why are clients returning null values ? (is this solved ?)
 	- deal with reset client issues
 
+- deployment
+
 -TIDY UP
-- try / catch for admin commands (50%)
+
+- refactor to syphon mode functions into different files
+- testing framework should be from admin not separate browser
+- try / catch for admin commands (50%) - work out something better
 - story stuff will need refactoring into a different place
 
 - display data persistence

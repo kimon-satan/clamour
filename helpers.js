@@ -123,6 +123,9 @@ exports.choose = function(list)
 	return list[Math.floor(Math.random() * list.length)];
 }
 
+
+//////////////////////////ROOMS////////////////////////
+
 exports.genRoomName = function()
 {
 	return randomWords({ exactly: 2, join: '-' });
@@ -262,6 +265,8 @@ exports.subRoom =  function(room, numRooms, cb)
 
 	})
 }
+
+//////////////////////////CMD LINE PARSING////////////////////////
 
 exports.parseFilters = function(args, currentRoom)
 {
@@ -483,6 +488,8 @@ exports.generateSearchObj = function(args)
 
 }
 
+/////////////////////////////LOADING////////////////////////////////
+
 exports.loadPresets = function(args, options, cb)
 {
 	var i = args.indexOf("-p");
@@ -520,7 +527,6 @@ exports.loadPresets = function(args, options, cb)
 
 }
 
-
 exports.loadSettings = function()
 {
 	//load global settings from JSON file
@@ -532,6 +538,8 @@ exports.loadSettings = function()
 			exports.loadDictionary();
 	});
 }
+
+/////////////////////////////STORY//////////////////////////////////
 
 exports.loadStory = function(cb)
 {
@@ -578,7 +586,6 @@ exports.incrementStoryClip = function()
 	}
 
 }
-
 
 exports.playSound = function(options)
 {
@@ -662,6 +669,9 @@ exports.startStoryClip = function(room)
 
 }
 
+
+////////////////////////////VOTING////////////////////////////////////
+
 exports.loadDictionary = function(cb)
 {
 	// //load the audio samples
@@ -688,8 +698,9 @@ exports.loadDictionary = function(cb)
 
 exports.sendVote = function(data, num)
 {
-	try
-	{
+
+		if(!data.open)return;
+
 		var omsg = {pair: data.pair, id: data._id};
 
 		if(num == undefined)num = 1;
@@ -709,7 +720,8 @@ exports.sendVote = function(data, num)
 
 			if(r > 0)
 			{
-				console.log( r + " too few voters for the pool " , num, docs.length );
+				//console.log( r + " too few voters for the pool " , num, docs.length );
+
 				//we ran out of voters before the pool could be complete
 				//store and kill these on reset just to be safe
 				globals.procs[omsg.id + "_" + generateTempId(5)] = setTimeout(function()
@@ -723,19 +735,25 @@ exports.sendVote = function(data, num)
 						{
 							if(res) //otherwise the vote must have expired ... terminate the process
 							{
-								console.log(res.notvoted.length + " voters remaining");
 								if(res.notvoted.length > 0)
 								{
 									exports.sendVote(res,r);
 								}
+								else if(res.open && globals.procs[omsg.id + "_concludeVote"] == undefined)
+								{
+									globals.procs[omsg.id + "_concludeVote"] = setTimeout(function()
+									{
+										exports.concludeVote(res);
+									},10000);// 10 seconds delay for stragglers
+								}
 							}
+
 						});
 
 						pp.catch((err)=>{
 							console.log("Error: sendVote timeout - " + err);
 						})
 					}
-
 
 				},
 				500); // call the function again
@@ -757,7 +775,7 @@ exports.sendVote = function(data, num)
 						globals.Votes.update({_id: omsg.id}, {$push: {voting: player._id}, $pull: {notvoted: player._id}})
 					);
 					promises.push(
-						globals.UserData.update({_id: player._id},{$set: {currentVoteId: player._id, currentVotePair: player.pair }})
+						globals.UserData.update({_id: player._id},{$set: {currentVoteId: data._id, currentVotePair: player.pair }})
 					);
 
 				}
@@ -774,50 +792,34 @@ exports.sendVote = function(data, num)
 			{
 				return globals.Votes.findOne({_id: omsg.id});
 			}
+
 		});
-
-		p = p.then((res)=>{
-			if(res) //otherwise the vote must have expired ... terminate the process
-			{
-				// console.log(
-				// 	"nv:  " + res.notvoted.length,
-				// 	" voting: " + res.voting.length,
-				// 	" voted: " + res.voted.length,
-				// 	" sum: " + (res.notvoted.length + res.voting.length + res.voted.length));
-
-					if(res.notvoted.length + res.voting.length + res.voted.length != res.population)
-					{
-						return Promise.reject(res.population);
-					}
-			}
-		})
 
 		p.catch((reason)=>{
 			console.log("Error - sendVote: " + reason);
 		})
-
-	}
-	catch (e)
-	{
-		console.log("Error caught - sendVote: " + e);
-	}
 
 }
 
 
 exports.concludeVote = function(data)
 {
-	//get the winner
-	data.winnerIdx = (data.scores[0] > data.scores[1]) ? 0 : 1;
 
-	//1. send a message to SC and display with the winner
-
-	var triggerVoteComplete = function()
+	var triggerVoteComplete = function(data)
 	{
+		//sends a message to SC and display with the winner
+
 		if(globals.currentConcludedVote != null)
 		{
-			console.log("vote full try again");
-			globals.procs[data._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete,1500);
+			if(globals.currentConcludedVote._id == data._id)
+			{
+				console.log("already concluded");
+			}
+			else
+			{
+				console.log("vote full try again");
+				globals.procs[data._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete,1500);
+			}
 			return;
 		}
 
@@ -828,8 +830,6 @@ exports.concludeVote = function(data)
 
 		globals.currentConcludedVote = data;
 		globals.players.emit('cmd',{cmd: 'pause_vote'});
-
-
 
 		if(globals.NO_SC)
 		{
@@ -857,8 +857,27 @@ exports.concludeVote = function(data)
 
 	}
 
-	globals.procs[data._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete,1500);
+	globals.Votes.findOne(data._id).then((doc)=>
+	{
+		data = doc;
 
-	//2. update the vote as concluded with the winner
+		//1. reset any hanging voters
+		for(var i = 0; i < data.voting.length; i++)
+		{
+			globals.players.to(data.voting[i]).emit('cmd',{cmd: 'cancel_vote', value: data._id});
+			globals.UserData.update({_id: data.voting[i]},{$set: {currentVoteId: -1 , currentVotePair: ["",""]}})
+		}
+
+		if(!data.open)return;
+
+		data.winnerIdx = (data.scores[0] > data.scores[1]) ? 0 : 1;
+		data.open = false;
+
+		globals.procs[data._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete.bind(this,data),1500);
+
+		//2. update the vote as concluded with the winner
+		globals.Votes.update(data._id, data);
+
+	})
 
 }

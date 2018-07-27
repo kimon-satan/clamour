@@ -120,6 +120,14 @@ VoteManager.prototype.wait = function()
 	if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
 }
 
+VoteManager.prototype.cancelVote = function(val)
+{
+	if(this.parent.data.currentVoteId != val) return; //wrong vote here
+	this.parent.data.state = "waiting";
+	this.isWaiting = true;
+	if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
+}
+
 VoteManager.prototype.createVote = function(vote)
 {
 	if(typeof(vote) != "undefined")

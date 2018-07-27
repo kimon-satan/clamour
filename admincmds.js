@@ -523,7 +523,9 @@ exports.response = function(socket)
 								population: docs[0].population.length,
 								num: num,
 								room: rm,
-								pos: pos
+								pos: pos,
+								open: true,
+								winnerIdx: -1
 							});
 					})
 
@@ -531,7 +533,7 @@ exports.response = function(socket)
 					{
 
 						globals.voteDisplaySlots[pos[0]][Number(pos[1])] = data._id;
-						console.log(globals.voteDisplaySlots);
+
 						//Tell SC to record the phrases
 						if(globals.NO_SC)
 						{

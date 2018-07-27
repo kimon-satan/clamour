@@ -122,6 +122,10 @@ Player = function(isDummy)
 			{
 				this.voteManager.resumeVote();
 			}
+			else if(msg.cmd == 'cancel_vote' && this.mode == "vote")
+			{
+				this.voteManager.cancelVote(msg.value);
+			}
 		}
 		else
 		{
@@ -159,6 +163,10 @@ Player = function(isDummy)
 			else if(msg.cmd == 'resume_vote' && this.mode == "vote")
 			{
 				this.voteManager.resumeVote();
+			}
+			else if(msg.cmd == 'cancel_vote' && this.mode == "vote")
+			{
+				this.voteManager.cancelVote(msg.value);
 			}
 		}
 
