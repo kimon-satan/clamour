@@ -90,8 +90,6 @@ exports.checkins = {};
 exports.procs = {}; //all timeout and interval processes
 
 exports.pendingVotes = [];
-exports.voteDisplayIndexes = {}; //TODO this should go
-
 exports.voteDisplaySlots =
 {
 	a: [0,0,0,0],

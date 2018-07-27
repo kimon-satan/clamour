@@ -3,13 +3,12 @@ TODO
 - votes
 
 	- deal with concluded Votes in manipulable data structure (70%)
-		- update resetall to clear slots
-		- draw vote text from center & resize to fit
 		- deal with overwriting slots ?
-		- deal with prematurely concluding votes
+		- deal with prematurely concluding votes / missing voters
+		- choosing / combining vote commands - see notes
 	- prevent sample duplicates in SC
 
-	- choosing / combining vote commands - see notes
+
 	- offering user input
 	- bug narrowed down to checkins - why are clients returning null values ? (is this solved)
 	- deal with reset client issues

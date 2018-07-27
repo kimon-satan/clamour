@@ -4,6 +4,10 @@ function VoteDisplayer()
 	this.staticFades = {a: [], b: []};
 	this.activeFades = {a: [], b: []};
 	this.slots = {a: [0,0,0,0], b: [0,0,0,0]};
+	this.slotHeight = innerHeight * 0.75/4;
+	this.slotWidth = innerWidth * 0.4;
+	this.colsAlign = ["center", "center"];
+
 
 	for(var i = 0; i < 4; i++)
 	{
@@ -17,16 +21,14 @@ function VoteDisplayer()
 
 	var c = $("#voteContainer")[0];
 	var ctx = c.getContext("2d");
+	ctx.textAlign = 'center';
+	ctx.textBaseline = 'middle'
 
 	this.cmd = function(msg)
 	{
 		if(msg.cmd == "displayVote")
 		{
 			this.displayVote(msg.val);
-		}
-		else if(msg.cmd == "setNumSlots")
-		{
-			this.setNumSlots(msg.val.numSlots);
 		}
 		else if (msg.cmd == "concludeVote")
 		{
@@ -63,8 +65,6 @@ function VoteDisplayer()
 			return;
 		}
 
-		console.log(this.slots);
-
 		this.positions = {ax: 0, bx: 0, y: [0,0,0,0]};
 
 		var maxRow = 0;
@@ -83,29 +83,33 @@ function VoteDisplayer()
 			}
 		}
 
-		console.log(maxRow, colsUsed);
-
 		if(!colsUsed.b && colsUsed.a)
 		{
 			this.positions.ax = innerWidth/2;
 			this.positions.bx = 0;
+			this.colsAlign = ["center", "center"];
 		}
 		else if(!colsUsed.a && colsUsed.b)
 		{
 			this.positions.bx = innerWidth/2;
 			this.positions.ax = 0;
+			this.colsAlign = ["center", "center"];
 		}
 		else
 		{
-			this.positions.ax = innerWidth * 3/8;
-			this.positions.bx = innerWidth * 5/8;
+			this.positions.ax = innerWidth * 0.28; //NB these are centers
+			this.positions.bx = innerWidth * 0.72;
+			this.colsAlign = ["right", "left"];
 		}
 
-		var incr = (innerHeight * 0.875)/(maxRow+2)
+		var incr = (innerHeight * 0.75)/(maxRow+2)
 		for(var i = 0; i < (maxRow + 1); i++)
 		{
 			this.positions.y[i] = innerHeight * 0.125 + incr * (i+1)
 		}
+
+		this.slotHeight = incr;
+		this.slotWidth = innerWidth * 0.4;
 
 
 	}.bind(this);
@@ -117,7 +121,7 @@ function VoteDisplayer()
 		var row = Number(vote.pos[1]);
 
 		var f = this.activeFades[col][row];
-		//TODO 12 colours and 12 fonts styles
+		//12 colours and 12 fonts styles
 
 		f.push({text: vote.text, alpha: 1.0, font: vote.font, col: vote.col});
 
@@ -136,11 +140,12 @@ function VoteDisplayer()
 	this.concludeVote = function(vote)
 	{
 
-		return;
-		var i = Number(vote.dispIdx);
+		var col = vote.pos[0];
+		var row = Number(vote.pos[1]);
 		var w = Number(vote.winner);
-		this.staticFades[i][w].alpha = 1.0;
-		this.staticFades[i][(w + 1)%2].alpha = 0.0;
+
+		this.staticFades[col][row][w].alpha = 1.0;
+		this.staticFades[col][row][(w + 1)%2].alpha = 0.0;
 
 	}.bind(this);
 
@@ -160,18 +165,42 @@ function VoteDisplayer()
 
 		for(var i = 0; i < cols.length; i++)
 		{
+
+			//ctx.textAlign = this.colsAlign[i];
+
 			for(var j = 0; j < this.slots[cols[i]].length; j++)
 			{
+
+
 				if(this.slots[cols[i]][j] != 0)
 				{
+
+					//DEBUG DRAWING
+					// ctx.strokeStyle="red";
+					// ctx.lineWidth="1";
+					// ctx.strokeRect(
+					// 	this.positions[cols[i]+"x"] - this.slotWidth/2,
+					// 	this.positions.y[j] - this.slotHeight/2,
+					// 	this.slotWidth,
+					// 	this.slotHeight
+					// );
+
 					//do the drawing
 					for(var k = 0; k < 2; k ++)
 					{
 						if(this.staticFades[cols[i]][j][k].alpha > 0)
 						{
 							ctx.fillStyle = "rgba(255,255,255," + String(this.staticFades[cols[i]][j][k].alpha) + ")";
-							ctx.fillText(this.staticFades[cols[i]][j][k].text,
-								this.positions[cols[i]+"x"], this.positions.y[j]);
+							// ctx.fillText(this.staticFades[cols[i]][j][k].text,
+							// 	this.positions[cols[i]+"x"], this.positions.y[j]);
+							fitText(
+								this.staticFades[cols[i]][j][k].text, //text to fit
+								{x: this.positions[cols[i] + "x"] - this.slotWidth/2, y: this.positions.y[j] - this.slotHeight/2, w: this.slotWidth, h: this.slotHeight}, //rect
+								"Arial",
+								150,//starting font size
+								ctx, //the canvas context
+								this.colsAlign[i]
+							);
 						}
 					}
 
@@ -180,9 +209,15 @@ function VoteDisplayer()
 						//draw the text
 						//console.log(this.activeFades[i][j]);
 						ctx.fillStyle = "rgba(" + this.activeFades[cols[i]][j][k].col + "," + String(this.activeFades[cols[i]][j][k].alpha) + ")";
-						ctx.font = "100px " + this.activeFades[cols[i]][j][k].font;
-						ctx.fillText(this.activeFades[cols[i]][j][k].text,
-							this.positions[cols[i] + "x"], this.positions.y[j]);
+
+						fitText(
+							this.activeFades[cols[i]][j][k].text, //text to fit
+							{x: this.positions[cols[i] + "x"] - this.slotWidth/2, y: this.positions.y[j] - this.slotHeight/2, w: this.slotWidth, h: this.slotHeight}, //rect
+							this.activeFades[cols[i]][j][k].font,
+							150,//starting font size
+							ctx, //the canvas context
+							this.colsAlign[i]
+						);
 					}
 
 

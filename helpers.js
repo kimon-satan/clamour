@@ -85,13 +85,13 @@ globals.udpPort.on('message', (msg, rinfo) => {
 				type: "vote", cmd: "concludeVote" ,
 				val: {
 					winner: globals.currentConcludedVote.winnerIdx,
-					dispIdx: globals.voteDisplayIndexes[globals.currentConcludedVote._id],
+					pos: globals.currentConcludedVote.pos
 				}
 			});
 
 			globals.players.emit('cmd',{
 				cmd: "display_winner",
-				value: globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx]
+				value: globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx] //TODO check this
 			});
 
 		}
@@ -816,17 +816,44 @@ exports.concludeVote = function(data)
 	{
 		if(globals.currentConcludedVote != null)
 		{
+			console.log("vote full try again");
 			globals.procs[data._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete,1500);
 			return;
 		}
 
 		globals.udpPort.send({
-				address: "/voteComplete", //TODO. pause audio in SC
+				address: "/voteComplete", //pause audio in SC
 				args: [String(data._id), data.winnerIdx]
 		}, "127.0.0.1", 57120);
 
 		globals.currentConcludedVote = data;
 		globals.players.emit('cmd',{cmd: 'pause_vote'});
+
+
+
+		if(globals.NO_SC)
+		{
+			//otherwise this happens when
+
+			globals.display.emit('cmd', {
+				type: "vote", cmd: "concludeVote" ,
+				val: {
+					winner: globals.currentConcludedVote.winnerIdx,
+					pos: globals.currentConcludedVote.pos
+				}
+			});
+
+			globals.players.emit('cmd',{
+				cmd: "display_winner",
+				value: globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx]
+			});
+
+			globals.procs[generateTempId(10)] = setTimeout(function(){
+				globals.players.emit('cmd',{cmd: 'resume_vote'});
+				//allows other votes to happen
+				globals.currentConcludedVote = null;
+			},1000);
+		}
 
 	}
 

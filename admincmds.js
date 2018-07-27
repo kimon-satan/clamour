@@ -357,7 +357,11 @@ exports.response = function(socket)
 				globals.sockets = {};
 				globals.UserData.remove({});
 				globals.Votes.remove({});
-				globals.voteDisplayIndexes = {};
+				globals.voteDisplaySlots =
+				{
+					a: [0,0,0,0],
+					b: [0,0,0,0]
+				};
 				globals.checkins = {};
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: "all databases reset", room: ""});
 				globals.players.emit('whoareyou'); //causes any connected players to reset

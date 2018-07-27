@@ -144,7 +144,6 @@ exports.response = function(socket)
 
 			p = p.then((data)=>
 			{
-				console.log(data._id);
 				data._id = helpers.validateId(data._id);
 
 				if(data == null)
@@ -163,42 +162,6 @@ exports.response = function(socket)
 						args: [String(data._id), msg.choice, usrobj.voiceNum, usrobj.voicePan, usrobj.voicePitch]
 				}, "127.0.0.1", 57120);
 
-				//assign to the next empty slot
-				//naieve version
-				// if(globals.voteDisplayIndexes[data._id] == undefined)
-				// {
-				// 	//assign a new slot !
-				// 	console.log(globals.voteDisplayIndexes);
-				// 	var k = Object.keys(globals.voteDisplayIndexes);
-				// 	var slots = [0,0,0,0,0,0,0,0]; //TODO maybe make this a global
-				//
-				// 	for(var i = 0; i < k.length; i++)
-				// 	{
-				// 		//console.log(k[i])
-				// 		slots[Number(globals.voteDisplayIndexes[k[i]])] = k[i];
-				//
-				// 	}
-				//
-				// 	if(slots.indexOf(0) == -1)
-				// 	{
-				// 		//all slots taken go back to zero
-				// 		globals.voteDisplayIndexes[data._id] = 0;
-				// 	}
-				// 	else
-				// 	{
-				// 		globals.voteDisplayIndexes[data._id] = slots.indexOf(0);
-				//
-				// 		//update display -
-				// 		//NB. This might not be the eventual point of making this change
-				// 		// we might want to put the admin in charge
-				// 		globals.display.emit('cmd', {
-				// 			type: "vote", cmd: "setNumSlots" ,
-				// 			val: {numSlots: Object.keys(globals.voteDisplayIndexes).length
-				// 			}});
-				// 	}
-				//
-				//
-				// }
 
 				globals.display.emit('cmd', {
 					type: "vote", cmd: "displayVote" ,

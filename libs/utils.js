@@ -276,8 +276,10 @@ hslToRgb = function(h, s, l){
 
 Math.fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecision(8)); };
 
-fitText = function(text, dims, font, fontSize, context)
+fitText = function(text, dims, font, fontSize, context, align)
 {
+
+	//dims = {x: y: w: h:}
 	//fits and centers text into rectangle
 
 	context.font = fontSize + "pt " + font;
@@ -334,7 +336,7 @@ fitText = function(text, dims, font, fontSize, context)
 	if(testSize < fontSize)
 	{
 		//run the process again recursively
-		fitText(text, dims, font, testSize, context);
+		fitText(text, dims, font, testSize, context, align);
 	}
 	else
 	{
@@ -345,9 +347,26 @@ fitText = function(text, dims, font, fontSize, context)
 		var vStart = dims.y + dims.h/2 - vSpace * 0.5 * (lines.length - 1);
 
 		//iterate and draw text
+		var offset = 0;
+		if(align == undefined || align == "center")
+		{
+			context.textAlign = "center";
+			offset = dims.w/2;
+		}
+		else if(align == "left")
+		{
+			context.textAlign = "left";
+			offset = 0;
+		}
+		else if(align == "right")
+		{
+			context.textAlign = "right";
+			offset = dims.w;
+		}
+
 		for(var i = 0; i < lines.length; i++)
 		{
-			context.fillText(lines[i], dims.x + dims.w/2, vStart + i * vSpace);
+			context.fillText(lines[i], dims.x + offset, vStart + i * vSpace);
 		}
 
 
