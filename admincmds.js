@@ -464,17 +464,11 @@ exports.response = function(socket)
 			helpers.parseOptions(msg.args, function(options)
 			{
 
-				if(options.choice == undefined)
-				{
-					var t = (options.type != undefined) ? options.type : helpers.choose(Object.keys(globals.dictionary.wordPairs));
-					var p = helpers.choose(globals.dictionary.wordPairs[t]);
-				}
-				else
-				{
-					p = options.choice;
-				}
+				var promises = [Promise.resolve()];
 
 				var num = (options.num != undefined) ? options.num : 1;  // we need this for the helper
+
+				//TODO deal with override here
 				var pos = options.pos;
 
 				if(pos == undefined)
@@ -496,75 +490,113 @@ exports.response = function(socket)
 						return;
 					}
 
-
 				}
 
-				var r = "choice: ";
-
-				for(var i = 0; i < p.length; i++)
+				if(options.choice == undefined)
 				{
-					r += p[i] + ", ";
+					var t = (options.type != undefined) ? options.type : helpers.choose(Object.keys(globals.dictionary.wordPairs));
+					var pair = helpers.choose(globals.dictionary.wordPairs[t]);
 				}
-
-				helpers.useRoom(msg, function(rm)
+				else
 				{
-					var promise = globals.Rooms.find({room: rm});
+					var pair = options.choice;
 
-					promise = promise.then((docs)=>
+					for(var i = 0; i < pair.length; i++)
 					{
-						return globals.Votes.insert(
-							{ pair: p,
-								type: t,
-								available: [[],[]],
-								scores: [0,0],
-								voting: [],
-								voted: [],
-								notvoted: docs[0].population,
-								population: docs[0].population.length,
-								num: num,
-								room: rm,
-								pos: pos,
-								open: true,
-								winnerIdx: -1
-							});
-					})
-
-					promise = promise.then((data)=>
-					{
-
-						globals.voteDisplaySlots[pos[0]][Number(pos[1])] = data._id;
-
-						//Tell SC to record the phrases
-						if(globals.NO_SC)
+						var m = pair[i].match(/([ab])(\d)/);
+						if(m)
 						{
-							//just trigger the function
-							data.available = [[ 0, 1, 2, 3, 4, 5, 6, 7 ], [ 0, 1, 2, 3, 4, 5, 6, 7 ]];
-							globals.Votes.update({_id : data._id},{$set: {available: data.available}})
-							.then(_=>
+							var vid = globals.voteDisplaySlots[m[1]][Number(m[2])];
+
+							if(!vid)continue;
+							pair.splice(i,1);
+							let p = globals.Votes.findOne(vid);
+
+
+							p = p.then((doc)=>
 							{
-								helpers.sendVote(data, data.num);
-							})
+								if(doc.winnerIdx != -1)
+								{
+									pair.push(doc.pair[doc.winnerIdx]);
+									return Promise.resolve();
+								}
+							});
+
+							promises.push(p);
 
 						}
-						else
+					}
+				}
+
+				Promise.all(promises).then(_=>
+				{
+					var r = "choice: ";
+
+					for(var i = 0; i < pair.length; i++)
+					{
+						r += pair[i] + ", ";
+					}
+
+					helpers.useRoom(msg, function(rm)
+					{
+						var promise = globals.Rooms.find({room: rm});
+
+						promise = promise.then((docs)=>
 						{
-							globals.udpPort.send({
-									address: "/recordPhrases",
-									args: [String(data._id), p[0],p[1]],
-							}, "127.0.0.1", 57120);
-						}
+							return globals.Votes.insert(
+								{ pair: pair,
+									type: t,
+									available: [[],[]],
+									scores: [0,0],
+									voting: [],
+									voted: [],
+									notvoted: docs[0].population,
+									population: docs[0].population.length,
+									num: num,
+									room: rm,
+									pos: pos,
+									open: true,
+									winnerIdx: -1
+								});
+						})
+
+						promise = promise.then((data)=>
+						{
+
+							globals.voteDisplaySlots[pos[0]][Number(pos[1])] = data._id;
+
+							//Tell SC to record the phrases
+							if(globals.NO_SC)
+							{
+								//just trigger the function
+								data.available = [[ 0, 1, 2, 3, 4, 5, 6, 7 ], [ 0, 1, 2, 3, 4, 5, 6, 7 ]];
+								globals.Votes.update({_id : data._id},{$set: {available: data.available}})
+								.then(_=>
+								{
+									helpers.sendVote(data, data.num);
+								})
+
+							}
+							else
+							{
+								globals.udpPort.send({
+										address: "/recordPhrases",
+										args: [String(data._id), p[0],p[1]],
+								}, "127.0.0.1", 57120);
+							}
 
 
-						globals.pendingVotes.push(String(data._id));
-						globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
+							globals.pendingVotes.push(String(data._id));
+							globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
+
+						});
+
+						promise.catch((reason)=>{
+							console.log("Error - vnew " + reason) ;
+						})
 
 					});
-
-					promise.catch((reason)=>{
-						console.log("Error - vnew " + reason) ;
-					})
-
-				});
+				})
 
 			});
 

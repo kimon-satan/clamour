@@ -391,11 +391,14 @@ exports.parseOptions = function(args, cb)
 					//repackage as an array
 					try
 					{
+						//well formed with numbers or quotes
 						options[args[i][0]] = JSON.parse(args[i][1]);
 					}
 					catch(e)
 					{
-						console.log(e);
+						//TODO test this 
+						var m = args[i][1].match(/\["?(.*?)"?,"?(.*?)"?\]/); //NB. max two args
+						options[args[i][0]] = [m[1],m[2]];
 					}
 
 				}
