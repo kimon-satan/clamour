@@ -468,7 +468,7 @@ exports.response = function(socket)
 
 				var num = (options.num != undefined) ? options.num : 1;  // we need this for the helper
 
-				//TODO deal with override here
+				//TODO deal with override here - don't let override slot in progress
 				var pos = options.pos;
 
 				if(pos == undefined)
@@ -501,24 +501,30 @@ exports.response = function(socket)
 				{
 					var pair = options.choice;
 
-					for(var i = 0; i < pair.length; i++)
+					for(var i = 0; i < 2; i++)
 					{
-						var m = pair[i].match(/([ab])(\d)/);
+						let m = pair[i].match(/([ab])(\d)/);
+
 						if(m)
 						{
 							var vid = globals.voteDisplaySlots[m[1]][Number(m[2])];
-
 							if(!vid)continue;
-							pair.splice(i,1);
 							let p = globals.Votes.findOne(vid);
-
 
 							p = p.then((doc)=>
 							{
 								if(doc.winnerIdx != -1)
 								{
-									pair.push(doc.pair[doc.winnerIdx]);
+									pair[pair.indexOf(m[0])] = doc.pair[doc.winnerIdx];
+
+									//remove old vote from globals.voteDisplaySlots
+									//will be updated when new vote is sent to display
+									globals.voteDisplaySlots[m[1]][Number(m[2])] = 0;
 									return Promise.resolve();
+								}
+								else
+								{
+									return Promise.reject("winner isn't chosen for " + m[0]); //TODO Uncaught
 								}
 							});
 

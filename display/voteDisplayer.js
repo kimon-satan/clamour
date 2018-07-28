@@ -34,6 +34,10 @@ function VoteDisplayer()
 		{
 			this.concludeVote(msg.val);
 		}
+		else if (msg.cmd == "updateSlots")
+		{
+			this.updatePositions(msg.val);
+		}
 
 	}.bind(this);
 
@@ -116,7 +120,7 @@ function VoteDisplayer()
 
 	this.displayVote = function(vote)
 	{
-
+		console.log(vote);
 		var col = vote.pos[0];
 		var row = Number(vote.pos[1]);
 
@@ -163,6 +167,7 @@ function VoteDisplayer()
 
 		var cols = ["a", "b"]
 
+
 		for(var i = 0; i < cols.length; i++)
 		{
 
@@ -170,12 +175,11 @@ function VoteDisplayer()
 
 			for(var j = 0; j < this.slots[cols[i]].length; j++)
 			{
-
-
 				if(this.slots[cols[i]][j] != 0)
 				{
 
 					//DEBUG DRAWING
+
 					// ctx.strokeStyle="red";
 					// ctx.lineWidth="1";
 					// ctx.strokeRect(
