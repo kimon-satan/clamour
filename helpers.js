@@ -67,7 +67,6 @@ globals.udpPort.on('message', (msg, rinfo) => {
 					var i = globals.pendingVotes.indexOf(String(vote._id));
 					//Check that this is a pending vote and that the two win conditions are available
 
-					console.log(vote);
 					if(i > -1 && (vote.winAvailable[0] && vote.winAvailable[1]))
 					{
 						//console.log("start vote")
@@ -102,17 +101,29 @@ globals.udpPort.on('message', (msg, rinfo) => {
 		if(msg.address == "/winSampleDone")
 		{
 
+			if(globals.currentConcludedVote.append || globals.currentConcludedVote.prepend)
+			{
+				var pos = globals.currentConcludedVote.pos;
+				globals.voteDisplaySlots[pos[0]][Number(pos[1])] = 0;
+			}
+
 			globals.display.emit('cmd', {
 				type: "vote", cmd: "concludeVote" ,
-				val: {
+				val:{
 					winner: globals.currentConcludedVote.winnerIdx,
-					pos: globals.currentConcludedVote.pos
+					pos: globals.currentConcludedVote.pos,
+					append: globals.currentConcludedVote.append,
+					prepend: globals.currentConcludedVote.prepend,
+					concatText: globals.currentConcludedVote.concatText,
+					slots: globals.voteDisplaySlots
 				}
 			});
 
+
+			//TODO adapt for append/prepend
 			globals.players.emit('cmd',{
 				cmd: "display_winner",
-				value: globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx] //TODO check this
+				value: globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx]
 			});
 
 		}
@@ -847,18 +858,10 @@ exports.concludeVote = function(data)
 			return;
 		}
 
-		if(data.append != undefined || data.prepend != undefined)
-		{
-			//NB. TODO Might not need this is if winning samples recorded separately from the rest
-		}
-		else
-		{
-			globals.udpPort.send({
-					address: "/voteComplete", //pause audio in SC
-					args: [String(data._id), data.winnerIdx]
-			}, "127.0.0.1", 57120);
-		}
-
+		globals.udpPort.send({
+				address: "/voteComplete", //pause audio in SC
+				args: [String(data._id), data.winnerIdx]
+		}, "127.0.0.1", 57120);
 
 		globals.currentConcludedVote = data;
 		globals.players.emit('cmd',{cmd: 'pause_vote'});
@@ -867,6 +870,7 @@ exports.concludeVote = function(data)
 		{
 			//otherwise this happens when
 
+			//TODO adapt for append/prepend
 			globals.display.emit('cmd', {
 				type: "vote", cmd: "concludeVote" ,
 				val: {
@@ -875,6 +879,7 @@ exports.concludeVote = function(data)
 				}
 			});
 
+			//TODO adapt for append/prepend
 			globals.players.emit('cmd',{
 				cmd: "display_winner",
 				value: globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx]
@@ -907,8 +912,12 @@ exports.concludeVote = function(data)
 
 		globals.procs[data._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete.bind(this,data),1500);
 
+		//adapt data if append or prepend
+
 		//2. update the vote as concluded with the winner
 		globals.Votes.update(data._id, data);
+
+		//TODO update appended or prepended votes too
 
 	})
 

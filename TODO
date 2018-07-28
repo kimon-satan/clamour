@@ -1,15 +1,12 @@
 TODO
 
 - votes
-
-	- deal with concluded Votes in manipulable data structure (80%)
-		- choosing / combining vote commands - see notes
-			- append option(50%)
-			- SC winner samples should be set separately and recorded first
-		- command to conclude stalled votes
-		- lvotes and ivotes
-		- prevent overwriting slots !
-		- more font colour combinations ?
+	- choosing / combining vote commands - see notes
+		- append/prepend options (90%) - finish DB update
+	- lvotes and ivotes
+	- prevent overwriting slots and other bad things
+	- command to conclude stalled votes
+	- more font colour combinations ?
 	- prevent sample duplicates in SC
 
 

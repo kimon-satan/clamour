@@ -122,7 +122,6 @@ function VoteDisplayer()
 
 	this.displayVote = function(vote)
 	{
-		console.log(vote);
 		var col = vote.pos[0];
 		var row = Number(vote.pos[1]);
 
@@ -135,7 +134,7 @@ function VoteDisplayer()
 		this.staticFades[col][row][0].alpha = Math.pow(vote.score[0],2);
 		this.staticFades[col][row][1].alpha = Math.pow(vote.score[1],2);
 
-		//FIXME this is all a bit messy
+		//TODO FIXME this is all a bit messy
 		this.staticFades[col][row][vote.choice].text = vote.text;
 
 		this.updatePositions(vote.slots);
@@ -153,6 +152,27 @@ function VoteDisplayer()
 		this.staticFades[col][row][w].alpha = 1.0;
 		this.staticFades[col][row][(w + 1)%2].alpha = 0.0;
 
+		if(vote.concatText)
+		{
+			if(vote.append)
+			{
+				var ncol = vote.append[0];
+				var nrow = vote.append[1];
+
+				for(var i =0 ; i <2; i++)
+					this.staticFades[ncol][nrow][i].text = vote.concatText + " " + this.staticFades[col][row][w].text;
+			}
+			else if(vote.prepend)
+			{
+				var ncol = vote.prepend[0];
+				var nrow = vote.prepend[1];
+
+				for(var i =0 ; i <2; i++)
+					this.staticFades[ncol][nrow][i].text = this.staticFades[col][row][w].text + " " + vote.concatText;
+			}
+
+			this.updatePositions(vote.slots);
+		}
 	}.bind(this);
 
 

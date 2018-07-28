@@ -591,19 +591,56 @@ exports.response = function(socket)
 							else
 							{
 								//TODO adapt for append and prepend
-								globals.udpPort.send({
-										address: "/recordWinPhrase",
-										args: [String(data._id) + "_win", pair[0],pair[1]],
-								}, "127.0.0.1", 57120);
+								var winPair = [pair[0], pair[1]];
+								var t_promise = Promise.resolve();
 
-								globals.udpPort.send({
-										address: "/recordPhrases",
-										args: [String(data._id), pair[0],pair[1]],
-								}, "127.0.0.1", 57120);
+								if(append != undefined || prepend != undefined)
+								{
+
+									t_promise = t_promise.then(_=>{
+										var slot_id;
+										if(append)
+										{
+											slot_id = globals.voteDisplaySlots[append[0]][append[1]];// TODO deal with empty slots
+										}
+										else
+										{
+											slot_id = globals.voteDisplaySlots[prepend[0]][prepend[1]]; // TODO deal with empty slots
+										}
+										return globals.Votes.findOne(slot_id);
+									})
+
+									t_promise = t_promise.then((doc)=>
+									{
+										if(prepend)
+										{
+											for(var i = 0; i < 2; i++)winPair[i] += " " + doc.pair[doc.winnerIdx];
+										}
+										else
+										{
+											for(var i = 0; i < 2; i++)winPair[i] = doc.pair[doc.winnerIdx] + " " + winPair[i];
+										}
+
+										return globals.Votes.update(data._id, {$set: {concatText: doc.pair[doc.winnerIdx]}});
+
+									})
+								}
 
 
+
+								t_promise.then(_=>
+								{
+									globals.udpPort.send({
+											address: "/recordWinPhrase",
+											args: [String(data._id) + "_win", winPair[0],winPair[1]],
+									}, "127.0.0.1", 57120);
+
+									globals.udpPort.send({
+											address: "/recordPhrases",
+											args: [String(data._id), pair[0],pair[1]],
+									}, "127.0.0.1", 57120);
+								})
 							}
-
 
 							globals.pendingVotes.push(String(data._id));
 							globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
