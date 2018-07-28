@@ -17,10 +17,20 @@ globals.udpPort.on('message', (msg, rinfo) => {
 			try
 			{
 
-				var id = exports.validateId(msg.args[0]);
+				var isWin = false;
+				if(msg.args[0].match("_win"))
+				{
+					var id = exports.validateId(msg.args[0].replace("_win", ""));
+					isWin = true;
+				}
+				else
+				{
+					id = exports.validateId(msg.args[0]);
+				}
 
 				if(!id)
 				{
+					//FIXME - why four calls ?
 					console.log("Error /phraseComplete: Invalid argument msg.args[0] " + msg.args[0]);
 					return;
 				}
@@ -33,8 +43,17 @@ globals.udpPort.on('message', (msg, rinfo) => {
 					if(data != null && exports.validateId(data._id))
 					{
 						vote = data;
-						data.available[msg.args[1]].push(msg.args[2]);
-						return globals.Votes.update({_id : vote._id},{$set: {available: data.available}});
+						if(isWin)
+						{
+							vote.winAvailable[msg.args[1]] = true;
+							return globals.Votes.update({_id: vote._id}, {$set: {winAvailable: vote.winAvailable}});
+						}
+						else
+						{
+							vote.available[msg.args[1]].push(msg.args[2]);
+							return globals.Votes.update({_id: vote._id}, {$set: {available: vote.available}});
+						}
+
 					}
 					else
 					{
@@ -46,8 +65,10 @@ globals.udpPort.on('message', (msg, rinfo) => {
 				{
 					//We're ready to start a vote
 					var i = globals.pendingVotes.indexOf(String(vote._id));
-					//Check that this is a pending vote
-					if(i > -1)
+					//Check that this is a pending vote and that the two win conditions are available
+
+					console.log(vote);
+					if(i > -1 && (vote.winAvailable[0] && vote.winAvailable[1]))
 					{
 						//console.log("start vote")
 						globals.pendingVotes.splice(i,1);
@@ -396,7 +417,7 @@ exports.parseOptions = function(args, cb)
 					}
 					catch(e)
 					{
-						//TODO test this 
+						//TODO test this
 						var m = args[i][1].match(/\["?(.*?)"?,"?(.*?)"?\]/); //NB. max two args
 						options[args[i][0]] = [m[1],m[2]];
 					}
@@ -826,10 +847,18 @@ exports.concludeVote = function(data)
 			return;
 		}
 
-		globals.udpPort.send({
-				address: "/voteComplete", //pause audio in SC
-				args: [String(data._id), data.winnerIdx]
-		}, "127.0.0.1", 57120);
+		if(data.append != undefined || data.prepend != undefined)
+		{
+			//NB. TODO Might not need this is if winning samples recorded separately from the rest
+		}
+		else
+		{
+			globals.udpPort.send({
+					address: "/voteComplete", //pause audio in SC
+					args: [String(data._id), data.winnerIdx]
+			}, "127.0.0.1", 57120);
+		}
+
 
 		globals.currentConcludedVote = data;
 		globals.players.emit('cmd',{cmd: 'pause_vote'});

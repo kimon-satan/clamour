@@ -4,6 +4,8 @@ TODO
 
 	- deal with concluded Votes in manipulable data structure (80%)
 		- choosing / combining vote commands - see notes
+			- append option(50%)
+			- SC winner samples should be set separately and recorded first
 		- command to conclude stalled votes
 		- lvotes and ivotes
 		- prevent overwriting slots !
@@ -29,10 +31,10 @@ TODO
 
 - Some thoughts ...
 // seems like multi-threaded design is vulnerable to dropped messages
-// consider refactoring vote system to a single thread with intervalic manager
+// consider refactoring vote system to a single thread with intervalic manager (working now)
 
 
-FIXES (in order of importance)
+LOVE FIXES (in order of importance) -
 
 - why does updatereactionMaps happen 4 times on iface init ?
 - splats rendered on mobile screen

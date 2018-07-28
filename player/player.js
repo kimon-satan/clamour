@@ -15,7 +15,7 @@ Player = function(isDummy)
 	this.checkAlive = setInterval(function(){
 		if(Date.now() - this.lastCheckin > 8000)
 		{
-			clearInterval(this.checkAlive);
+			clearInterval(this.checkAlive); //TODO check this ... it's annoying
 			changeMode("refresh");
 		}
 	}.bind(this), 1000);

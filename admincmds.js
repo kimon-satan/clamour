@@ -470,6 +470,8 @@ exports.response = function(socket)
 
 				//TODO deal with override here - don't let override slot in progress
 				var pos = options.pos;
+				var append = options.append;
+				var prepend = options.prepend;
 
 				if(pos == undefined)
 				{
@@ -553,6 +555,7 @@ exports.response = function(socket)
 								{ pair: pair,
 									type: t,
 									available: [[],[]],
+									winAvailable: [false,false],
 									scores: [0,0],
 									voting: [],
 									voted: [],
@@ -562,7 +565,9 @@ exports.response = function(socket)
 									room: rm,
 									pos: pos,
 									open: true,
-									winnerIdx: -1
+									winnerIdx: -1,
+									append: append,
+									prepend: prepend
 								});
 						})
 
@@ -585,10 +590,18 @@ exports.response = function(socket)
 							}
 							else
 							{
+								//TODO adapt for append and prepend
+								globals.udpPort.send({
+										address: "/recordWinPhrase",
+										args: [String(data._id) + "_win", pair[0],pair[1]],
+								}, "127.0.0.1", 57120);
+
 								globals.udpPort.send({
 										address: "/recordPhrases",
-										args: [String(data._id), p[0],p[1]],
+										args: [String(data._id), pair[0],pair[1]],
 								}, "127.0.0.1", 57120);
+
+
 							}
 
 
