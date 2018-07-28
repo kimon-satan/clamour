@@ -72,6 +72,7 @@ function VoteDisplayer()
 		this.positions = {ax: 0, bx: 0, y: [0,0,0,0]};
 
 		var maxRow = 0;
+		var minRow = 4;
 		var colsUsed = {a: false, b: false};
 
 		//check what is being used
@@ -81,6 +82,7 @@ function VoteDisplayer()
 			{
 				if(this.slots[k[j]][i] != 0)
 				{
+					minRow = Math.min(minRow, i);
 					maxRow = Math.max(maxRow, i);
 					colsUsed[k[j]] = true;
 				}
@@ -106,10 +108,10 @@ function VoteDisplayer()
 			this.colsAlign = ["right", "left"];
 		}
 
-		var incr = (innerHeight * 0.75)/(maxRow+2)
-		for(var i = 0; i < (maxRow + 1); i++)
+		var incr = (innerHeight * 0.75)/(maxRow-minRow+2)
+		for(var i = minRow; i < (maxRow + 1); i++)
 		{
-			this.positions.y[i] = innerHeight * 0.125 + incr * (i+1)
+			this.positions.y[i] = innerHeight * 0.125 + incr * (i-minRow+1)
 		}
 
 		this.slotHeight = incr;

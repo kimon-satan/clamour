@@ -4,7 +4,6 @@ TODO
 
 	- deal with concluded Votes in manipulable data structure (80%)
 		- choosing / combining vote commands - see notes
-			- check that quotes are removed in parseOptions
 		- command to conclude stalled votes
 		- lvotes and ivotes
 		- prevent overwriting slots !
