@@ -58,6 +58,203 @@ exports.listVotes = function()
 
 }
 
+exports.startVote = function(msg)
+{
+
+	var response = "";
+	var options = helpers.parseOptions(msg.args);
+
+	var num = (options.num != undefined) ? options.num : 1;  // we need this for the helper
+
+	//TODO deal with override here - don't let override slot in progress
+	var pos = options.pos;
+	var append = options.append;
+	var prepend = options.prepend;
+	var pair = options.choice;
+	var vote;
+
+	if(pos == undefined)
+	{
+		//try to find an empty slot
+		var a = globals.voteDisplaySlots.a.indexOf(0);
+		var b  = globals.voteDisplaySlots.b.indexOf(0);
+		if(a != -1)
+		{
+			pos = "a" + a;
+		}
+		else if(b != -1)
+		{
+			pos = "b" + b;
+		}
+		else
+		{
+			return Promise.resolve("No free display slots for vote");
+		}
+
+	}
+
+	var p = Promise.resolve();
+
+	for(var i = 0; i < 2; i++)
+	{
+		let m = pair[i].match(/([ab])(\d)/);
+
+		if(m)
+		{
+			var vid = globals.voteDisplaySlots[m[1]][Number(m[2])];
+			if(!vid)continue;
+
+			p = p.then(_=>
+			{
+				return globals.Votes.findOne(vid)
+			});
+
+			p = p.then((doc)=>
+			{
+				if(doc.winnerIdx != -1)
+				{
+					pair[pair.indexOf(m[0])] = doc.pair[doc.winnerIdx];
+
+					//remove old vote from globals.voteDisplaySlots
+					//will be updated when new vote is sent to display
+					globals.voteDisplaySlots[m[1]][Number(m[2])] = 0;
+					return Promise.resolve();
+				}
+				else
+				{
+					return Promise.resolve("winner isn't chosen for " + m[0]);
+				}
+			});
+
+		}
+	}
+
+	p = p.then(_=>
+	{
+		var response = "choice: ";
+
+		for(var i = 0; i < pair.length; i++)
+		{
+			response += pair[i] + ", ";
+		}
+
+		return helpers.useRoom(msg);
+	});
+
+
+	p = p.then((rm)=>
+	{
+		return globals.Rooms.findOne({room: rm});
+	})
+
+	p = p.then((doc)=>
+	{
+		return globals.Votes.insert(
+			{ pair: pair,
+				available: [[],[]],
+				winAvailable: [false,false],
+				scores: [0,0],
+				voting: [],
+				voted: [],
+				notvoted: doc.population,
+				population: doc.population.length,
+				num: num,
+				room: doc.room,
+				pos: pos,
+				open: true,
+				winnerIdx: -1,
+				append: append,
+				prepend: prepend
+		});
+	});
+
+	p = p.then((data)=>
+	{
+		vote = data;
+		globals.voteDisplaySlots[pos[0]][Number(pos[1])] = data._id;
+		return Promise.resolve();
+	});
+
+	if(globals.NO_SC)
+	{
+		p = p.then(_=>
+		{
+			vote.available = [[ 0, 1, 2, 3, 4, 5, 6, 7 ], [ 0, 1, 2, 3, 4, 5, 6, 7 ]];
+			return globals.Votes.update({_id : vote._id},{$set: {available: data.available}});
+		});
+
+		p = p.then(_=>
+		{
+			//just trigger the function
+			helpers.sendVote(vote, vote.num);
+			return Promise.resolve(data);
+		});
+	}
+	else
+	{
+		//Tell SC to record the phrases
+		var winPair = [pair[0], pair[1]];
+
+		if(append != undefined || prepend != undefined)
+		{
+			p = p.then(_=>
+			{
+				var slot_id;
+				if(append)
+				{
+					slot_id = globals.voteDisplaySlots[append[0]][append[1]];// TODO deal with empty slots
+				}
+				else
+				{
+					slot_id = globals.voteDisplaySlots[prepend[0]][prepend[1]]; // TODO deal with empty slots
+				}
+				return globals.Votes.findOne(slot_id);
+			});
+
+			p = p.then((doc)=>
+			{
+				if(prepend)
+				{
+					for(var i = 0; i < 2; i++)winPair[i] += " " + doc.pair[doc.winnerIdx];
+				}
+				else
+				{
+					for(var i = 0; i < 2; i++)winPair[i] = doc.pair[doc.winnerIdx] + " " + winPair[i];
+				}
+				return globals.Votes.update(vote._id, {$set: {concatText: doc.pair[doc.winnerIdx]}});
+			});
+
+		}
+
+		p = p.then(_=>
+		{
+			globals.udpPort.send({
+					address: "/recordWinPhrase",
+					args: [String(vote._id) + "_win", winPair[0],winPair[1]],
+			}, "127.0.0.1", 57120);
+
+			globals.udpPort.send({
+					address: "/recordPhrases",
+					args: [String(vote._id), pair[0],pair[1]],
+			}, "127.0.0.1", 57120);
+
+			return Promise.resolve();
+		});
+	}
+
+	p = p.then(_=>
+	{
+		globals.pendingVotes.push(String(vote._id));
+		return Promise.resolve(response);
+	})
+
+	p.catch((reason)=>{
+		console.log("Error - vnew " + reason) ;
+	})
+
+	return p;
+}
+
 exports.sendVote = function(data, num)
 {
 

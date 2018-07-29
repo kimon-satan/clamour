@@ -113,13 +113,7 @@ exports.response = function(socket)
 			return;
 		}
 
-		// if(typeof(id) != "string"){
-		// 	console.log("incorrect usr id: " + id + "," + typeof(id));
-		// 	return;
-		// }
-
 		msg.id = helpers.validateId(msg.id);
-
 
 		if(!msg.id)
 		{
@@ -132,108 +126,87 @@ exports.response = function(socket)
 			return;
 		}
 
-		try{
 
-			var usrobj;
-			var p = globals.UserData.findOne({_id: String(id)});
 
-			p = p.then((data)=>
+		var usrobj;
+		var p = globals.UserData.findOne({_id: String(id)});
+
+		p = p.then((data)=>
+		{
+			usrobj = data;
+			return globals.Votes.findOne({_id: msg.id});
+		})
+
+		p = p.then((data)=>
+		{
+			data._id = helpers.validateId(data._id);
+
+			if(data == null)
 			{
-				usrobj = data;
-				return globals.Votes.findOne({_id: msg.id});
-			})
-
-			p = p.then((data)=>
+				return Promise.reject("vote " + msg.id + " could not be found ");
+			}
+			else if(!data._id)
 			{
-				data._id = helpers.validateId(data._id);
+				return Promise.reject("vote " + msg.id + " return invalid id");
+			}
 
-				if(data == null)
-				{
-					return Promise.reject("vote " + msg.id + " could not be found ");
+			data.scores[msg.choice] += 1.0/data.population;
+
+			globals.udpPort.send({
+					address: "/speakPhrase",
+					args: [String(data._id), msg.choice, usrobj.voiceNum, usrobj.voicePan, usrobj.voicePitch]
+			}, "127.0.0.1", 57120);
+
+
+			globals.display.emit('cmd', {
+				type: "vote", cmd: "displayVote" ,
+				val: {
+					choice: msg.choice,
+					text: data.pair[msg.choice],
+					font: usrobj.font,
+					col: usrobj.fontCol,
+					score: data.scores,
+					pos: data.pos,
+					slots: globals.voteDisplaySlots //Indicates the current state of the slots
 				}
-				else if(!data._id)
-				{
-					return Promise.reject("vote " + msg.id + " return invalid id");
-				}
-
-				data.scores[msg.choice] += 1.0/data.population;
-
-				globals.udpPort.send({
-						address: "/speakPhrase",
-						args: [String(data._id), msg.choice, usrobj.voiceNum, usrobj.voicePan, usrobj.voicePitch]
-				}, "127.0.0.1", 57120);
-
-
-				globals.display.emit('cmd', {
-					type: "vote", cmd: "displayVote" ,
-					val: {
-						choice: msg.choice,
-						text: data.pair[msg.choice],
-						font: usrobj.font,
-						col: usrobj.fontCol,
-						score: data.scores,
-						pos: data.pos,
-						slots: globals.voteDisplaySlots //Indicates the current state of the slots
-					}
-				});
-
-				return globals.Votes.update({_id: data._id},
-				{$push: {voted: id},
-				$pull: {voting: id},
-				$set:{scores: data.scores}
-				});
-			})
-
-			p = p.then((data)=>
-			{
-				//NB. perhaps needs try catch
-				return globals.Votes.findOne({_id: msg.id});
-			})
-
-			p = p.then((data)=>
-			{
-				if(typeof(data) != "object")
-				{
-					return Promise.reject("oops");
-				}
-
-				if(data.voted.length == data.population)
-				{
-					//resolve the vote if there are no voters left
-					votehelpers.concludeVote(data);
-				}
-				else
-				{
-					//initiate the next voter if there is one
-					votehelpers.sendVote(data);
-				}
-
-				return Promise.resolve();
-
 			});
 
-			p = p.then(_=>
-			{
-				//NB. perhaps needs try catch
-				try{
-					return globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
-				}
-				catch(e){
-					console.log(e);
-				}
-			})
+			return globals.Votes.update(
+				{
+					_id: data._id},
+					{$push: {voted: id},
+				$pull: {voting: id},
+			$set:{scores: data.scores}
+			});
 
-			p.catch((reason)=>
-			{
-				console.log("Error - voted " + reason) ;
-			})
+		})
 
-		}
-		catch(e)
+		p = p.then((data)=>
 		{
-			console.log("Caught Error - voted" + e);
-		}
-		//reset this users vote
+			return globals.Votes.findOne({_id: msg.id});
+		})
+
+		p = p.then((data)=>
+		{
+			if(data.voted.length == data.population)
+			{
+				//resolve the vote if there are no voters left
+				votehelpers.concludeVote(data);
+			}
+			else
+			{
+				//initiate the next voter if there is one
+				votehelpers.sendVote(data);
+			}
+
+			return globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
+
+		});
+
+		p.catch((reason)=>
+		{
+			console.log("Error - voted " + reason) ;
+		})
 
 
 	})

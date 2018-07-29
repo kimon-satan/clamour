@@ -47,22 +47,21 @@ exports.joinRoom = function(uids, roomName, cb)
 		}
 	}
 
-	globals.Rooms.update({room: roomName},{room: roomName, population: uids},{upsert: true}, cb);
-
-	//callback here
-	//if(cb != undefined)cb(); // it is safe to send a command to the room
-
-	//now update the databases - this can be asynchronous
-
-	//add the room to UserData
-	//remove old versions first
 	globals.UserData.update({_id: { $in: uids} }, {$pull : {rooms: roomName}}, {multi: true})
+
 	.then(_=>
 	{
 		globals.UserData.update({_id: { $in: uids} },{ $push : {rooms: roomName}}, {multi: true});
 	});
 
+	var p = globals.Rooms.update({room: roomName},{room: roomName, population: uids},{upsert: true});
 
+	p = p.then(_=>{
+		if(cb != undefined)cb();
+		return Promise.resolve();
+	});
+
+	return p;
 }
 
 exports.useRoom = function(msg, cb) //add an optional cmd
@@ -76,18 +75,34 @@ exports.useRoom = function(msg, cb) //add an optional cmd
 		if(selector.roomName == undefined)selector.roomName = exports.genRoomName();
 		selector.mode = msg.mode;
 
-		exports.selectAndJoin(selector, function(resp)
+		var p = exports.selectAndJoin(selector);
+
+		p = p.then((resp)=>
 		{
-			if(typeof(cb) == "function")cb(selector.roomName);
 			globals.admin.emit('server_report', {msg: resp, id: msg.cli_id, room: selector.roomName });
+
+			if(cb != undefined)
+			{
+				cb(selector.roomName);
+			}
+
+			return Promise.resolve(selector.roomName);
+
 		});
+
+		return p;
 	}
 	else
 	{
 		//use the existing room
+		if(typeof(cb) == "function")
+		{
+			cb(msg.room);
+		}
 
-		if(typeof(cb) == "function")cb(msg.room);
 		globals.admin.emit('server_report', {id: msg.cli_id});
+
+		return Promise.resolve(msg.room);
 	}
 }
 
@@ -96,8 +111,9 @@ exports.selectPlayers = function(args, cb)
 
 	var searchObj = exports.generateSearchObj(args);
 
-	globals.UserData.find(searchObj, '_id').then((docs) =>
-	{
+	var p = globals.UserData.find(searchObj, '_id');
+
+	p = p.then((docs) =>{
 		//only the name field will be returned
 		//repackage into a simple array
 		var uids = [];
@@ -121,23 +137,42 @@ exports.selectPlayers = function(args, cb)
 			uids = uids.slice(0,numPlayers);
 		}
 
-		cb(uids);
+		if(cb != undefined)
+		{
+			cb(uids);
+		}
+
+		return Promise.resolve(uids);
 
 	});
 
+	return p;
 }
 
 exports.selectAndJoin = function(args, cb)
 {
-		if(typeof(args) == "undefined")return false;
-		exports.selectPlayers(args, function(uids)
+	if(typeof(args) == "undefined")return false;
+
+	var p = exports.selectPlayers(args);
+	var msg = "";
+
+	p = p.then((uids)=>
+	{
+		msg =  args.mode + " with " + uids.length + " players with room: " + args.roomName;
+		return exports.joinRoom(uids, args.roomName);
+	})
+
+	p = p.then(_=>
+	{
+		if(cb != undefined)
 		{
-			var msg =  args.mode + " with " + uids.length + " players with room: " + args.roomName;
-			exports.joinRoom(uids, args.roomName, function()
-			{
-				cb(msg);
-			});
-		});
+			cb(msg)
+		}
+
+		return Promise.resolve(msg);
+	})
+
+	return p;
 }
 
 exports.subRoom =  function(room, numRooms, cb)
@@ -280,12 +315,6 @@ exports.parseOptions = function(args, cb)
 	//parses args into an object option
 	var options = {};
 
-	if(args.length == 0)
-	{
-		cb(options);
-		return;
-	}
-
 	for(var i = 0; i < args.length; i++)
 	{
 		if(args[i][0] != "f" && args[i][0] != "n")
@@ -322,7 +351,16 @@ exports.parseOptions = function(args, cb)
 			}
 	}
 
-	cb(options);
+	//TODO UTILMATELY WE DON'T NEED A CALLBACK
+	if(cb == undefined)
+	{
+		return options;
+	}
+	else
+	{
+		cb(options);
+	}
+
 }
 
 exports.generateSearchObj = function(args)
