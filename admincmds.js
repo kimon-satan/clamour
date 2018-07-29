@@ -659,19 +659,11 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "lvotes")
 		{
-			var p = globals.Votes.find({});
-
-			p.then((docs)=>{
-				var r = "";
-				for(var i = 0; i < docs.length; i++)
-				{
-					var id = String(docs[i]._id);
-					var idstr = id.substring(0,3) + "..." + id.substring(id.length -3, id.length);
-					r += idstr + ", population: " + docs[i].population + ", voted: " + docs[i].voted.length + "\n";
-				}
-				globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
-			});
-
+			//make a list of votes
+			listVotes().then((doc)=>
+			{
+				globals.admin.emit('server_report', {id: msg.cli_id, isproc: msg.isproc , msg: doc});
+			})
 		}
 
 
@@ -812,6 +804,7 @@ exports.response = function(socket)
 }
 
 //////////////////////HELPER FUNCTIONS/////////////////////////
+//TODO MOVE TO HELPERS ?
 
 
 function listPlayers(args, room, cb)
@@ -919,4 +912,36 @@ function handleStorySubrooms(room, options, cli_id)
 		});
 
 	}
+}
+
+function listVotes()
+{
+	var ids = globals.voteDisplaySlots.a.concat(globals.voteDisplaySlots.b);
+	var p = globals.Votes.find({_id: {$in: ids }},{sort: {pos: 1}});
+
+	p = p.then((docs)=>
+	{
+		var r = "";
+		for(var i = 0; i < docs.length; i++)
+		{
+			r += "pos: " + docs[i].pos;
+
+			if(docs[i].open)
+			{
+				r += ", choice: " + docs[i].pair[0] + "," + docs[i].pair[1];
+				r += ", pop: " + docs[i].population + ", voting: " + docs[i].voting.length + ", notvoted: " + docs[i].notvoted.length;
+			}
+			else
+			{
+				r += ", text: " + docs[i].pair[docs[i].winnerIdx];
+			}
+			r += "\n";
+		}
+
+		return Promise.resolve(r);
+
+	});
+
+	return p;
+
 }

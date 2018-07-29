@@ -1,7 +1,6 @@
 TODO
 
-- votes
-	- lvotes and ivotes
+- Votes
 	- prevent overwriting slots and other bad things
 	- command to conclude stalled votes
 	- more font colour combinations ?
@@ -23,10 +22,6 @@ TODO
 
 - display data persistence
 - asynchronous error logging (maybe...)
-
-- Some thoughts ...
-// seems like multi-threaded design is vulnerable to dropped messages
-// consider refactoring vote system to a single thread with intervalic manager (working now)
 
 
 LOVE FIXES (in order of importance) -
