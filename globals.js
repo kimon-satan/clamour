@@ -87,7 +87,8 @@ exports.display = io.of('/display');
 exports.players = io.of('/player');
 exports.sockets = {};
 exports.checkins = {};
-exports.procs = {}; //all timeout and interval processes
+exports.checkinProcs = {}; //checkin processes only
+exports.procs = {}; //all timeout and interval processes - excluding checkins
 
 exports.pendingVotes = [];
 exports.voteDisplaySlots =

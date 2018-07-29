@@ -30,7 +30,6 @@ globals.udpPort.on('message', (msg, rinfo) => {
 
 				if(!id)
 				{
-					//FIXME - why four calls ?
 					console.log("Error /phraseComplete: Invalid argument msg.args[0] " + msg.args[0]);
 					return;
 				}
@@ -912,12 +911,25 @@ exports.concludeVote = function(data)
 
 		globals.procs[data._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete.bind(this,data),1500);
 
-		//adapt data if append or prepend
+		//2. update other record if append or prepend
+		if(data.append || data.prepend)
+		{
+			if(data.append)
+			{
+				var id = globals.voteDisplaySlots[data.append[0]][data.append[1]];
+				var s = data.concatText + " " + data.pair[data.winnerIdx]; //the final string
+			}
+			else
+			{
+				var id = globals.voteDisplaySlots[data.prepend[0]][data.prepend[1]];
+				var s = data.pair[data.winnerIdx] + " " + data.concatText; //the final string
+			}
 
-		//2. update the vote as concluded with the winner
+			globals.Votes.update(id,{$set: {pair: [s,s]}});
+		}
+
+		//3. update the vote as concluded with the winner
 		globals.Votes.update(data._id, data);
-
-		//TODO update appended or prepended votes too
 
 	})
 

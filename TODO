@@ -1,8 +1,6 @@
 TODO
 
 - votes
-	- choosing / combining vote commands - see notes
-		- append/prepend options (90%) - finish DB update
 	- lvotes and ivotes
 	- prevent overwriting slots and other bad things
 	- command to conclude stalled votes

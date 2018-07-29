@@ -287,7 +287,8 @@ exports.response = function(socket)
 					console.log("Error - disconnect: " + err);
 				});
 				delete globals.checkins[id];
-				clearInterval(globals.procs[id]);
+				clearInterval(globals.checkinProcs[id]);
+				delete globals.checkinProcs[id];
 			}
 		}
 		catch(e)
@@ -297,7 +298,7 @@ exports.response = function(socket)
 	});
 
 	//a process to check players are with us
-	globals.procs[id] = setInterval(function()
+	globals.checkinProcs[id] = setInterval(function()
 	{
 		socket.emit('checkAlive',function(data)
 		{
@@ -306,6 +307,6 @@ exports.response = function(socket)
 				globals.checkins[data] = Date.now();
 			}
 		});
-	},5000)
+	},5000);
 
 }
