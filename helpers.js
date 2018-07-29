@@ -2,7 +2,7 @@ var globals = require('./globals.js');
 var randomWords = require('random-words');
 var fs = require('fs');
 
-//Handle incoming OSC - TODO move to server.js
+//Handle incoming OSC - TODO move to server.js ?
 
 globals.udpPort.on('message', (msg, rinfo) => {
 
@@ -100,10 +100,12 @@ globals.udpPort.on('message', (msg, rinfo) => {
 		if(msg.address == "/winSampleDone")
 		{
 
+
 			if(globals.currentConcludedVote.append || globals.currentConcludedVote.prepend)
 			{
 				var pos = globals.currentConcludedVote.pos;
 				globals.voteDisplaySlots[pos[0]][Number(pos[1])] = 0;
+
 			}
 
 			globals.display.emit('cmd', {
@@ -118,11 +120,20 @@ globals.udpPort.on('message', (msg, rinfo) => {
 				}
 			});
 
+			var displayTxt = globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx];
+			if(globals.currentConcludedVote.append)
+			{
+				displayTxt =  globals.currentConcludedVote.concatText + " " + displayTxt;
+			}
+			else if (globals.currentConcludedVote.prepend)
+			{
+				displayTxt = displayTxt + " " + globals.currentConcludedVote.concatText;
+			}
 
-			//TODO adapt for append/prepend
-			globals.players.emit('cmd',{
+			globals.players.emit('cmd',
+			{
 				cmd: "display_winner",
-				value: globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx]
+				value: displayTxt
 			});
 
 		}
