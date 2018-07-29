@@ -1,32 +1,26 @@
 TODO
 
-- Votes
-	- do some tidying
+### Votes ###
 	- append/prepend can happen with non-concluded votes
 	- prevent overwriting slots and other bad things
 	- command to conclude stalled votes
+	- moving votes around / particularly making space for prepend append
 	- more font colour combinations ?
 	- prevent sample duplicates in SC
-
-
 	- offering user input
-	- bug narrowed down to checkins - why are clients returning null values ? (is this solved ?)
+
 	- deal with reset client issues
 
-- deployment
+### VM Deployment ###
 
--TIDY UP
-
-- refactor to syphon mode functions into different files
+### Refactoring ####
+- sort out some robust error handling
 - testing framework should be from admin not separate browser
-- try / catch for admin commands (50%) - work out something better
-- story stuff will need refactoring into a different place
+- refactor story
 
 - display data persistence
-- asynchronous error logging (maybe...)
 
-
-LOVE FIXES (in order of importance) -
+### Love ###
 
 - why does updatereactionMaps happen 4 times on iface init ?
 - splats rendered on mobile screen

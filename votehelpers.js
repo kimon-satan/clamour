@@ -60,7 +60,7 @@ exports.listVotes = function()
 
 exports.getVoteFromSlot = function(slot)
 {
-	var m = pair[i].match(/[ab]\d/);
+	var m = slot.match(/[ab]\d/);
 
 	if(!m)
 	{
@@ -68,7 +68,6 @@ exports.getVoteFromSlot = function(slot)
 	}
 
 	var slot_id = globals.voteDisplaySlots[slot[0]][slot[1]];
-	console.log(slot_id);
 	return globals.Votes.findOne(slot_id);
 }
 
@@ -137,6 +136,8 @@ exports.handlePhraseComplete = function(msg)
 
 exports.startVote = function(msg)
 {
+
+	//TODO - check catch deal with bad inputs
 
 	var response = "";
 	var options = helpers.parseOptions(msg.args);
@@ -209,7 +210,7 @@ exports.startVote = function(msg)
 
 	p = p.then(_=>
 	{
-		var response = "choice: ";
+		response = "choice: ";
 
 		for(var i = 0; i < pair.length; i++)
 		{
@@ -261,7 +262,7 @@ exports.startVote = function(msg)
 		{
 			if(append)
 			{
-				return exports.getVoteFromSlot(append); // ISSUE HERE
+				return exports.getVoteFromSlot(append);
 			}
 			else
 			{
@@ -295,6 +296,7 @@ exports.startVote = function(msg)
 		p = p.then(_=>
 		{
 			//just trigger the function
+			console.log(response);
 			exports.sendVote(vote, vote.num);
 			return Promise.resolve(response);
 		});
@@ -325,7 +327,8 @@ exports.startVote = function(msg)
 	}
 
 
-	p.catch((reason)=>{
+	p.catch((reason)=>
+	{
 		console.log("Error - vnew " + reason) ;
 	})
 

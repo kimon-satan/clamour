@@ -460,8 +460,9 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "vnew")
 		{
-			votehelpers.startVote(msg)
-			.then((resp)=>
+			var p = votehelpers.startVote(msg);
+
+			p.then((resp)=>
 			{
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
 			})
