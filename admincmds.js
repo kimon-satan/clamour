@@ -1,5 +1,6 @@
 var globals = require('./globals.js');
 var helpers = require('./helpers.js');
+var votehelpers = require('./votehelpers.js');
 require('./libs/utils.js'); //just for generateTempId
 
 exports.response = function(socket)
@@ -584,9 +585,30 @@ exports.response = function(socket)
 								globals.Votes.update({_id : data._id},{$set: {available: data.available}})
 								.then(_=>
 								{
-									helpers.sendVote(data, data.num);
+									votehelpers.sendVote(data, data.num);
 								})
+								exports.loadDictionary = function(cb)
+								{
+									// //load the audio samples
+									// globals.udpPort.send(
+									// {
+									// 	address: "/loadSamples",
+									// 	args: [globals.settings.samplePath]
+									// },
+									// "127.0.0.1", 57120);
 
+									//load the story object
+
+									fs.readFile(globals.settings.dictionaryPath, 'utf8', function (err, data)
+									{
+										globals.dictionary = JSON.parse(data);
+
+										if(typeof(cb) == "function")
+										{
+											cb(err);
+										}
+									});
+								}
 							}
 							else
 							{
@@ -660,7 +682,7 @@ exports.response = function(socket)
 		else if(msg.cmd == "lvotes")
 		{
 			//make a list of votes
-			listVotes().then((doc)=>
+			votehelpers.listVotes().then((doc)=>
 			{
 				globals.admin.emit('server_report', {id: msg.cli_id, isproc: msg.isproc , msg: doc});
 			})
@@ -912,36 +934,4 @@ function handleStorySubrooms(room, options, cli_id)
 		});
 
 	}
-}
-
-function listVotes()
-{
-	var ids = globals.voteDisplaySlots.a.concat(globals.voteDisplaySlots.b);
-	var p = globals.Votes.find({_id: {$in: ids }},{sort: {pos: 1}});
-
-	p = p.then((docs)=>
-	{
-		var r = "";
-		for(var i = 0; i < docs.length; i++)
-		{
-			r += "pos: " + docs[i].pos;
-
-			if(docs[i].open)
-			{
-				r += ", choice: " + docs[i].pair[0] + "," + docs[i].pair[1];
-				r += ", pop: " + docs[i].population + ", voting: " + docs[i].voting.length + ", notvoted: " + docs[i].notvoted.length;
-			}
-			else
-			{
-				r += ", text: " + docs[i].pair[docs[i].winnerIdx];
-			}
-			r += "\n";
-		}
-
-		return Promise.resolve(r);
-
-	});
-
-	return p;
-
 }

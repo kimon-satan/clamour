@@ -1,5 +1,6 @@
 var globals = require('./globals.js');
 var helpers = require('./helpers.js');
+var votehelpers = require('./votehelpers.js');
 
 exports.response = function(socket)
 {
@@ -199,15 +200,12 @@ exports.response = function(socket)
 				if(data.voted.length == data.population)
 				{
 					//resolve the vote if there are no voters left
-					//TODO broken promise here
-					helpers.concludeVote(data);
-
+					votehelpers.concludeVote(data);
 				}
 				else
 				{
-					//TODO broken promise here
 					//initiate the next voter if there is one
-					helpers.sendVote(data);
+					votehelpers.sendVote(data);
 				}
 
 				return Promise.resolve();
