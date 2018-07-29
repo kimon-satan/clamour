@@ -58,6 +58,83 @@ exports.listVotes = function()
 
 }
 
+exports.getVoteFromSlot = function(slot)
+{
+	var m = pair[i].match(/[ab]\d/);
+
+	if(!m)
+	{
+		return Promise.reject("Error - incorrect slot format");
+	}
+
+	var slot_id = globals.voteDisplaySlots[slot[0]][slot[1]];
+	console.log(slot_id);
+	return globals.Votes.findOne(slot_id);
+}
+
+
+exports.handlePhraseComplete = function(msg)
+{
+	var isWin = false;
+	if(msg.args[0].match("_win"))
+	{
+		isWin = true;
+	}
+
+	var id = helpers.validateId(msg.args[0].replace("_win", ""));
+
+	if(!id)
+	{
+		console.log("Error /phraseComplete: Invalid argument msg.args[0] " + msg.args[0]);
+		return;
+	}
+
+	var p = globals.Votes.findOne({_id: id});
+	var vote;
+
+	p = p.then((data)=>
+	{
+		if(data != null && helpers.validateId(data._id))
+		{
+			vote = data;
+			if(isWin)
+			{
+				vote.winAvailable[msg.args[1]] = true;
+				return globals.Votes.update({_id: vote._id}, {$set: {winAvailable: vote.winAvailable}});
+			}
+			else
+			{
+				vote.available[msg.args[1]].push(msg.args[2]);
+				return globals.Votes.update({_id: vote._id}, {$set: {available: vote.available}});
+			}
+		}
+		else
+		{
+			return Promise.reject("vote not found");
+		}
+	});
+
+	p = p.then(_=>
+	{
+		//We're ready to start a vote
+		var i = globals.pendingVotes.indexOf(String(vote._id));
+		//Check that this is a pending vote and that the two win conditions are available
+
+		if(i > -1 && (vote.winAvailable[0] && vote.winAvailable[1]))
+		{
+			//console.log("start vote")
+			globals.pendingVotes.splice(i,1);
+			//WARNING: possibility of race condition ... ? probably not as SC records phrases one by one
+			exports.sendVote(vote, vote.num);
+			return Promise.resolve();
+		}
+	})
+
+	p.catch((reason)=>{
+		console.log("Error - phraseComplete: " + reason);
+	});
+}
+
 exports.startVote = function(msg)
 {
 
@@ -71,6 +148,7 @@ exports.startVote = function(msg)
 	var append = options.append;
 	var prepend = options.prepend;
 	var pair = options.choice;
+	var winPair;
 	var vote;
 
 	if(pos == undefined)
@@ -138,6 +216,8 @@ exports.startVote = function(msg)
 			response += pair[i] + ", ";
 		}
 
+		winPair = [pair[0], pair[1]];
+
 		return helpers.useRoom(msg);
 	});
 
@@ -175,59 +255,55 @@ exports.startVote = function(msg)
 		return Promise.resolve();
 	});
 
+	if(append != undefined || prepend != undefined)
+	{
+		p = p.then(_=>
+		{
+			if(append)
+			{
+				return exports.getVoteFromSlot(append); // ISSUE HERE
+			}
+			else
+			{
+				return exports.getVoteFromSlot(prepend);
+			}
+		});
+
+		p = p.then((doc)=>
+		{
+			if(prepend)
+			{
+				for(var i = 0; i < 2; i++)winPair[i] += " " + doc.pair[doc.winnerIdx];
+			}
+			else
+			{
+				for(var i = 0; i < 2; i++)winPair[i] = doc.pair[doc.winnerIdx] + " " + winPair[i];
+			}
+			return globals.Votes.update(vote._id, {$set: {concatText: doc.pair[doc.winnerIdx]}});
+		});
+	}
+
 	if(globals.NO_SC)
 	{
 		p = p.then(_=>
 		{
 			vote.available = [[ 0, 1, 2, 3, 4, 5, 6, 7 ], [ 0, 1, 2, 3, 4, 5, 6, 7 ]];
-			return globals.Votes.update({_id : vote._id},{$set: {available: data.available}});
+			vote.winAvailable = [true, true];
+			return globals.Votes.update({_id : vote._id},{$set: {available: vote.available}});
 		});
 
 		p = p.then(_=>
 		{
 			//just trigger the function
-			helpers.sendVote(vote, vote.num);
-			return Promise.resolve(data);
+			exports.sendVote(vote, vote.num);
+			return Promise.resolve(response);
 		});
 	}
 	else
 	{
-		//Tell SC to record the phrases
-		var winPair = [pair[0], pair[1]];
-
-		if(append != undefined || prepend != undefined)
-		{
-			p = p.then(_=>
-			{
-				var slot_id;
-				if(append)
-				{
-					slot_id = globals.voteDisplaySlots[append[0]][append[1]];// TODO deal with empty slots
-				}
-				else
-				{
-					slot_id = globals.voteDisplaySlots[prepend[0]][prepend[1]]; // TODO deal with empty slots
-				}
-				return globals.Votes.findOne(slot_id);
-			});
-
-			p = p.then((doc)=>
-			{
-				if(prepend)
-				{
-					for(var i = 0; i < 2; i++)winPair[i] += " " + doc.pair[doc.winnerIdx];
-				}
-				else
-				{
-					for(var i = 0; i < 2; i++)winPair[i] = doc.pair[doc.winnerIdx] + " " + winPair[i];
-				}
-				return globals.Votes.update(vote._id, {$set: {concatText: doc.pair[doc.winnerIdx]}});
-			});
-
-		}
-
 		p = p.then(_=>
 		{
+			//Tell SC to record the phrases
 			globals.udpPort.send({
 					address: "/recordWinPhrase",
 					args: [String(vote._id) + "_win", winPair[0],winPair[1]],
@@ -240,13 +316,14 @@ exports.startVote = function(msg)
 
 			return Promise.resolve();
 		});
+
+		p = p.then(_=>
+		{
+			globals.pendingVotes.push(String(vote._id));
+			return Promise.resolve(response);
+		});
 	}
 
-	p = p.then(_=>
-	{
-		globals.pendingVotes.push(String(vote._id));
-		return Promise.resolve(response);
-	})
 
 	p.catch((reason)=>{
 		console.log("Error - vnew " + reason) ;
@@ -406,6 +483,48 @@ exports.concludeVote = function(data)
 
 }
 
+exports.concludeDisplayAndPlayers = function()
+{
+
+	if(globals.currentConcludedVote.append || globals.currentConcludedVote.prepend)
+	{
+		var pos = globals.currentConcludedVote.pos;
+		globals.voteDisplaySlots[pos[0]][Number(pos[1])] = 0;
+
+	}
+
+	globals.display.emit('cmd',
+	{
+		type: "vote", cmd: "concludeVote" ,
+		val:{
+			winner: globals.currentConcludedVote.winnerIdx,
+			pos: globals.currentConcludedVote.pos,
+			append: globals.currentConcludedVote.append,
+			prepend: globals.currentConcludedVote.prepend,
+			concatText: globals.currentConcludedVote.concatText,
+			slots: globals.voteDisplaySlots
+		}
+	});
+
+	//TODO does can this be refactored
+	var displayTxt = globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx];
+
+	if(globals.currentConcludedVote.append)
+	{
+		displayTxt =  globals.currentConcludedVote.concatText + " " + displayTxt;
+	}
+	else if (globals.currentConcludedVote.prepend)
+	{
+		displayTxt = displayTxt + " " + globals.currentConcludedVote.concatText;
+	}
+
+	globals.players.emit('cmd',
+	{
+		cmd: "display_winner",
+		value: displayTxt
+	});
+
+}
 
 //private helper functions
 
@@ -439,26 +558,13 @@ var triggerVoteComplete = function(data)
 	{
 		//otherwise this happens when
 
-		//TODO adapt for append/prepend
-		globals.display.emit('cmd', {
-			type: "vote", cmd: "concludeVote" ,
-			val: {
-				winner: globals.currentConcludedVote.winnerIdx,
-				pos: globals.currentConcludedVote.pos
-			}
-		});
+		exports.concludeDisplayAndPlayers();
 
-		//TODO adapt for append/prepend
-		globals.players.emit('cmd',{
-			cmd: "display_winner",
-			value: globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx]
-		});
-
-		globals.procs[generateTempId(10)] = setTimeout(function(){
+		globals.procs[generateTempId(10)] = setTimeout(function()
+		{
 			globals.players.emit('cmd',{cmd: 'resume_vote'});
 			//allows other votes to happen
 			globals.currentConcludedVote = null;
 		},1000);
 	}
-
 }
