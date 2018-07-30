@@ -337,17 +337,17 @@ exports.response = function(socket)
 
 				var users = [];
 
-				docs.forEach(function(e)
+				for(var i = 0; i < docs.length; i++)
 				{
-					delete globals.sockets[e._id]; //does this work ?
-					delete globals.checkins[e._id];
-					clearInterval(globals.procs[e._id]);
-					globals.UserData.remove(e._id);
-					users.push(e._id);
-				});
+					delete globals.sockets[docs[i]._id]; //does this work ?
+					delete globals.checkins[docs[i]._id];
+					clearInterval(globals.procs[docs[i]._id]);
+					globals.UserData.remove(docs[i]._id);
+					users.push(docs[i]._id);
+				}
 
-				globals.Rooms.update({},{$pull: {population: {$in: users }}}); //remove these users from anyglobals.Rooms
-				globals.admin.emit('server_report', {id: msg.cli_id, msg: docs.length + " disconnected users removed "});
+				globals.Rooms.update({},{$pull: {population: {$in: users }}},{multi: true}); //remove these users from anyglobals.Rooms
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: users.length + " disconnected users removed "});
 			});
 		}
 		else if(msg.cmd == "resetall")
@@ -372,6 +372,7 @@ exports.response = function(socket)
 			globals.display.emit('cmd', {type: 'clear_display'});
 			globals.storyChapter = 0;
 			globals.storyClip = 0;
+
 			var keys = Object.keys(globals.procs);
 			for(var i = 0; i < keys.length; i++)
 			{
@@ -388,6 +389,7 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "stats")
 		{
+			//TODO make istats
 
 			globals.UserData.find({},'connected').then((docs)=>{
 				var resp = "";

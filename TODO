@@ -3,14 +3,14 @@ TODO
 ### Votes ###
 
 	- join for combining non-concluded votes
-		- deal with display why no update
-		- deal with audio
+		- deal with audio(70%)
+			- deal with samples not ready yet
 		- check for individual users
 
 	- prevent overwriting slots and other bad things
 	- command to conclude stalled votes
 	- moving votes around / particularly making space for prepend append
-	
+
 	- more font colour combinations ?
 	- prevent sample duplicates in SC
 

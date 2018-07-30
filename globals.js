@@ -5,7 +5,7 @@ exports.app = express();
 http = require('http').Server(exports.app);
 
 //exports.DEBUG = true;
-exports.NO_SC = true;
+//exports.NO_SC = true;
 
 //simple db using monk & mongodb
 exports.URL = 'localhost:27017/ConditionalLove';

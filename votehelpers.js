@@ -92,12 +92,20 @@ exports.getVoteFromSlot = function(slot)
 exports.handlePhraseComplete = function(msg)
 {
 	var isWin = false;
+	var isJoin = false;
 	if(msg.args[0].match("_win"))
 	{
 		isWin = true;
 	}
+	else if(msg.args[0].match("_join"))
+	{
+		isJoin = true;
+	}
 
-	var id = helpers.validateId(msg.args[0].replace("_win", ""));
+	var id = msg.args[0].replace("_win", "");
+	id = id.replace("_join", "");
+
+	var id = helpers.validateId(id);
 
 	if(!id)
 	{
@@ -116,6 +124,12 @@ exports.handlePhraseComplete = function(msg)
 			{
 				vote.winAvailable[msg.args[1]] = true;
 				return globals.Votes.update({_id: vote._id}, {$set: {winAvailable: vote.winAvailable}});
+			}
+			else if(isJoin)
+			{
+				vote.joinAvailable[msg.args[1]] = true;
+				//TODO. both votes will need to be updated ugh
+				return globals.Votes.update({_id: vote._id}, {$set: {joinAvailable: vote.joinAvailable}});
 			}
 			else
 			{
@@ -206,6 +220,7 @@ exports.startVote = function(msg)
 			{ pair: pair,
 				available: [[],[]],
 				winAvailable: [false,false],
+				joinAvailable: [false,false,false,false],
 				scores: [0,0],
 				voting: [],
 				voted: [],
@@ -273,7 +288,10 @@ exports.startVote = function(msg)
 		{
 			vote.available = [[ 0, 1, 2, 3, 4, 5, 6, 7 ], [ 0, 1, 2, 3, 4, 5, 6, 7 ]];
 			vote.winAvailable = [true, true];
-			return globals.Votes.update({_id : vote._id},{$set: {available: vote.available}});
+			return globals.Votes.update(
+				{_id : vote._id},
+				{$set: {available: vote.available, winAvailable: vote.winAvailable}}
+			);
 		});
 
 		p = p.then(_=>
@@ -462,6 +480,7 @@ exports.concludeVote = function(data)
 				var s = data.pair[data.winnerIdx] + " " + data.concatText; //the final string
 			}
 
+			data.pair = [s,s];
 			return globals.Votes.update(id,{$set: {pair: [s,s], lock: false}});
 		})
 	}
@@ -533,46 +552,44 @@ exports.concludeDisplayAndPlayers = function()
 {
 
 	var displayTxt = globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx];
+	var pos = globals.currentConcludedVote.pos;
 
 	if(globals.currentConcludedVote.append || globals.currentConcludedVote.prepend)
 	{
 		//the newer vote is destroyed
-		var pos = globals.currentConcludedVote.pos;
-		globals.voteDisplaySlots[pos[0]][Number(pos[1])] = 0;
+		pos = (globals.currentConcludedVote.append) ? globals.currentConcludedVote.append : globals.currentConcludedVote.prepend;
+		var dpos = globals.currentConcludedVote.pos;
+		globals.voteDisplaySlots[dpos[0]][Number(dpos[1])] = 0;
 
-		//TODO. we probably shouldn't need this either
-		if(globals.currentConcludedVote.append)
-		{
-			displayTxt =  globals.currentConcludedVote.concatText + " " + displayTxt;
-		}
-		else if (globals.currentConcludedVote.prepend)
-		{
-			displayTxt = displayTxt + " " + globals.currentConcludedVote.concatText;
-		}
 	}
 	else if (
 		(globals.currentConcludedVote.joinpre || globals.currentConcludedVote.joinsuff)
 		&& !globals.currentConcludedVote.lock
 	)
 	{
-
 		if(globals.currentConcludedVote.selfdestruct)
 		{
-			var pos = globals.currentConcludedVote.pos;
-			globals.voteDisplaySlots[pos[0]][Number(pos[1])] = 0;
+			var dpos = globals.currentConcludedVote.pos;
+			pos = (globals.currentConcludedVote.joinpre) ? globals.currentConcludedVote.joinpre : globals.currentConcludedVote.joinsuff;
 		}
-		else
+		else if(globals.currentConcludedVote.joinpre)
 		{
-			var pos = globals.currentConcludedVote.pos;
-			globals.voteDisplaySlots[pos[0]][Number(pos[1])] = 0;
+			var dpos = globals.currentConcludedVote.joinpre;
 		}
+		else if(globals.currentConcludedVote.joinsuff)
+		{
+			var dpos = globals.currentConcludedVote.joinsuff;
+		}
+
+		globals.voteDisplaySlots[dpos[0]][Number(dpos[1])] = 0;
+
 	}
 
 	globals.display.emit('cmd',
 	{
 		type: "vote", cmd: "concludeVote" ,
 		val:{
-			pos: globals.currentConcludedVote.pos,
+			pos: pos,
 			text: displayTxt,
 			slots: globals.voteDisplaySlots
 		}
@@ -658,6 +675,29 @@ exports.joinVotes = function(msg)
 		p = p.then(_=>
 		{
 			//TODO  tell SC to record all the win phrases
+			//Tell SC to record the phrases
+			var joinPhrases = [];
+
+			for(var i = 0; i < 2; i++)
+			{
+				for(var j = 0; j < 2; j++)
+				{
+						joinPhrases.push(votes[0].pair[i] + " " + votes[1].pair[j]);
+				}
+			}
+
+			for(var i = 0; i < votes.length; i++)
+			{
+				globals.udpPort.send({
+						address: "/recordJoinPhrases",
+						args: [String(votes[i]._id) + "_join",
+						joinPhrases[0],
+						joinPhrases[1],
+						joinPhrases[2],
+						joinPhrases[3]],
+				}, "127.0.0.1", 57120);
+			}
+
 		});
 	}
 
@@ -765,11 +805,48 @@ var triggerVoteComplete = function(data)
 	else
 	{
 		//NB. this needs to be different for join
+		if((data.joinpre || data.joinsuff) && !data.lock)
+		{
+			var idxs = [];
+			var p;
+			if(data.joinpre)
+			{
+				p = exports.getVoteFromSlot(data.joinpre);
+				p = p.then((doc)=>{
+					idxs.push(doc.winnerIdx);
+					idxs.push(data.winnerIdx);
+					return Promise.resolve();
+				})
+			}
+			else
+			{
+				p = exports.getVoteFromSlot(data.joinsuff);
 
-		globals.udpPort.send({
-				address: "/voteComplete", //pause audio in SC
-				args: [String(data._id), data.winnerIdx]
-		}, "127.0.0.1", 57120);
+				p = p.then((doc)=>{
+					idxs.push(data.winnerIdx);
+					idxs.push(doc.winnerIdx);
+					return Promise.resolve();
+				})
+			}
+
+			p.then(_=>{
+
+				var winIdx = (idxs[0] * 2) + idxs[1];
+				globals.udpPort.send({
+						address: "/voteComplete", //pause audio in SC
+						args: [String(data._id) + "_join_" + winIdx + "_7"]
+				}, "127.0.0.1", 57120);
+			})
+
+		}
+		else
+		{
+			globals.udpPort.send({
+					address: "/voteComplete", //pause audio in SC
+					args: [String(data._id) + "_win_" + data.winnerIdx + "_7"]
+			}, "127.0.0.1", 57120);
+		}
+
 	}
 
 }

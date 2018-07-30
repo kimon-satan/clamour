@@ -150,7 +150,7 @@ function VoteDisplayer()
 
 		this.staticFades[col][row][0].alpha = 1.0;
 		this.staticFades[col][row][1].alpha = 0.0;
-		this.staticFades[col][row][0].text = vote.text;
+		this.staticFades[col][row][0].text = String(vote.text);
 
 		this.updatePositions(vote.slots);
 
