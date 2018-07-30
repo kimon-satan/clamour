@@ -12,6 +12,11 @@ Player = function(isDummy)
 	this.iface = undefined;
 	this.voteManager = new VoteManager(this);
 
+	this.killMe = function()
+	{
+		this.socket.disconnect();
+	}
+
 	this.checkAlive = setInterval(function(){
 		if(Date.now() - this.lastCheckin > 8000)
 		{
@@ -98,17 +103,17 @@ Player = function(isDummy)
 			if (msg.cmd == "chat_update")
 			{
 				this.data.chatText = msg.value;
-				this.updateTable(this.tableid, this.data);
+				//this.updateTable(this.tableid, this.data);
 			}
 			else if(msg.cmd == 'chat_newline')
 			{
 				this.data.chatText = "NL";
-				this.updateTable(this.tableid, this.data);
+				//this.updateTable(this.tableid, this.data);
 			}
 			else if(msg.cmd == 'chat_clear')
 			{
 				this.data.chatText = "";
-				this.updateTable(this.tableid, this.data);
+				//this.updateTable(this.tableid, this.data);
 			}
 			else if(msg.cmd == 'new_vote' && this.mode == "vote")
 			{
@@ -278,10 +283,10 @@ Player = function(isDummy)
 
 		this.socket.emit('update_user', this.data); //tell the server that we have changed
 
-		if(this.updateTable != undefined)
-		{
-			this.updateTable(this.tableid, this.data);
-		}
+		// if(//this.updateTable != undefined)
+		// {
+		// 	//this.updateTable(this.tableid, this.data);
+		// }
 
 	}.bind(this);
 
@@ -393,10 +398,10 @@ Player = function(isDummy)
 		}
 
 		//for load testing only
-		if(this.updateTable != undefined)
-		{
-			this.updateTable(this.tableid, this.data);
-		}
+		// if(//this.updateTable != undefined)
+		// {
+		// 	//this.updateTable(this.tableid, this.data);
+		// }
 
 	}.bind(this);
 

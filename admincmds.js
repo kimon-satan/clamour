@@ -628,6 +628,12 @@ function listPlayers(args, room, cb)
 				str += ", death: " + Math.round(e.death * 100)/100;
 				str += ", envTime: " + e.envTime;
 			}
+			else if(e.mode == "vote")
+			{
+				if(typeof(e.currentVoteId) == "string")str += ", id: " + e.currentVoteId.substring(0,3) + "..." + e.currentVoteId.substring(-3);
+				if(typeof(e.currentVotePair) == "object")str += ", pair: [" + e.currentVotePair[0] + ", " + e.currentVotePair[1] + "]";
+
+			}
 			results += str + "\n";
 		});
 		cb(results);

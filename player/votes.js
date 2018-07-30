@@ -117,7 +117,7 @@ VoteManager.prototype.wait = function()
 {
 	this.parent.data.state = "waiting";
 	this.isWaiting = true;
-	if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
+	//if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
 }
 
 VoteManager.prototype.cancelVote = function(val)
@@ -125,7 +125,7 @@ VoteManager.prototype.cancelVote = function(val)
 	if(this.parent.data.currentVoteId != val) return; //wrong vote here
 	this.parent.data.state = "waiting";
 	this.isWaiting = true;
-	if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
+	//if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
 }
 
 VoteManager.prototype.createVote = function(vote)
@@ -165,7 +165,7 @@ VoteManager.prototype.pauseVote = function()
 	this.isPaused = true;
 	this.pauseMessage = "...";
 	this.parent.data.state = "paused";
-	if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
+	//if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
 }
 
 VoteManager.prototype.displayWinner = function(msg)
@@ -177,7 +177,7 @@ VoteManager.prototype.resumeVote = function()
 {
 	this.parent.data.state = (this.isWaiting) ? "waiting" : "voting";
 	this.isPaused = false;
-	if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
+	//if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
 }
 
 
@@ -203,7 +203,7 @@ VoteManager.prototype.createTestVote = function(vote)
 	this.parent.data.currentVoteId = vote.id;
 	this.parent.data.currentVotePair = vote.pair;
 	this.parent.data.state = "voting";
-	this.parent.updateTable(this.parent.tableid, this.parent.data);
+	//this.parent.updateTable(this.parent.tableid, this.parent.data);
 
 	var makeChoice = function()
 	{

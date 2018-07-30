@@ -9,6 +9,8 @@ var gProcs = {};
 var idxs = [];
 var socket = io('/admin');
 
+var dummyPlayers = [];
+
 socket.on('server_report', function(msg)
 {
 

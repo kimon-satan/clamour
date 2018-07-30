@@ -273,4 +273,40 @@ CLMR_CMDS["_n"] = function(args,  cli)
     cli.newCursor();
 }
 
+CLMR_CMDS["_makedummies"] = function(args,  cli)
+{
+	var num = 100;
+	for(var i = 0; i < args.length; i++)
+	{
+		if(args[i][0] == 'num')
+		{
+			num = Number(args[i][1]);
+		}
+	}
+
+	if(typeof(num) != "number")num = 100;
+
+	for(var i = 0; i < num; i++)
+	{
+		n = new Player(true);
+		dummyPlayers.push(n);
+	}
+
+  cli.newCursor();
+}
+
+CLMR_CMDS["_killdummies"] = function(args,  cli)
+{
+
+		for(var i = 0; i < dummyPlayers.length; i++)
+		{
+			dummyPlayers[i].killMe();
+			delete dummyPlayers[i];
+		}
+
+		dummyPlayers = [];
+		basicCmd("cleanup", [], cli);
+}
+
+
 //TODO there will need to be more story commands here.

@@ -32,7 +32,7 @@ exports.choose = function(list)
 
 exports.genRoomName = function()
 {
-	return randomWords({ exactly: 2, join: '-' });
+	return randomWords({ exactly: 2, join: '.' });
 }
 
 exports.joinRoom = function(uids, roomName, cb)
