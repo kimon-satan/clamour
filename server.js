@@ -133,7 +133,9 @@ globals.udpPort.on('message', (msg, rinfo) => {
 
 		if(msg.address == "/phraseComplete")
 		{
-			votehelpers.handlePhraseComplete(msg);
+			votehelpers.handlePhraseComplete(msg).catch((err)=>{
+				console.log(err);
+			});
 		}
 
 		if(msg.address == "/resumeVote") //TODO change name

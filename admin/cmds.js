@@ -24,9 +24,8 @@ var cmdList = [
 	"sreset",
 	"sgoto",
 
-	"vpairs", //vote stuff
-	"vsentences",
 	"vnew",
+	"vjoin",
 	"lvotes"
 ];
 

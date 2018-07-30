@@ -1,28 +1,39 @@
 TODO
 
 ### Votes ###
-	- append/prepend can happen with non-concluded votes
+
+	- join for combining non-concluded votes
+		- deal with display why no update
+		- deal with audio
+		- check for individual users
+
 	- prevent overwriting slots and other bad things
 	- command to conclude stalled votes
 	- moving votes around / particularly making space for prepend append
+	
 	- more font colour combinations ?
 	- prevent sample duplicates in SC
+
 	- offering user input
 
-	- deal with reset client issues
+
 
 ### VM Deployment ###
+	- TODO
 
-### Refactoring ####
-- sort out some robust error handling
-- testing framework should be from admin not separate browser
-- refactor story
+### Refactoring/ Tidying ####
 
-- display data persistence
+	- testing framework should be from admin not separate browser
+	- deal with/ check reset client issues - check all flags are cleared
+	- more robust error handling
+		- make sure every DB request is caught somehow
+		- no need for try/ catch -  errors can be thrown if caught
+	- refactor story
+	- display data persistence
+
 
 ### Love ###
-
-- why does updatereactionMaps happen 4 times on iface init ?
-- splats rendered on mobile screen
-- adjust states / more variation between blobs
-- poisson disk for splat distribution
+	- why does updatereactionMaps happen 4 times on iface init ?
+	- splats rendered on mobile screen
+	- adjust states / more variation between blobs
+	- poisson disk for splat distribution

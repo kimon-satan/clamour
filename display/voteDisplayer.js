@@ -147,32 +147,13 @@ function VoteDisplayer()
 
 		var col = vote.pos[0];
 		var row = Number(vote.pos[1]);
-		var w = Number(vote.winner);
 
-		this.staticFades[col][row][w].alpha = 1.0;
-		this.staticFades[col][row][(w + 1)%2].alpha = 0.0;
+		this.staticFades[col][row][0].alpha = 1.0;
+		this.staticFades[col][row][1].alpha = 0.0;
+		this.staticFades[col][row][0].text = vote.text;
 
-		if(vote.concatText)
-		{
-			if(vote.append)
-			{
-				var ncol = vote.append[0];
-				var nrow = vote.append[1];
+		this.updatePositions(vote.slots);
 
-				for(var i =0 ; i <2; i++)
-					this.staticFades[ncol][nrow][i].text = vote.concatText + " " + this.staticFades[col][row][w].text;
-			}
-			else if(vote.prepend)
-			{
-				var ncol = vote.prepend[0];
-				var nrow = vote.prepend[1];
-
-				for(var i =0 ; i <2; i++)
-					this.staticFades[ncol][nrow][i].text = this.staticFades[col][row][w].text + " " + vote.concatText;
-			}
-
-			this.updatePositions(vote.slots);
-		}
 	}.bind(this);
 
 

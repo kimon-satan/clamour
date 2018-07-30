@@ -418,54 +418,32 @@ exports.response = function(socket)
 			globals.players.emit('cmd', {cmd: 'change_mode', value: {mode: "blank"}});
 
 		}
-		else if(msg.cmd == "vpairs")
-		{
-			helpers.parseOptions(msg.args, function(options)
-			{
-				var r = "";
-
-				if(options.type != undefined)
-				{
-					var k = globals.dictionary.wordPairs[options.type];
-				}
-				else
-				{
-					var k = Object.keys(globals.dictionary.wordPairs);
-				}
-
-
-				if(k != undefined)
-				{
-					for(var i = 0; i < k.length; i++)
-					{
-						r += k[i] + "\n";
-					}
-				}
-				else
-				{
-					r = options.type + " not found";
-				}
-
-				globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
-			});
-		}
-		else if(msg.cmd == "vsentences")
-		{
-			var r = "";
-			for(var i = 0; i < globals.dictionary.sentences.length; i++)
-			{
-				r += globals.dictionary.sentences[i] + "\n";
-			}
-			globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
-		}
 		else if(msg.cmd == "vnew")
 		{
-			var p = votehelpers.startVote(msg);
+			votehelpers.startVote(msg)
 
-			p.then((resp)=>
+			.then((resp)=>
 			{
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
 			})
+
+			.catch((resp)=>{
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
+			});
+
+		}
+		else if(msg.cmd == "vjoin")
+		{
+			votehelpers.joinVotes(msg)
+
+			.then((resp)=>
+			{
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
+			})
+
+			.catch((resp)=>{
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
+			});
 
 		}
 		else if(msg.cmd == "lvotes")
