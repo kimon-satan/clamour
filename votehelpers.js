@@ -128,7 +128,6 @@ exports.handlePhraseComplete = function(msg)
 			else if(isJoin)
 			{
 				vote.joinAvailable[msg.args[1]] = true;
-				//TODO. both votes will need to be updated ugh
 				return globals.Votes.update({_id: vote._id}, {$set: {joinAvailable: vote.joinAvailable}});
 			}
 			else
@@ -143,21 +142,39 @@ exports.handlePhraseComplete = function(msg)
 		}
 	});
 
-	p = p.then(_=>
+	if(isJoin)
 	{
-		//We're ready to start a vote
-		var i = globals.pendingVotes.indexOf(String(vote._id));
-		//Check that this is a pending vote and that the two win conditions are available
-
-		if(i > -1 && (vote.winAvailable[0] && vote.winAvailable[1]))
+		p = p.then(_=>
 		{
-			//console.log("start vote")
-			globals.pendingVotes.splice(i,1);
-			//WARNING: possibility of race condition ... ? probably not as SC records phrases one by one
-			exports.sendVote(vote, vote.num);
-			return Promise.resolve();
-		}
-	})
+			//both votes need to be updated
+			var slot = (vote.joinpre) ? vote.joinpre : vote.joinsuff;
+			return exports.getVoteFromSlot(slot);
+		})
+
+		p = p.then((doc)=>
+		{
+			return globals.Votes.update(doc._id, {$set: {joinAvailable: vote.joinAvailable}});
+		})
+	}
+	else
+	{
+		p = p.then(_=>
+		{
+			//We're ready to start a vote
+			var i = globals.pendingVotes.indexOf(String(vote._id));
+			//Check that this is a pending vote and that the two win conditions are available
+
+			if(i > -1 && (vote.winAvailable[0] && vote.winAvailable[1]))
+			{
+				//console.log("start vote")
+				globals.pendingVotes.splice(i,1);
+				//WARNING: possibility of race condition ... ? probably not as SC records phrases one by one
+				exports.sendVote(vote, vote.num);
+				return Promise.resolve();
+			}
+		})
+
+	}
 
 	p.catch((reason)=>{
 		console.log("Error - phraseComplete: " + reason);
@@ -517,13 +534,13 @@ exports.concludeVote = function(data)
 					var s = data.pair[data.winnerIdx] + " " + doc.pair[doc.winnerIdx]; //the final string
 				}
 
-					//NB. winnerIdx might be adapted at this point to pick the correct sample from SC
-					doc.pair = [s,s];
-					data.pair = [s,s];
-					doc.lock = false;
-					data.lock = false;
+				//NB. winnerIdx might be adapted at this point to pick the correct sample from SC
+				doc.pair = [s,s];
+				data.pair = [s,s];
+				doc.lock = false;
+				data.lock = false;
 
-					return globals.Votes.update(doc._id, doc);
+				return globals.Votes.update(doc._id, doc);
 
 			}
 		})
@@ -539,7 +556,6 @@ exports.concludeVote = function(data)
 	p = p.then(_=>
 	{
 		globals.procs[data._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete.bind(this,data),1500);
-
 	});
 
 	p.catch((err)=>{
@@ -664,17 +680,12 @@ exports.joinVotes = function(msg)
 
 	if(globals.NO_SC)
 	{
-		p = p.then(_=>
-		{
-			//TODO check if both are already closed
-			return Promise.resolve(options.pre + " will be joined to " + options.suff);
-		})
+		//don't need to do anything
 	}
 	else
 	{
 		p = p.then(_=>
 		{
-			//TODO  tell SC to record all the win phrases
 			//Tell SC to record the phrases
 			var joinPhrases = [];
 
@@ -698,8 +709,49 @@ exports.joinVotes = function(msg)
 				}, "127.0.0.1", 57120);
 			}
 
+			return Promise.resolve();
+
 		});
 	}
+
+	p = p.then(_=>
+	{
+		//check if both are already closed
+		if(!votes[0].open && !votes[1].open)
+		{
+			//set the concatText
+			if(votes[0].joinpre)
+			{
+				var s = votes[1].pair[doc.winnerIdx] + " " + votes[0].pair[votes[0].winnerIdx]; //the final string
+			}
+			else
+			{
+				var s = votes[0].pair[votes[0].winnerIdx] + " " + votes[1].pair[votes[1].winnerIdx]; //the final string
+			}
+
+			//NB. winnerIdx might be adapted at this point to pick the correct sample from SC
+			votes[0].pair = [s,s];
+			votes[1].pair = [s,s];
+			votes[0].lock = false;
+			votes[1].lock = false;
+
+			globals.procs[votes[0]._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete.bind(this,votes[0]),1500);
+
+			return Promise.all([
+				globals.Votes.update(votes[0]._id, votes[0]),
+				globals.Votes.update(votes[1]._id, votes[1])
+			]);
+		}
+		else
+		{
+			return Promise.resolve();
+		}
+	})
+
+	p = p.then(_=>
+	{
+		return Promise.resolve(options.pre + " will be joined to " + options.suff);
+	});
 
 	p.catch((err)=>{
 		console.log(err);
@@ -781,13 +833,12 @@ var triggerVoteComplete = function(data)
 		else
 		{
 			console.log("vote full try again");
-			globals.procs[data._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete,1500);
+			globals.procs[data._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete.bind(null, data),1500);
 		}
 		return;
 	}
 
-	globals.currentConcludedVote = data;
-	globals.players.emit('cmd',{cmd: 'pause_vote'});
+
 
 	if(globals.NO_SC)
 	{
@@ -807,9 +858,34 @@ var triggerVoteComplete = function(data)
 		//NB. this needs to be different for join
 		if((data.joinpre || data.joinsuff) && !data.lock)
 		{
-			var idxs = [];
+
 			var p;
-			if(data.joinpre)
+			var idxs = [];
+			var samplesReady = true;
+
+			for(var i = 0; i < 4; i++)
+			{
+				if(!data.joinAvailable[0])
+				{
+					samplesReady = false;
+					break;
+				}
+			}
+
+			if(!samplesReady)
+			{
+				p = globals.Votes.findOne(data._id);
+
+				p = p.then((doc)=>
+				{
+					//samples aren't ready try again in half a second
+					globals.procs[doc._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete.bind(null, doc),500);
+				})
+
+				return;
+
+			}
+			else if(data.joinpre)
 			{
 				p = exports.getVoteFromSlot(data.joinpre);
 				p = p.then((doc)=>{
@@ -848,5 +924,8 @@ var triggerVoteComplete = function(data)
 		}
 
 	}
+
+	globals.players.emit('cmd',{cmd: 'pause_vote'});
+	globals.currentConcludedVote = data;
 
 }
