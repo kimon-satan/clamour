@@ -430,7 +430,7 @@ exports.sendVote = function(data, num)
 						globals.Votes.update({_id: omsg.id}, {$push: {voting: player._id}, $pull: {notvoted: player._id}})
 					);
 					promises.push(
-						globals.UserData.update({_id: player._id},{$set: {currentVoteId: data._id, currentVotePair: player.pair }})
+						globals.UserData.update({_id: player._id},{$set: {currentVoteId: data._id, currentVotePair: data.pair }})
 					);
 
 				}

@@ -611,8 +611,9 @@ function listPlayers(args, room, cb)
 	globals.UserData.find(so).then((docs)=>
 	{
 
-		docs.forEach(function(e)
+		for(var i = 0; i < docs.length; i++)
 		{
+			var e = docs[i];
 			var id = String(e._id);
 			var str = id.substring(0,3) + "..." + id.substring(id.length -3, id.length) ;
 			str += (e.connected) ? " connected " : " dormant ";
@@ -630,12 +631,18 @@ function listPlayers(args, room, cb)
 			}
 			else if(e.mode == "vote")
 			{
-				if(typeof(e.currentVoteId) == "string")str += ", id: " + e.currentVoteId.substring(0,3) + "..." + e.currentVoteId.substring(-3);
-				if(typeof(e.currentVotePair) == "object")str += ", pair: [" + e.currentVotePair[0] + ", " + e.currentVotePair[1] + "]";
+				var vid = String(e.currentVoteId);
+				if(vid.length > 3)
+				{
+					str += ", id: " + vid.substring(0,3) + "..." + vid.substring(-3);
+					if(typeof(e.currentVotePair) == "object" && e.currentVotePair != null)str += ", pair: [" + e.currentVotePair[0] + ", " + e.currentVotePair[1] + "]";
+				}
+
 
 			}
 			results += str + "\n";
-		});
+		}
+
 		cb(results);
 	});
 }
