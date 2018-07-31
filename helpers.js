@@ -572,7 +572,7 @@ exports.playSound = function(options)
 		globals.udpPort.send(
 		{
 			address: "/playStereo",
-			args: argsVote
+			args: args
 		},
 		"127.0.0.1", 57120);
 }

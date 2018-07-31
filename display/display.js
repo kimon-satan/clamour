@@ -236,7 +236,7 @@ Love = function(socket)
 				this.splatManager.transform(msg.val._id, function()
 				{
 							newBranch(blob);
-							this.scene.add(blob.mesh);
+							love.scene.add(blob.mesh);
 				});
 
 			}

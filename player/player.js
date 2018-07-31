@@ -205,7 +205,8 @@ Player = function(isDummy)
 		console.log("inform:" , msg);
 		msg._id = this.data._id;
 		this.socket.emit('update_user', msg); //tell the server that we have changed mode
-	}
+		
+	}.bind(this);
 
 	var parseMsgParams = function(msg)
 	{

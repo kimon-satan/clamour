@@ -2,16 +2,13 @@ TODO
 
 ### Playtest Prep ###
 
-	- check story works
-	- check chat and love works
-	- perhaps combine SC files
 	- VM test with many points - add some extras if time.
 
 ### Votes ###
 
+	- moving votes around / particularly making space for prepend append
 	- prevent overwriting slots and other bad things
 	- command to conclude stalled votes
-	- moving votes around / particularly making space for prepend append
 
 	- prevent vote stallers - options:
 		- client side timer (weak if client is actually broken)
@@ -29,7 +26,7 @@ TODO
 
 
 ### VM Deployment ###
-	- TODO
+
 	- deploy on VM and test
 
 ### Refactoring/ Tidying ####
@@ -45,6 +42,8 @@ TODO
 
 ### Love ###
 	- why does updatereactionMaps happen 4 times on iface init ?
+	- investigate web audio overlap bug
 	- splats rendered on mobile screen
+	- linear progression of blobs
 	- adjust states / more variation between blobs
 	- poisson disk for splat distribution

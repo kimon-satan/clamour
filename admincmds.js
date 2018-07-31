@@ -479,11 +479,9 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "play")
 		{
-			helpers.parseOptions(msg.args, function(options)
-			{
-				helpers.playSound(options);
-				globals.admin.emit('server_report', {id: msg.cli_id});
-			});
+			var options = helpers.parseOptions(msg.args);
+			helpers.playSound(options);
+			globals.admin.emit('server_report', {id: msg.cli_id});
 		}
 		else if(msg.cmd == "killsound")
 		{
