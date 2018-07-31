@@ -1,10 +1,25 @@
 TODO
 
+### Playtest Prep ###
+
+	- check story works
+	- check chat and love works
+	- perhaps combine SC files
+	- VM test with many points - add some extras if time.
+
 ### Votes ###
 
 	- prevent overwriting slots and other bad things
 	- command to conclude stalled votes
 	- moving votes around / particularly making space for prepend append
+
+	- prevent vote stallers - options:
+		- client side timer (weak if client is actually broken)
+		- server side
+			- starts a new thread if the old one is stalled
+			- time stamps votes and removes and resets if too long
+
+
 
 	- more font colour combinations ?
 	- prevent sample duplicates in SC
@@ -15,6 +30,7 @@ TODO
 
 ### VM Deployment ###
 	- TODO
+	- deploy on VM and test
 
 ### Refactoring/ Tidying ####
 

@@ -838,7 +838,7 @@ var triggerVoteComplete = function(data)
 		return;
 	}
 
-
+	globals.currentConcludedVote = data;
 
 	if(globals.NO_SC)
 	{
@@ -874,6 +874,7 @@ var triggerVoteComplete = function(data)
 
 			if(!samplesReady)
 			{
+				globals.currentConcludedVote = null;
 				p = globals.Votes.findOne(data._id);
 
 				p = p.then((doc)=>
@@ -881,7 +882,6 @@ var triggerVoteComplete = function(data)
 					//samples aren't ready try again in half a second
 					globals.procs[doc._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete.bind(null, doc),500);
 				})
-
 				return;
 
 			}
@@ -926,6 +926,6 @@ var triggerVoteComplete = function(data)
 	}
 
 	globals.players.emit('cmd',{cmd: 'pause_vote'});
-	globals.currentConcludedVote = data;
+
 
 }
