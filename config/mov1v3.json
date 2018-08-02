@@ -1,0 +1,324 @@
+[
+	{"name": "pre_section", "clips":
+		[
+			{}
+		]
+	},
+	{"name": "chapter_1", "clips":
+		[
+			{
+			"img": "chapter1/waves-1.jpg",
+			"texts": [
+				"Our landless world",
+				"Our story sets out in a distant past"
+			]
+			},
+
+			{ "img": "chapter1/k-copy.jpg",
+				"texts":
+				[
+					"and our mothership within it.",
+					"from a unique place."
+				]
+			},
+
+			{ "img": "chapter1/roughs-2-orig-colour.jpg",
+				"texts":
+				[
+					"The base for our nation and our struggle for survival,",
+					"The home of a curious people,"
+				]
+			},
+
+			{ "img": "chapter1/roughs-3.jpg",
+				"texts":
+				[
+					"a home we proudly call Sealand.",
+					"the historic nation of Sealand."
+				]
+			}
+		]
+	},
+	{"name": "chapter2", "clips":
+		[
+			{
+				"texts":
+				[
+					"But life is hard",
+					"But Sealand wasn't always this way"
+				]
+			},
+			{ "img": "chapter2/boat1.jpg",
+				"texts":
+				[
+					"We eke out an existence",
+					"made a surprise discovery"
+				]
+			},
+			{ "img": "chapter2/mammoth-crop1.jpg"},
+			{ "img": "chapter2/trolley-1.jpg",
+				"texts":
+				[
+					"Resources are scarce",
+					"Relics from an ancient past"
+				]
+			},
+			{ "img": "chapter2/skull-2.jpg",
+				"texts":
+				[
+					"and not all of us have survived",
+					"shedding new light on Sealand's history"
+				]
+			}
+		]
+	},
+	{"name": "chapter3", "clips":
+		[
+			{
+				"texts":
+				[
+					"But things weren't always this way ...",
+					"We now know ..."
+				]
+			},
+			{ "img": "chapter3/Doggerland-CGI-3-rev.jpg",
+				"texts":
+				[
+					"We once lived in a fertile and plentiful land",
+					"Sealand was once a fertile and plentiful land"
+				]
+			},
+			{ "img": "chapter3/Doggerland-CGI-1.jpg",
+				"texts":
+				[
+					"Separated from the mainlands by sea."
+				]
+			},
+			{ "img": "chapter3/Doggerland-CGI-4.jpg",
+				"texts":
+				[
+					"Technologically and culturally advanced,",
+					"A technologically and culturally advanced nation,"
+				]
+			},
+			{ "img": "chapter3/Doggerland-CGI-5.jpg",
+				"texts":
+				[
+					"We built a just and equal society,",
+					"With a developed system of governance"
+				]
+			},
+			{ "img": "chapter3/Doggerland-CGI-2.jpg",
+				"texts":
+				[
+					"Which we believed could spread far and wide.",
+					"And an appetite for expansion."
+				]
+			}
+
+		]
+	},
+	{"name": "chapter4", "clips":
+		[
+			{
+				"texts":
+				[
+					"At a key point in our past ...",
+					"What's more ..."
+				]
+			},
+			{ "img": "chapter4/marine-archeology-2.jpg",
+				"texts":
+				[
+					"Surveys of the surrounding seafloor",
+					"Newly recovered documents"
+				]
+			},
+			{ "img": "chapter4/clipboard-1.jpg",
+				"texts":
+				[
+					"Revealed an exciting possibility",
+					"Perfectly preserved on the seafloor"
+				]
+			},
+			{ "img": "chapter4/dday-1.jpg",
+				"texts":
+				[
+					"to engineer our oceans",
+					"have revealed a bloody past"
+				]
+			},
+			{},
+			{ "img": "chapter4/boardroom.jpg",
+				"texts":
+				[
+					"Our elders gathered together",
+					"At the height of their civilisation"
+				]
+			},
+			{ "img": "chapter4/classified-doc-1.jpg",
+				"texts":
+				[
+					"and devised a radical plan",
+					"a radical plan was devised"
+				]
+			},
+			{ "img": "chapter4/drainage1.jpg",
+				"texts":
+				[
+					"Our aim: to unify Sealand with the mainlands",
+					"To weld Sealand to the mainlands"
+				]
+			},
+			{ "img": "chapter4/drainage2.jpg",
+				"texts":
+				[
+					"By draining the waters between us",
+					"By draining the waters between them"
+				]
+			}
+
+		]
+	},
+	{"name": "chapter5", "clips":
+		[
+			{
+				"texts":
+				[
+					"However ..."
+				]
+			},
+			{ "img": "chapter5/Shadowy-figures-1-mod.jpg",
+				"texts":
+				[
+					"As we progressed with our plan, mistrust developed between us",
+					"As they progressed with their plan, mistrust developed"
+				]
+			},
+			{ "img": "chapter5/pitchforks.jpg",
+				"texts":
+				[
+					"Dissent spread"
+				]
+			},
+			{ "img": "chapter5/Medieval-weapons.jpg",
+				"texts":
+				[
+					"And open conflict ensued"
+				]
+			},
+			{ "img": "chapter5/militias2.jpg",
+				"texts":
+				[
+					"Militias conspired to re-flood our newly created land",
+					"Militias conspired to re-flood the newly created land"
+				]
+			},
+			{ "img": "chapter5/militias3.jpg",
+				"texts":
+				[
+					"But their sabotage had severe repercussions",
+					"But the sabotage had severe repercussions"
+				]
+			},
+			{ "img": "chapter5/flood6.jpg",
+				"texts":
+				[
+					"Which resulted in mutual destruction"
+				]
+			},
+			{ "img": "chapter5/overhead.jpg",
+				"texts":
+				[
+					"Soon all the lands were drowned"
+				]
+			},
+			{
+				"texts":
+				[
+					"Our people themselves largely perished",
+					"The Sealanders themselves surely perished"
+				]
+			}
+
+		]
+	},
+	{"name": "chapter6", "clips":
+		[
+			{ "img": "chapter6/waves-1.jpg",
+				"texts":
+				[
+					"Yet for some of us there was salvation$Upon the waters of our drowned land",
+					"Yet for some there was salvation$Upon the waters of their drowned land"
+				]
+			},
+
+			{ "img": "chapter6/roughs-2-orig-colour.jpg",
+				"texts":
+				[
+					"Our people survive... ",
+					"A trace remained..."
+				]
+			},
+
+			{ "img": "chapter6/blueprint.jpg",
+				"texts":
+				[
+					"In the hour of our near-destruction a stronghold was built",
+					"In the hour of their near-destruction a stronghold was built"
+				]
+			},
+
+			{ "img": "chapter6/k-copy.jpg",
+				"texts":
+				[
+					"Now, as we stand alone in this world",
+					"They found themselves alone in the world"
+				]
+			},
+
+			{ "img": "chapter6/Sealand-coins.jpg",
+				"texts":
+				[
+					"We must create a new nation ",
+					"and determined to create a new nation"
+				]
+			},
+
+			{ "img": "chapter6/Sealand-passport.jpg",
+				"texts":
+				[
+					"We must draft a constitution",
+					"A new constitution was written"
+				]
+			},
+
+			{ "img": "chapter6/sealand-swing.jpg",
+				"texts":
+				[
+					"We will ensure a better future",
+					"With a singular aim:"
+				]
+			},
+
+			{ "img": "chapter6/waves-1.jpg",
+				"texts":
+				[
+					"History must not be allowed to repeat itself",
+					"History must not be allowed to repeat itself"
+				]
+			}
+		]
+	},
+	{"name": "end_section", "clips":
+		[
+			{
+				"texts":
+				[
+					"And so for the sake of the nation, let us begin. Let us draft the constitution",
+					"Let us recreate that crucial moment in history. Let us draft a constitution"
+				]
+			}
+		]
+	}
+]

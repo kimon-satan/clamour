@@ -104,10 +104,22 @@ function setupInstructions()
 
 function story(img)
 {
+	//TODO ensure images always max size and centered
+
 	$('#displayscreen').empty();
 	if(img != "blank")
 	{
-		$('#displayscreen').append("<div id='storyContainer'><img src=" + img + "></div>");
+		var imgtag = $("<img src=" + img + ">");
+		var imgdiv = $("<div id='storyContainer'></div>");
+
+
+		imgtag.css('width', innerWidth);
+		//imgtag.css('height', innerHeight);
+
+		imgdiv.append(imgtag);
+
+
+		$('#displayscreen').append(imgdiv);
 	}
 
 	mode = "story";
