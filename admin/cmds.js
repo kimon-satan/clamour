@@ -91,7 +91,8 @@ function soundCmd(cmd, args, cli)
 var cmdList = [
 	"killsound",
 	"play",
-	"reloadsamples"
+	"reloadsamples",
+	"setscaddr"
 ];
 
 for(var i = 0; i < cmdList.length; i++)

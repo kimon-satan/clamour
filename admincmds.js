@@ -538,6 +538,12 @@ exports.response = function(socket)
 			}, globals.scAddr, 57120);
 			globals.admin.emit('server_report', {id: msg.cli_id});
 		}
+		else if(msg.cmd == "setscaddr")
+		{
+				var options = helpers.parseOptions(msg.args);
+				globals.scAddr = options.addr;
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: "new address is " + options.addr});
+		}
 	});
 
 	/////////////////////////////////////////////////////////////////////
