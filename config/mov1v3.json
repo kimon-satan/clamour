@@ -6,7 +6,8 @@
 	},
 	{"name": "chapter_1", "clips":
 		[
-			{
+			{"audio": {"path" : "story/chapter1", "loop": "false", "in" : 1.0, "out" : 2.0, "amp" : 0.2, "solo": "false", "dur": 120},
+
 			"img": "chapter1/waves-1.jpg",
 			"texts": [
 				"Our landless world",
@@ -14,7 +15,9 @@
 			]
 			},
 
-			{ "img": "chapter1/k-copy.jpg",
+			{
+				"audio": {},
+				"img": "chapter1/k-copy.jpg",
 				"texts":
 				[
 					"and our mothership within it.",
@@ -22,7 +25,9 @@
 				]
 			},
 
-			{ "img": "chapter1/roughs-2-orig-colour.jpg",
+			{
+				"audio": {},
+				"img": "chapter1/roughs-2-orig-colour.jpg",
 				"texts":
 				[
 					"The base for our nation and our struggle for survival,",
@@ -30,7 +35,9 @@
 				]
 			},
 
-			{ "img": "chapter1/roughs-3.jpg",
+			{
+				"audio": {},
+				"img": "chapter1/roughs-3.jpg",
 				"texts":
 				[
 					"a home we proudly call Sealand.",
@@ -41,6 +48,7 @@
 	},
 	{"name": "chapter2", "clips":
 		[
+
 			{
 				"texts":
 				[
@@ -48,14 +56,25 @@
 					"But Sealand wasn't always this way"
 				]
 			},
-			{ "img": "chapter2/boat1.jpg",
+			{
+				"audio": {"path" : "story/sailing", "loop": "true", "in" : 0.2, "out" : 0.5, "amp" : 0.2, "solo": "true"},
+				"img": "chapter2/boat1.jpg",
 				"texts":
 				[
-					"We eke out an existence",
+					"Scavenging from the waters that surround us...",
+					"Recently, an archaeological research vessel"
+				]
+			},
+			{
+			"audio": {"path" : "story/underwater1", "loop": "true", "in" : 0.2, "out" : 0.5, "amp" : 0.2, "solo": "true"},
+			"img": "chapter2/marine-archeology-1.jpg",
+				"texts":
+				[
+					"we eke out an existence",
 					"made a surprise discovery"
 				]
 			},
-			{ "img": "chapter2/mammoth-crop1.jpg"},
+			{ "img": "chapter2/mammoth-crop1.jpg", "texts":[]},
 			{ "img": "chapter2/trolley-1.jpg",
 				"texts":
 				[

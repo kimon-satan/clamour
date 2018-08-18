@@ -154,6 +154,7 @@ exports.response = function(socket)
 		else if(msg.cmd == "story_newline")
 		{
 			var txts = globals.story[globals.storyChapter].clips[globals.storyClip].texts;
+			//catch error here
 			if(txts.length > 1 && globals.storyRooms.length > 1)
 			{
 				//send the new line to room 0
