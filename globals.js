@@ -12,10 +12,9 @@ io = require('socket.io')(http);
 exports.port = 80;
 
 //simple db using monk & mongodb
-
 exports.MONK = require('monk');
+exports.URL = 'localhost:27017/ConditionalLove';
 exports.DB = exports.MONK(exports.URL);
-exports.DB .addMiddleware(require('monk-middleware-debug'))
 
 exports.DB.then(() => {
 	console.log('Connected correctly to server')
