@@ -495,7 +495,7 @@ exports.loadStory = function(cb)
 		address: "/loadSamples",
 		args: [globals.settings.samplePath]
 	},
-	"127.0.0.1", 57120);
+	globals.scAddr, 57120);
 
 	//load the story object
 
@@ -574,7 +574,7 @@ exports.playSound = function(options)
 			address: "/playStereo",
 			args: args
 		},
-		"127.0.0.1", 57120);
+		globals.scAddr, 57120);
 }
 
 exports.startStoryClip = function(room)
@@ -617,7 +617,7 @@ exports.startStoryClip = function(room)
 		{
 			address: "/allOff",
 		},
-		"127.0.0.1", 57120);
+		globals.scAddr, 57120);
 	}
 
 	//NB. at some point we might need the option not to clear the screen

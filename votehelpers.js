@@ -11,7 +11,7 @@ exports.loadDictionary = function(cb)
 	// 	address: "/loadSamples",
 	// 	args: [globals.settings.samplePath]
 	// },
-	// "127.0.0.1", 57120);
+	// globals.scAddr, 57120);
 
 	//load the story object
 
@@ -326,12 +326,12 @@ exports.startVote = function(msg)
 			globals.udpPort.send({
 					address: "/recordWinPhrase",
 					args: [String(vote._id) + "_win", winPair[0],winPair[1]],
-			}, "127.0.0.1", 57120);
+			}, globals.scAddr, 57120);
 
 			globals.udpPort.send({
 					address: "/recordPhrases",
 					args: [String(vote._id), pair[0],pair[1]],
-			}, "127.0.0.1", 57120);
+			}, globals.scAddr, 57120);
 
 			return Promise.resolve();
 		});
@@ -706,7 +706,7 @@ exports.joinVotes = function(msg)
 						joinPhrases[1],
 						joinPhrases[2],
 						joinPhrases[3]],
-				}, "127.0.0.1", 57120);
+				}, globals.scAddr, 57120);
 			}
 
 			return Promise.resolve();
@@ -911,7 +911,7 @@ var triggerVoteComplete = function(data)
 				globals.udpPort.send({
 						address: "/voteComplete", //pause audio in SC
 						args: [String(data._id) + "_join_" + winIdx + "_7"]
-				}, "127.0.0.1", 57120);
+				}, globals.scAddr, 57120);
 			})
 
 		}
@@ -920,7 +920,7 @@ var triggerVoteComplete = function(data)
 			globals.udpPort.send({
 					address: "/voteComplete", //pause audio in SC
 					args: [String(data._id) + "_win_" + data.winnerIdx + "_7"]
-			}, "127.0.0.1", 57120);
+			}, globals.scAddr, 57120);
 		}
 
 	}

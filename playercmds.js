@@ -155,7 +155,7 @@ exports.response = function(socket)
 			globals.udpPort.send({
 					address: "/speakPhrase",
 					args: [String(data._id), msg.choice, usrobj.voiceNum, usrobj.voicePan, usrobj.voicePitch]
-			}, "127.0.0.1", 57120);
+			}, globals.scAddr, 57120);
 
 
 			globals.display.emit('cmd', {
@@ -231,7 +231,7 @@ exports.response = function(socket)
 		globals.udpPort.send({
 				address: "/splat",
 				args: args,
-		}, "127.0.0.1", 57120);
+		}, globals.scAddr, 57120);
 
 
 		globals.display.emit('cmd', {type: "splat", val: msg});

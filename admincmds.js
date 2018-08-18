@@ -431,7 +431,7 @@ exports.response = function(socket)
 					address: "/resetPhrases",
 					args: []
 			},
-			"127.0.0.1", 57120);
+			globals.scAddr, 57120);
 		}
 		else if(msg.cmd == "stats")
 		{
@@ -460,7 +460,7 @@ exports.response = function(socket)
 					address: "/allOff",
 					args: []
 			},
-			"127.0.0.1", 57120);
+			globals.scAddr, 57120);
 			globals.admin.emit('server_report', {id: msg.cli_id});
 			globals.display.emit("cmd", {type: "end"});
 			globals.DisplayState.mode = "end";
@@ -521,7 +521,7 @@ exports.response = function(socket)
 				address: "/loadSamples",
 				args: [globals.settings.samplePath]
 			},
-			"127.0.0.1", 57120);
+			globals.scAddr, 57120);
 			globals.admin.emit('server_report', {id: msg.cli_id});
 		}
 		else if(msg.cmd == "play")
@@ -535,7 +535,7 @@ exports.response = function(socket)
 			globals.udpPort.send({
 					address: "/allOff",
 					args: []
-			}, "127.0.0.1", 57120);
+			}, globals.scAddr, 57120);
 			globals.admin.emit('server_report', {id: msg.cli_id});
 		}
 	});

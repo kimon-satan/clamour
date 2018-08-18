@@ -21,7 +21,7 @@ exports.response = function(socket)
 		globals.udpPort.send({
 				address: "/addTone",
 				args: args,
-		}, "127.0.0.1", 57120);
+		}, globals.scAddr, 57120);
 
 	})
 
@@ -40,7 +40,7 @@ exports.response = function(socket)
 		globals.udpPort.send({
 				address: "/updateTone",
 				args: args,
-		}, "127.0.0.1", 57120);
+		}, globals.scAddr, 57120);
 
 	})
 
@@ -59,7 +59,7 @@ exports.response = function(socket)
 		globals.udpPort.send({
 				address: "/endTone",
 				args: args,
-		}, "127.0.0.1", 57120);
+		}, globals.scAddr, 57120);
 
 		globals.players.to(msg.id).emit('cmd', {cmd: 'set_params', value: {isMobile: true, isSplat: false}});
 
@@ -80,7 +80,7 @@ exports.response = function(socket)
 		globals.udpPort.send({
 				address: "/startCrawler",
 				args: args,
-		}, "127.0.0.1", 57120);
+		}, globals.scAddr, 57120);
 
 	})
 
@@ -98,7 +98,7 @@ exports.response = function(socket)
 		globals.udpPort.send({
 				address: "/updateCrawler",
 				args: args,
-		}, "127.0.0.1", 57120);
+		}, globals.scAddr, 57120);
 
 	})
 
@@ -116,7 +116,7 @@ exports.response = function(socket)
 		globals.udpPort.send({
 				address: "/endCrawler",
 				args: args,
-		}, "127.0.0.1", 57120);
+		}, globals.scAddr, 57120);
 
 	})
 
@@ -135,7 +135,7 @@ exports.response = function(socket)
 		globals.udpPort.send({
 				address: "/transTone",
 				args: args,
-		}, "127.0.0.1", 57120);
+		}, globals.scAddr, 57120);
 	})
 
 	socket.on('vidUpdate', function(msg){

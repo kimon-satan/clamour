@@ -111,8 +111,10 @@ exports.currentConcludedVote = null;
 
 var osc = require("osc");
 
+exports.scAddr = "127.0.0.1";
+
 exports.udpPort = new osc.UDPPort({
-		localAddress: "127.0.0.1",
+		localAddress: "server.clamour.info",
 		localPort: 12345
 });
 
