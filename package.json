@@ -1,21 +1,22 @@
 {
-  "name": "clamour",
-  "version": "0.0.0",
-  "description": "A performance interface for mobile phones",
-  "main": "server.js",
-  "author": "Simon Katan",
-  "private": true,
-  "license": "BSD",
-  "dependencies": {
-    "express": "4.13.4",
-    "mongodb": "^2.2.33",
-    "monk": "^6.0.5",
-    "osc": "^2.2.0",
-    "path": "^0.12.7",
-    "random-words": "0.0.1",
-    "socket.io": "^2.0.4"
-  },
-  "scripts": {
-    "start": "node server.js"
-  }
+	"name": "clamour",
+	"version": "1.0.0",
+	"description": "A performance interface for mobile phones",
+	"main": "server.js",
+	"author": "Simon Katan",
+	"private": true,
+	"license": "BSD",
+	"dependencies": {
+		"express": "^4.15.3",
+		"socket.io": "^2.0.4",
+		"mongodb": "^2.2.33",
+		"monk": "^6.0.5",
+		"osc": "^2.2.0",
+		"path": "^0.12.7",
+		"import": "0.0.6",
+		"random-words": "^1.1.0"
+	},
+	"scripts": {
+		"start": "node server.js"
+	}
 }

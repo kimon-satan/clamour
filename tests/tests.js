@@ -9,7 +9,8 @@ $(document).ready(function()
 		n.tableid = 'player_' + i;
 		n.updateTable = updateTable;
 		players.push(n);
-		$('#usertable').append('<tr id ="' + n.tableid + '" ><td>'+ i +'</td></tr>')
+		$('#usertable').append('<tr id ="' + n.tableid + '" ><td>'+ i +'</td></tr>');
+		n.updateTable(n.tableid, n.data);
 	}
 
 });
@@ -26,6 +27,6 @@ function updateTable (tableid , data)
 	else if(this.data.mode == "vote")
 	{
 		$('#' + tableid).append('<td>' + data.currentVoteId + ': '+
-		data.currentVotePair[0] + ',' +data.currentVotePair[1] + '</td>')
+		data.currentVotePair[0] + ',' +data.currentVotePair[1] + "," + data.state + '</td>' );
 	}
 }

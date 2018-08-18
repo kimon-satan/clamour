@@ -27,9 +27,8 @@ var cmdList = [
 	"sgoto",
 	"ldisplay", //display stats
 
-	"vpairs", //vote stuff
-	"vsentences",
 	"vnew",
+	"vjoin",
 	"lvotes"
 ];
 
@@ -69,6 +68,7 @@ var cmdList = [
 	"dinstruct",
 	"dlove",
 	"dstory",
+	"dvote",
 	"dclear",
 	"dtransform",
 	"dsplat"
@@ -222,6 +222,27 @@ CLMR_CMDS["_irooms"] = function(args, cli){
 
 }
 
+CLMR_CMDS["_ivotes"] = function(args, cli){
+
+  if(cli.proc != undefined){
+    cli.println("busy");
+    return;
+  }
+
+  var proc = {};
+  proc.id = generateTempId(8);
+  proc.loop = setInterval(function(){
+
+    var msgobj = {cmd: "lvotes", args: args, cli_id: cli.idx, mode: cli.cli_mode, isproc: true}
+    socket.emit('cmd', msgobj);
+
+  }, 2000);
+
+  gProcs[proc.id] = proc;
+  cli.proc = proc;
+
+}
+
 
 CLMR_CMDS["_closeall"] = function(args,  cli)
 {
@@ -275,5 +296,41 @@ CLMR_CMDS["_n"] = function(args,  cli)
     }
 //    cli.newCursor();
 }
+
+CLMR_CMDS["_makedummies"] = function(args,  cli)
+{
+	var num = 100;
+	for(var i = 0; i < args.length; i++)
+	{
+		if(args[i][0] == 'num')
+		{
+			num = Number(args[i][1]);
+		}
+	}
+
+	if(typeof(num) != "number")num = 100;
+
+	for(var i = 0; i < num; i++)
+	{
+		n = new Player(true);
+		dummyPlayers.push(n);
+	}
+
+  cli.newCursor();
+}
+
+CLMR_CMDS["_killdummies"] = function(args,  cli)
+{
+
+		for(var i = 0; i < dummyPlayers.length; i++)
+		{
+			dummyPlayers[i].killMe();
+			delete dummyPlayers[i];
+		}
+
+		dummyPlayers = [];
+		basicCmd("cleanup", [], cli);
+}
+
 
 //TODO there will need to be more story commands here.

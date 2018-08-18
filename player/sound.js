@@ -2,6 +2,7 @@
 
 //NB this will need to be split in AC and synth classes if there are multiple sound streams
 
+var grainWindow;
 
 Sound.prototype.init = function(){
 
@@ -49,6 +50,7 @@ Sound.prototype.init = function(){
 
   this.loadSample(globals.samplePath + "232211_spit.wav");
 
+	console.log("initialised");
 
 }
 
@@ -215,8 +217,18 @@ Sound.prototype.nextGrain = function()
   if (this.applyGrainWindow)
   {
     var windowDuration = this.parameters.grainDuration.value / pitchRate;
-    grainWindowNode.gain.value = 0.0; // make default value 0
-    grainWindowNode.gain.setValueCurveAtTime(grainWindow, this.realTime, windowDuration);
+    grainWindowNode.gain.setValueAtTime(0.0, this.realTime); // make default value 0
+		try
+		{
+			grainWindowNode.gain.setValueCurveAtTime(grainWindow, this.realTime, windowDuration);
+		}
+		catch(e)
+		{
+			//TODO investigate overlap bug here
+			//
+			console.log(e);
+		}
+
   }
 
 

@@ -1,24 +1,49 @@
 TODO
 
-- votes initial pool size
-- votes implement timeouts for real client
-- votes audio
-- votes deal with concluded Votes
-- then stage two
+### Playtest Prep ###
 
-- try / catch for admin commands
-- story stuff will need refactoring into a different place
-- investigate text to speech options
-- fadeIn and fadeOut for images ?
+	- VM test with many points - add some extras if time.
+
+### Votes ###
+
+	- moving votes around / particularly making space for prepend append
+	- prevent overwriting slots and other bad things
+	- command to conclude stalled votes
+
+	- prevent vote stallers - options:
+		- client side timer (weak if client is actually broken)
+		- server side
+			- starts a new thread if the old one is stalled
+			- time stamps votes and removes and resets if too long
 
 
-- display data persistence
-- asynchronous error logging (maybe...)
+
+	- more font colour combinations ?
+	- prevent sample duplicates in SC
+
+	- offering user input
 
 
-FIXES (in order of importance)
 
-- why does updatereactionMaps happen 4 times on iface init ?
-- splats rendered on mobile screen
-- adjust states / more variation between blobs
-- poisson disk for splat distribution
+### VM Deployment ###
+
+	- deploy on VM and test
+
+### Refactoring/ Tidying ####
+
+	- testing framework should be from admin not separate browser
+	- deal with/ check reset client issues - check all flags are cleared
+	- more robust error handling
+		- make sure every DB request is caught somehow
+		- no need for try/ catch -  errors can be thrown if caught
+	- refactor story
+	- display data persistence
+
+
+### Love ###
+	- why does updatereactionMaps happen 4 times on iface init ?
+	- investigate web audio overlap bug
+	- splats rendered on mobile screen
+	- linear progression of blobs
+	- adjust states / more variation between blobs
+	- poisson disk for splat distribution

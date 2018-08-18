@@ -1,5 +1,6 @@
 var globals = require('./globals.js');
 var helpers = require('./helpers.js');
+var votehelpers = require('./votehelpers.js');
 require('./libs/utils.js'); //just for generateTempId
 
 
@@ -156,7 +157,8 @@ exports.response = function(socket)
 		else if(msg.cmd == "story_newline")
 		{
 			var txts = globals.story[globals.storyChapter].clips[globals.storyClip].texts;
-			if(txts)
+			//catch error here
+			if(txts.length > 1 && globals.storyRooms.length > 1)
 			{
 				if(txts.length > 1 && globals.storyRooms.length > 1)
 				{
@@ -380,17 +382,17 @@ exports.response = function(socket)
 
 				var users = [];
 
-				docs.forEach(function(e)
+				for(var i = 0; i < docs.length; i++)
 				{
-					delete globals.sockets[e._id]; //does this work ?
-					delete globals.checkins[e._id];
-					clearInterval(globals.procs[e._id]);
-					globals.UserData.remove(e._id);
-					users.push(e._id);
-				});
+					delete globals.sockets[docs[i]._id]; //does this work ?
+					delete globals.checkins[docs[i]._id];
+					clearInterval(globals.procs[docs[i]._id]);
+					globals.UserData.remove(docs[i]._id);
+					users.push(docs[i]._id);
+				}
 
-				globals.Rooms.update({},{$pull: {population: {$in: users }}}); //remove these users from anyglobals.Rooms
-				globals.admin.emit('server_report', {id: msg.cli_id, msg: docs.length + " disconnected users removed "});
+				globals.Rooms.update({},{$pull: {population: {$in: users }}},{multi: true}); //remove these users from anyglobals.Rooms
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: users.length + " disconnected users removed "});
 			});
 		}
 		else if(msg.cmd == "resetall")
@@ -401,21 +403,39 @@ exports.response = function(socket)
 				globals.sockets = {};
 				globals.UserData.remove({});
 				globals.Votes.remove({});
+				globals.voteDisplaySlots =
+				{
+					a: [0,0,0,0],
+					b: [0,0,0,0]
+				};
+				globals.checkins = {};
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: "all databases reset", room: ""});
 				globals.players.emit('whoareyou'); //causes any connected players to reset
-				Object.keys(globals.procs).forEach(function(id)
-				{
-					clearInterval(globals.procs);
-				});
+
 			})
 			globals.DisplayState.mode = "instruct";
 			globals.display.emit("cmd", {type: "instruct"});
 			globals.display.emit('cmd', {type: 'clear_display'});
 			globals.storyChapter = 0;
 			globals.storyClip = 0;
+
+			var keys = Object.keys(globals.procs);
+			for(var i = 0; i < keys.length; i++)
+			{
+				clearInterval(globals.procs[keys[i]]);
+				clearTimeout(globals.procs[keys[i]]);
+			}
+
+			globals.udpPort.send(
+			{
+					address: "/resetPhrases",
+					args: []
+			},
+			"127.0.0.1", 57120);
 		}
 		else if(msg.cmd == "stats")
 		{
+			//TODO make istats
 
 			globals.UserData.find({},'connected').then((docs)=>{
 				var resp = "";
@@ -447,96 +467,41 @@ exports.response = function(socket)
 			globals.players.emit('cmd', {cmd: 'change_mode', value: {mode: "blank"}});
 
 		}
-		else if(msg.cmd == "vpairs")
-		{
-			helpers.parseOptions(msg.args, function(options)
-			{
-				var r = "";
-
-				if(options.type != undefined)
-				{
-					var k = globals.dictionary.wordPairs[options.type];
-				}
-				else
-				{
-					var k = Object.keys(globals.dictionary.wordPairs);
-				}
-
-
-				if(k != undefined)
-				{
-					for(var i = 0; i < k.length; i++)
-					{
-						r += k[i] + "\n";
-					}
-				}
-				else
-				{
-					r = options.type + " not found";
-				}
-
-				globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
-			});
-		}
-		else if(msg.cmd == "vsentences")
-		{
-			var r = "";
-			for(var i = 0; i < globals.dictionary.sentences.length; i++)
-			{
-				r += globals.dictionary.sentences[i] + "\n";
-			}
-			globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
-		}
 		else if(msg.cmd == "vnew")
 		{
-			helpers.parseOptions(msg.args, function(options)
+			votehelpers.startVote(msg)
+
+			.then((resp)=>
 			{
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
+			})
 
-				var r = "choice: ";
-				var t = (options.type != undefined) ? options.type : helpers.choose(Object.keys(globals.dictionary.wordPairs));
-				var num = (options.num != undefined) ? options.num : 1;
-				var p = helpers.choose(globals.dictionary.wordPairs[t]);
+			.catch((resp)=>{
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
+			});
 
-				for(var i = 0; i < p.length; i++)
-				{
-					r += p[i] + ", ";
-				}
+		}
+		else if(msg.cmd == "vjoin")
+		{
+			votehelpers.joinVotes(msg)
 
-				helpers.useRoom(msg, function(rm)
-				{
-					var promise = globals.Rooms.find({room: rm});
+			.then((resp)=>
+			{
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
+			})
 
-					promise = promise.then((docs)=>
-					{
-						globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
-						return globals.Votes.insert({ pair: p, type: t, scores: [0,0], voting: [], voted: [], notvoted: docs[0].population, population: docs[0].population.length});
-					})
-
-					promise = promise.then((data)=>
-					{
-						helpers.sendVote(data, num);
-					});
-
-				});
-
+			.catch((resp)=>{
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
 			});
 
 		}
 		else if(msg.cmd == "lvotes")
 		{
-			var p = globals.Votes.find({});
-
-			p.then((docs)=>{
-				var r = "";
-				for(var i = 0; i < docs.length; i++)
-				{
-					var id = String(docs[i]._id);
-					var idstr = id.substring(0,3) + "..." + id.substring(id.length -3, id.length);
-					r += idstr + ", population: " + docs[i].population + ", voted: " + docs[i].voted.length + "\n";
-				}
-				globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
-			});
-
+			//make a list of votes
+			votehelpers.listVotes().then((doc)=>
+			{
+				globals.admin.emit('server_report', {id: msg.cli_id, isproc: msg.isproc , msg: doc});
+			})
 		}
 
 
@@ -561,11 +526,9 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "play")
 		{
-			helpers.parseOptions(msg.args, function(options)
-			{
-				helpers.playSound(options);
-				globals.admin.emit('server_report', {id: msg.cli_id});
-			});
+			var options = helpers.parseOptions(msg.args);
+			helpers.playSound(options);
+			globals.admin.emit('server_report', {id: msg.cli_id});
 		}
 		else if(msg.cmd == "killsound")
 		{
@@ -593,6 +556,12 @@ exports.response = function(socket)
 		{
 			globals.DisplayState.mode = "love";
 			globals.display.emit("cmd", {type: "love"});
+			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
+		}
+		else if(msg.cmd == "dvote")
+		{
+			globals.display.emit("cmd", {type: "vote", cmd: "new"});
+			globals.voteDisplayIndexes = {};
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
 		else if(msg.cmd == "dstory")
@@ -674,6 +643,7 @@ exports.response = function(socket)
 }
 
 //////////////////////HELPER FUNCTIONS/////////////////////////
+//TODO MOVE TO HELPERS ?
 
 
 function listPlayers(args, room, cb)
@@ -689,8 +659,9 @@ function listPlayers(args, room, cb)
 	globals.UserData.find(so).then((docs)=>
 	{
 
-		docs.forEach(function(e)
+		for(var i = 0; i < docs.length; i++)
 		{
+			var e = docs[i];
 			var id = String(e._id);
 			var str = id.substring(0,3) + "..." + id.substring(id.length -3, id.length) ;
 			str += (e.connected) ? " connected " : " dormant ";
@@ -706,8 +677,20 @@ function listPlayers(args, room, cb)
 				str += ", death: " + Math.round(e.death * 100)/100;
 				str += ", envTime: " + e.envTime;
 			}
+			else if(e.mode == "vote")
+			{
+				var vid = String(e.currentVoteId);
+				if(vid.length > 3)
+				{
+					str += ", id: " + vid.substring(0,3) + "..." + vid.substring(-3);
+					if(typeof(e.currentVotePair) == "object" && e.currentVotePair != null)str += ", pair: [" + e.currentVotePair[0] + ", " + e.currentVotePair[1] + "]";
+				}
+
+
+			}
 			results += str + "\n";
-		});
+		}
+
 		cb(results);
 	});
 }

@@ -7,6 +7,7 @@ io = require('socket.io')(http);
 
 
 //exports.DEBUG = true;
+//exports.NO_SC = true;
 
 exports.port = process.env.PORT || process.env.OPENSHIFT_NODEJS_PORT || 8080,
     ip   = process.env.IP   || process.env.OPENSHIFT_NODEJS_IP || '0.0.0.0',
@@ -45,6 +46,7 @@ else {
 
 exports.MONK = require('monk');
 exports.DB = exports.MONK(exports.URL);
+exports.DB .addMiddleware(require('monk-middleware-debug'))
 
 exports.DB.then(() => {
 	console.log('Connected correctly to server')
@@ -87,6 +89,27 @@ exports.LoveParameters =
 		death: 0
 }
 
+exports.fonts = [
+	"AlexBrush",
+	"Pacifico",
+	"Chunkfive",
+	"KaushanScript",
+	"Ostrich",
+	"Oswald",
+	"Arial",
+	"Times"];
+
+exports.fontColours = [
+	"255,0,0",
+	"0,255,0",
+	"255,255,0",
+	"255,0,255",
+	"0,255,255",
+	"255,180,0",
+	"0,150,0",
+	"100,100,255"
+];
+
 var k = Object.keys(exports.LoveParameters);
 
 for(var i = 0; i < k.length; i++)
@@ -98,7 +121,7 @@ exports.storyCurrText = [""];
 exports.storyNumChars = 0;
 exports.storyRooms = [];
 
-exports.currentVotes = {};
+
 
 
 exports.admin = io.of('/admin');
@@ -106,8 +129,17 @@ exports.display = io.of('/display');
 exports.players = io.of('/player');
 exports.sockets = {};
 exports.checkins = {};
-exports.procs = {};
+exports.checkinProcs = {}; //checkin processes only
+exports.procs = {}; //all timeout and interval processes - excluding checkins
 
+exports.pendingVotes = [];
+exports.voteDisplaySlots =
+{
+	a: [0,0,0,0],
+	b: [0,0,0,0]
+};
+
+exports.currentConcludedVote = null;
 
 var osc = require("osc");
 
@@ -117,36 +149,3 @@ exports.udpPort = new osc.UDPPort({
 });
 
 exports.udpPort.open();
-
-//update the graphics
-
-exports.udpPort.on('message', (msg, rinfo) => {
-
-		if(msg.address == "/poll")
-		{
-			 exports.display.emit('cmd', { type: 'update', id: msg.args[0], val: msg.args[1]});
-		}
-
-});
-
-
-
-setInterval(function()
-{
-
-	time = Date.now();
-
-	Object.keys(exports.checkins).forEach(function(k)
-	{
-			var delta = time - exports.checkins[k];
-			if(exports.DEBUG)console.log(k, delta);
-			if(delta > 20000) //20 secs = dormant
-			{
-				if(exports.DEBUG)console.log(k + " is dormant");
-				exports.UserData.update({_id: k},{$set: {connected: false}});
-				delete exports.checkins[k];
-			}
-	})
-
-
-}, 5000);

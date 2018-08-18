@@ -1,7 +1,7 @@
 {
-	"samplePath": "http://igor.gold.ac.uk/~skata001/clamour/samples/",
-	"storyPath": "config/teststory.json",
-	"imagePath": "http://igor.gold.ac.uk/~skata001/clamour/images/story/",
-	"videoPath": "http://igor.gold.ac.uk/~skata001/clamour/videos/",
+	"samplePath": "/Users/kimonsatan/Music/projectSamples/conditionalLove/samples",
+	"storyPath": "config/mov1v3.json",
+	"imagePath": "/images/mov1v3/",
+	"videoPath": "",
 	"dictionaryPath": "config/dictionary.json"
 }

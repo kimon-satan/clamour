@@ -3,22 +3,22 @@
 	 0%
 	 {
 		 background-color: #333333;
-		 color: #ffffff
+
 	 }
 	 7%
 	 {
 		 background-color: white;
-		 color: black;
+
 	 }
 	 50%
 	 {
 		 background-color: #333333;
-		 color: black;
+
 	 }
 	 100%
 	 {
 		 background-color: black;
-		 color: black;
+
 	 }
 }
 
@@ -26,13 +26,44 @@
 {
 	 0%   {
 		 background-color: #333333;
-		 color: #ffffff
+		 opacity: 0;
 	 }
 	 100% {
 		 background-color: black;
-		 color: black;
+		 opacity: 0;
 	 }
 }
+
+@font-face {
+	font-family: 'AlexBrush';
+	src: url('../fonts/alexbrush-regular.ttf');
+}
+
+@font-face {
+	font-family: 'Pacifico';
+	src: url('../fonts/pacifico.ttf');
+}
+
+@font-face {
+	font-family: 'Chunkfive';
+	src: url('../fonts/Chunkfive.otf');
+}
+
+@font-face {
+	font-family: 'KaushanScript';
+	src: url('../fonts/KaushanScript-Regular.otf');
+}
+
+@font-face {
+	font-family: 'Ostrich';
+	src: url('../fonts/ostrich-regular.ttf');
+}
+
+@font-face {
+	font-family: 'Oswald';
+	src: url('../fonts/Oswald-Heavy.ttf');
+}
+
 
 body
 {

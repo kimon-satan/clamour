@@ -15,12 +15,17 @@ Player = function(isDummy)
 	this.data = {};
 	this.mode = "";
 	this.iface = undefined;
-	this.previousVotes = {};
+	this.voteManager = new VoteManager(this);
+
+	this.killMe = function()
+	{
+		this.socket.disconnect();
+	}
 
 	this.checkAlive = setInterval(function(){
 		if(Date.now() - this.lastCheckin > 8000)
 		{
-			clearInterval(this.checkAlive);
+			clearInterval(this.checkAlive); //TODO check this ... it's annoying
 			changeMode("refresh");
 		}
 	}.bind(this), 1000);
@@ -103,25 +108,39 @@ Player = function(isDummy)
 			if (msg.cmd == "chat_update")
 			{
 				this.data.chatText = msg.value;
-				this.updateTable(this.tableid, this.data);
+				//this.updateTable(this.tableid, this.data);
 			}
 			else if(msg.cmd == 'chat_newline')
 			{
 				this.data.chatText = "NL";
-				this.updateTable(this.tableid, this.data);
+				//this.updateTable(this.tableid, this.data);
 			}
 			else if(msg.cmd == 'chat_clear')
 			{
 				this.data.chatText = "";
-				this.updateTable(this.tableid, this.data);
+				//this.updateTable(this.tableid, this.data);
 			}
 			else if(msg.cmd == 'new_vote' && this.mode == "vote")
 			{
-				createTestVote(msg); //TODO implement the same for real vote
+				this.voteManager.createTestVote(msg.value);
+			}
+			else if(msg.cmd == 'pause_vote' && this.mode == "vote")
+			{
+				this.voteManager.pauseVote();
+			}
+			else if(msg.cmd == 'resume_vote' && this.mode == "vote")
+			{
+				this.voteManager.resumeVote();
+			}
+			else if(msg.cmd == 'cancel_vote' && this.mode == "vote")
+			{
+				this.voteManager.cancelVote(msg.value);
 			}
 		}
 		else
 		{
+			//real version
+
 			if (msg.cmd == "chat_update")
 			{
 				$('#chatContainer>div.largeText:last-child').remove();
@@ -141,9 +160,23 @@ Player = function(isDummy)
 			}
 			else if(msg.cmd == 'new_vote' && this.mode == "vote")
 			{
-				this.data.currentVoteId = msg.value.id;
-				this.data.currentVotePair = msg.value.pair;
-				createVote();
+				this.voteManager.createVote(msg.value);
+			}
+			else if(msg.cmd == 'pause_vote' && this.mode == "vote")
+			{
+				this.voteManager.pauseVote();
+			}
+			else if(msg.cmd == 'display_winner' && this.mode == "vote")
+			{
+				this.voteManager.displayWinner(msg.value);
+			}
+			else if(msg.cmd == 'resume_vote' && this.mode == "vote")
+			{
+				this.voteManager.resumeVote();
+			}
+			else if(msg.cmd == 'cancel_vote' && this.mode == "vote")
+			{
+				this.voteManager.cancelVote(msg.value);
 			}
 		}
 
@@ -151,98 +184,7 @@ Player = function(isDummy)
 
 	//private functions
 
-	var createTestVote = function(msg)
-	{
 
-		if(this.previousVotes[msg.value.id] != undefined)
-		{
-			console.log("duplicate vote");
-			return;
-		}
-
-		if(this.data.currentVoteId != -1)
-		{
-			window.setTimeout(function()
-			{
-				console.log("waiting, " +  msg.value.id);
-				createTestVote(msg);
-			},1000); //try again in 1 sec
-			return;
-		}
-
-		this.previousVotes[msg.value.id] = true;
-		this.data.currentVoteId = msg.value.id;
-		this.data.currentVotePair = msg.value.pair;
-
-		window.setTimeout(function()
-		{
-			var o = Math.round(Math.random());
-			this.socket.emit('voted', {choice: o, id: this.data.currentVoteId });
-			this.data.currentVoteId = -1;
-			this.data.currentVotePair = ["",""];
-			this.updateTable(this.tableid, this.data);
-
-		}.bind(this), 1500 + Math.random() * 5000);
-
-		this.updateTable(this.tableid, this.data);
-
-	}.bind(this);
-
-	var createVote = function()
-	{
-
-		$('#voteContainer').empty();
-
-
-		for(var i = 0; i < 2; i++)
-		{
-			var d = $("<div class='mbut noselect'/>");
-			var tc = $("<div class='textContainer'></div>");
-
-			d.attr("id", "option" + i);
-			d.attr("name", this.data.currentVotePair[i]);
-
-			//text resizing according to content ...
-			var w = this.data.currentVotePair[i].split(" ");
-			var fs = Math.min(Math.max(0.5, this.data.currentVotePair[i].length/60), 1.0);
-			for(var j = 0; j < w.length; j++)
-			{
-				if(w[j].length > 0)
-				{
-					fs = Math.max(w[j].length/15, fs);
-				}
-			}
-			fs = Math.min(Math.max(0.5, fs), 1.0);
-
-			tc.html(this.data.currentVotePair[i]);
-			d.append(tc);
-			$('#voteContainer').append(d);
-			$('#option' + i).fitText(fs);
-
-		}
-
-		//looks like we don't need touchstart
-		//$(".mbut").on("touchstart", voted);
-
-		$(".mbut").on("click", voted);
-
-	}.bind(this);
-
-	var voted = function(e)
-	{
-		if(this.data.currentVoteId == -1) return; //you already voted !
-
-		//************ something happened here ************
-		var r = /option(\d)/;
-		var o = parseInt(r.exec(e.target.id)[1]);
-		$('#option' + o).addClass("vote");
-		$('#option' + (o+1)%2).addClass("reject");
-		this.socket.emit('voted', {choice: o, id: this.data.currentVoteId });
-		this.data.currentVoteId = -1;
-		e.preventDefault();
-		e.stopPropagation();
-
-	}.bind(this);
 
 	var setupIface = function (callback)
 	{
@@ -268,7 +210,8 @@ Player = function(isDummy)
 		console.log("inform:" , msg);
 		msg._id = this.data._id;
 		this.socket.emit('update_user', msg); //tell the server that we have changed mode
-	}
+		
+	}.bind(this);
 
 	var parseMsgParams = function(msg)
 	{
@@ -346,10 +289,10 @@ Player = function(isDummy)
 
 		this.socket.emit('update_user', this.data); //tell the server that we have changed
 
-		if(this.updateTable != undefined)
-		{
-			this.updateTable(this.tableid, this.data);
-		}
+		// if(//this.updateTable != undefined)
+		// {
+		// 	//this.updateTable(this.tableid, this.data);
+		// }
 
 	}.bind(this);
 
@@ -404,15 +347,18 @@ Player = function(isDummy)
 			if(mode == "vote")
 			{
 				$('#container').empty();
-				$('#container').append( '<div id="voteContainer"></div>' );
+				$('#container').append( '<canvas id="voteCanvas"></canvas>' );
+				$('#voteCanvas').attr('width', window.innerWidth);
+				$('#voteCanvas').attr('height', window.innerHeight);
+				this.voteManager.startDrawing();
 
-				if(this.data.currentVoteId == -1) //TODO
+				if(this.data.currentVoteId == -1)
 				{
-					$('#voteContainer').html( '<h1>Waiting ...</h1>' );
+					this.voteManager.wait();
 				}
 				else
 				{
-					createVote();
+					this.voteManager.createVote();
 				}
 			}
 
@@ -435,6 +381,20 @@ Player = function(isDummy)
 			}
 
 		}
+		else
+		{
+			if(mode == "vote")
+			{
+				if(this.data.currentVoteId == -1)
+				{
+					this.voteManager.wait();
+				}
+				else
+				{
+					this.voteManager.createVote();
+				}
+			}
+		}
 
 		this.mode = mode;
 		this.data.mode = mode;
@@ -444,10 +404,10 @@ Player = function(isDummy)
 		}
 
 		//for load testing only
-		if(this.updateTable != undefined)
-		{
-			this.updateTable(this.tableid, this.data);
-		}
+		// if(//this.updateTable != undefined)
+		// {
+		// 	//this.updateTable(this.tableid, this.data);
+		// }
 
 	}.bind(this);
 
@@ -464,4 +424,16 @@ function getCook(cookiename)
 	var cookiestring=RegExp(""+cookiename+"[^;]+").exec(document.cookie);
 	// Return everything after the equal sign, or an empty string if the cookie name not found
 	return unescape(!!cookiestring ? cookiestring.toString().replace(/^[^=]+./,"") : "");
+}
+
+function webglAvailable() {
+	try {
+		var canvas = document.createElement( 'canvas' );
+		return !!( window.WebGLRenderingContext && (
+			canvas.getContext( 'webgl' ) ||
+			canvas.getContext( 'experimental-webgl' ) )
+		);
+	} catch ( e ) {
+		return false;
+	}
 }

@@ -5,6 +5,8 @@ var globals;
 
 love = undefined;
 
+var voteDisplayer;
+
 var lastFrameTime, framePeriod, fps, mode;
 var vidProgRoutine;
 var myVid;// make a video element
@@ -48,6 +50,18 @@ socket.on('cmd', function(msg){
 	else if (msg.type == "story" )
 	{
 		story(msg);
+	}
+	else if (msg.type == "vote" )
+	{
+		if(msg.cmd == "reset" || msg.cmd == "new")
+		{
+			$('#displayscreen').empty();
+			voteDisplayer = new VoteDisplayer();
+		}
+		else
+		{
+			voteDisplayer.cmd(msg);
+		}
 	}
 	else if (msg.type == "end")
 	{
@@ -122,13 +136,21 @@ function story(msg)
 	}
 	else if(msg.img)
 	{
+		$('#displayscreen').empty();
 		if(typeof(vidProgRoutine) != "undefined")
 		{
 			window.clearInterval(vidProgRoutine);
 			vidProgRoutine = undefined
 		}
-		$('#displayscreen').empty();
-		$('#displayscreen').append("<div id='storyContainer'><img src=" + msg.img + "></div>");
+		var imgtag = $("<img src=" + img + ">");
+		var imgdiv = $("<div id='storyContainer'></div>");
+
+
+		imgtag.css('width', innerWidth);
+		//imgtag.css('height', innerHeight);
+
+		imgdiv.append(imgtag);
+		$('#displayscreen').append(imgdiv);
 	}
 	else if (msg.video)
 	{
@@ -149,8 +171,10 @@ function story(msg)
 			socket.emit("vidUpdate", p);
 		},500);
 	}
+
 	mode = "story";
 }
+
 
 ///////////////////////////////////////LOVE//////////////////////////////////////////
 
@@ -274,7 +298,7 @@ Love = function(socket)
 				this.splatManager.transform(msg.val._id, function()
 				{
 							newBranch(blob);
-							this.scene.add(blob.mesh);
+							love.scene.add(blob.mesh);
 				});
 
 			}

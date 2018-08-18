@@ -2,15 +2,37 @@ var globals = require('./globals.js');
 var randomWords = require('random-words');
 var fs = require('fs');
 
+///////////////////////////////////////////////////////////////////////////////////////
+
+exports.validateId = function(id)
+{
+	if(typeof(id) != "string")
+	{
+		id = String(id);
+	}
+
+	if(id.length != 24)
+	{
+		return false;
+	}
+	else
+	{
+		return id;
+	}
+
+}
 
 exports.choose = function(list)
 {
 	return list[Math.floor(Math.random() * list.length)];
 }
 
+
+//////////////////////////ROOMS////////////////////////
+
 exports.genRoomName = function()
 {
-	return randomWords({ exactly: 2, join: '-' });
+	return randomWords({ exactly: 2, join: '.' });
 }
 
 exports.joinRoom = function(uids, roomName, cb)
@@ -25,20 +47,21 @@ exports.joinRoom = function(uids, roomName, cb)
 		}
 	}
 
-	globals.Rooms.update({room: roomName},{room: roomName, population: uids},{upsert: true}, cb);
+	globals.UserData.update({_id: { $in: uids} }, {$pull : {rooms: roomName}}, {multi: true})
 
-	//callback here
-	//if(cb != undefined)cb(); // it is safe to send a command to the room
-
-	//now update the databases - this can be asynchronous
-
-	//add the room to UserData
-	//remove old versions first
-	globals.UserData.update({_id: { $in: uids} }, {$pull : {rooms: roomName}}, {multi: true}, function(){
+	.then(_=>
+	{
 		globals.UserData.update({_id: { $in: uids} },{ $push : {rooms: roomName}}, {multi: true});
-	})
+	});
 
+	var p = globals.Rooms.update({room: roomName},{room: roomName, population: uids},{upsert: true});
 
+	p = p.then(_=>{
+		if(cb != undefined)cb();
+		return Promise.resolve();
+	});
+
+	return p;
 }
 
 exports.useRoom = function(msg, cb) //add an optional cmd
@@ -52,18 +75,34 @@ exports.useRoom = function(msg, cb) //add an optional cmd
 		if(selector.roomName == undefined)selector.roomName = exports.genRoomName();
 		selector.mode = msg.mode;
 
-		exports.selectAndJoin(selector, function(resp)
+		var p = exports.selectAndJoin(selector);
+
+		p = p.then((resp)=>
 		{
-			if(typeof(cb) == "function")cb(selector.roomName);
 			globals.admin.emit('server_report', {msg: resp, id: msg.cli_id, room: selector.roomName });
+
+			if(cb != undefined)
+			{
+				cb(selector.roomName);
+			}
+
+			return Promise.resolve(selector.roomName);
+
 		});
+
+		return p;
 	}
 	else
 	{
 		//use the existing room
+		if(typeof(cb) == "function")
+		{
+			cb(msg.room);
+		}
 
-		if(typeof(cb) == "function")cb(msg.room);
 		globals.admin.emit('server_report', {id: msg.cli_id});
+
+		return Promise.resolve(msg.room);
 	}
 }
 
@@ -72,8 +111,9 @@ exports.selectPlayers = function(args, cb)
 
 	var searchObj = exports.generateSearchObj(args);
 
-	globals.UserData.find(searchObj, '_id').then((docs) =>
-	{
+	var p = globals.UserData.find(searchObj, '_id');
+
+	p = p.then((docs) =>{
 		//only the name field will be returned
 		//repackage into a simple array
 		var uids = [];
@@ -97,23 +137,42 @@ exports.selectPlayers = function(args, cb)
 			uids = uids.slice(0,numPlayers);
 		}
 
-		cb(uids);
+		if(cb != undefined)
+		{
+			cb(uids);
+		}
+
+		return Promise.resolve(uids);
 
 	});
 
+	return p;
 }
 
 exports.selectAndJoin = function(args, cb)
 {
-		if(typeof(args) == "undefined")return false;
-		exports.selectPlayers(args, function(uids)
+	if(typeof(args) == "undefined")return false;
+
+	var p = exports.selectPlayers(args);
+	var msg = "";
+
+	p = p.then((uids)=>
+	{
+		msg =  args.mode + " with " + uids.length + " players with room: " + args.roomName;
+		return exports.joinRoom(uids, args.roomName);
+	})
+
+	p = p.then(_=>
+	{
+		if(cb != undefined)
 		{
-			var msg =  args.mode + " with " + uids.length + " players with room: " + args.roomName;
-			exports.joinRoom(uids, args.roomName, function()
-			{
-				cb(msg);
-			});
-		});
+			cb(msg)
+		}
+
+		return Promise.resolve(msg);
+	})
+
+	return p;
 }
 
 exports.subRoom =  function(room, numRooms, cb)
@@ -145,6 +204,8 @@ exports.subRoom =  function(room, numRooms, cb)
 
 	})
 }
+
+//////////////////////////CMD LINE PARSING////////////////////////
 
 exports.parseFilters = function(args, currentRoom)
 {
@@ -254,12 +315,6 @@ exports.parseOptions = function(args, cb)
 	//parses args into an object option
 	var options = {};
 
-	if(args.length == 0)
-	{
-		cb(options);
-		return;
-	}
-
 	for(var i = 0; i < args.length; i++)
 	{
 		if(args[i][0] != "f" && args[i][0] != "n")
@@ -267,8 +322,18 @@ exports.parseOptions = function(args, cb)
 				if(args[i][1].match(/\[.*?\]/)) //as many args
 				{
 					//repackage as an array
-					var str = args[i][1].match(/\[(.*?)\]/)[1];
-					options[args[i][0]] = str.split(",");
+					try
+					{
+						//well formed with numbers or quotes
+						options[args[i][0]] = JSON.parse(args[i][1]);
+					}
+					catch(e)
+					{
+						//TODO test this
+						var m = args[i][1].match(/\["?(.*?)"?,"?(.*?)"?\]/); //NB. max two args
+						options[args[i][0]] = [m[1],m[2]];
+					}
+
 				}
 				else if(args[i][1].match(/\([^,],[^,]\)/)) //only two args
 				{
@@ -286,7 +351,16 @@ exports.parseOptions = function(args, cb)
 			}
 	}
 
-	cb(options);
+	//TODO UTILMATELY WE DON'T NEED A CALLBACK
+	if(cb == undefined)
+	{
+		return options;
+	}
+	else
+	{
+		cb(options);
+	}
+
 }
 
 exports.generateSearchObj = function(args)
@@ -359,6 +433,8 @@ exports.generateSearchObj = function(args)
 
 }
 
+/////////////////////////////LOADING////////////////////////////////
+
 exports.loadPresets = function(args, options, cb)
 {
 	var i = args.indexOf("-p");
@@ -396,7 +472,7 @@ exports.loadPresets = function(args, options, cb)
 
 }
 
-
+//TODO doesn't belong here
 exports.loadSettings = function()
 {
 	//load global settings from JSON file
@@ -405,9 +481,11 @@ exports.loadSettings = function()
 			if (err) throw err;
 			globals.settings = JSON.parse(data);
 			exports.loadStory();
-			exports.loadDictionary();
+			//exports.loadDictionary(); //needs to be called from elsewhere
 	});
 }
+
+/////////////////////////////STORY//////////////////////////////////
 
 exports.loadStory = function(cb)
 {
@@ -454,7 +532,6 @@ exports.incrementStoryClip = function()
 	}
 
 }
-
 
 exports.playSound = function(options)
 {
@@ -551,84 +628,5 @@ exports.startStoryClip = function(room)
 
 }
 
-exports.loadDictionary = function(cb)
-{
-	// //load the audio samples
-	// globals.udpPort.send(
-	// {
-	// 	address: "/loadSamples",
-	// 	args: [globals.settings.samplePath]
-	// },
-	// "127.0.0.1", 57120);
 
-	//load the story object
-
-	fs.readFile(globals.settings.dictionaryPath, 'utf8', function (err, data)
-	{
-		globals.dictionary = JSON.parse(data);
-
-		if(typeof(cb) == "function")
-		{
-			cb(err);
-		}
-	});
-}
-
-
-exports.sendVote = function(data, num)
-{
-	var omsg = {pair: data.pair, id: data._id};
-	var p = globals.UserData.find({_id: {$in: data.notvoted}, currentVoteId: -1});
-	if(num == undefined)num = 1;
-
-	p = p.then((docs)=>
-	{
-		if(docs.length > 0)
-		{
-
-			for(var i = num; i > 0; i--)
-			{
-				if(docs.length == 0)
-				{
-					//TODO probably store and kill these on reset just to be safe
-					setTimeout(function()
-					{
-						globals.Votes.findOne(omsg.id).then((res)=>
-						{
-							if(res.notvoted.length > 0)
-							{
-								exports.sendVote(res,i);
-							}
-						})
-					}, 500); // call the function again
-					break;
-				}
-				var idx = Math.floor(Math.random() * docs.length);
-				var player = docs[idx];
-				docs.splice(idx, 1);
-				globals.players.to(player._id).emit('cmd',{cmd: 'new_vote', value: omsg});
-				globals.Votes.update(omsg.id, {$push: {voting: player._id}, $pull: {notvoted: player._id}});
-				globals.UserData.update(player._id,{$set: {currentVoteId: player._id, currentVotePair: player.pair }});
-
-			}
-		}
-		else
-		{
-			//TODO probably store and kill these on reset just to be safe
-			setTimeout(function()
-			{
-				globals.Votes.findOne(omsg.id).then((res)=>{
-					if(res.notvoted.length > 0)
-					{
-						exports.sendVote(res,num);
-					}
-				})
-			}, 500); // call the function again
-		}
-	})
-
-	p.catch((reason)=>{
-		console.log("Error - sendVote: " + reason);
-	})
-
-}
+////////////////////////////VOTING////////////////////////////////////

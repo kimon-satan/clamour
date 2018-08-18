@@ -1,5 +1,6 @@
 var globals = require('./globals.js');
 var helpers = require('./helpers.js');
+var votehelpers = require('./votehelpers.js');
 
 exports.response = function(socket)
 {
@@ -17,13 +18,23 @@ exports.response = function(socket)
 		usrobj.colSeed = Math.random();
 		usrobj.colMode = Math.floor(Math.random() * 4);
 		usrobj.blobSeed = Math.random();
+		usrobj.voiceNum = Math.floor(Math.random() * 8);
+		usrobj.voicePan = -1 + Math.random() * 2;
+		usrobj.voicePitch = 0.75 + Math.random() * 0.5;
+		//TODO this would work better with 15 * 15 and indexed permutations (guaranteed difference)
+		usrobj.font = globals.fonts[Math.floor(Math.random() * globals.fonts.length)];
+		usrobj.fontCol = globals.fontColours[Math.floor(Math.random() * globals.fontColours.length)];
 
 		if(msg == "new")
 		{
 
 			globals.UserData.insert(usrobj,{}, function(err,res)
 			{
-				if(err) throw err;
+				if(err)
+				{
+					console.log(err);
+					//throw err;
+				}
 				if(globals.DEBUG)console.log('hello new user: ' + res._id);
 				id = res._id;
 				socket.join(res._id);
@@ -38,7 +49,11 @@ exports.response = function(socket)
 
 			globals.UserData.findOne(msg,{}, function(err,res)
 			{
-				if(err) throw err;
+				if(err)
+				{
+					console.log(err);
+					//throw err;
+				}
 
 				if(!res)
 				{
@@ -95,18 +110,75 @@ exports.response = function(socket)
 		if(typeof(msg) != "object")
 		{
 			console.log("null msg");
+			return;
 		}
-		var p = globals.Votes.findOne({_id: msg.id});
+
+		msg.id = helpers.validateId(msg.id);
+
+		if(!msg.id)
+		{
+			console.log("incorrect msg id: " + msg.id);
+			return;
+		}
+		else if(!helpers.validateId(id))
+		{
+			console.log("incorrect user id: " + id);
+			return;
+		}
+
+
+
+		var usrobj;
+		var p = globals.UserData.findOne({_id: String(id)});
 
 		p = p.then((data)=>
 		{
+			usrobj = data;
+			return globals.Votes.findOne({_id: msg.id});
+		})
+
+		p = p.then((data)=>
+		{
+			data._id = helpers.validateId(data._id);
+
 			if(data == null)
 			{
-				throw "vote " + msg.id + " could not be found ";
+				return Promise.reject("vote " + msg.id + " could not be found ");
 			}
+			else if(!data._id)
+			{
+				return Promise.reject("vote " + msg.id + " return invalid id");
+			}
+
 			data.scores[msg.choice] += 1.0/data.population;
-			//TODO trigger the audio sample
-			return globals.Votes.update({_id: data._id}, {$push: {voted: id}, $pull: {voting: id}, $set:{scores: data.scores}});
+
+			globals.udpPort.send({
+					address: "/speakPhrase",
+					args: [String(data._id), msg.choice, usrobj.voiceNum, usrobj.voicePan, usrobj.voicePitch]
+			}, "127.0.0.1", 57120);
+
+
+			globals.display.emit('cmd', {
+				type: "vote", cmd: "displayVote" ,
+				val: {
+					choice: msg.choice,
+					text: data.pair[msg.choice],
+					font: usrobj.font,
+					col: usrobj.fontCol,
+					score: data.scores,
+					pos: data.pos,
+					slots: globals.voteDisplaySlots //Indicates the current state of the slots
+				}
+			});
+
+			return globals.Votes.update(
+				{
+					_id: data._id},
+					{$push: {voted: id},
+				$pull: {voting: id},
+			$set:{scores: data.scores}
+			});
+
 		})
 
 		p = p.then((data)=>
@@ -116,33 +188,38 @@ exports.response = function(socket)
 
 		p = p.then((data)=>
 		{
-			if(typeof(data) != "object")
-			{
-				throw "oops";
-			}
 			if(data.voted.length == data.population)
 			{
-				//TODO resolve the vote if there are no voters left
-				console.log("vote concluded, " + data._id)
+				//resolve the vote if there are no voters left
+				votehelpers.concludeVote(data);
 			}
 			else
 			{
 				//initiate the next voter if there is one
-				helpers.sendVote(data);
+				votehelpers.sendVote(data);
 			}
+
+			return globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
+
 		});
 
-		p.catch((reason)=>{
+		p.catch((reason)=>
+		{
 			console.log("Error - voted " + reason) ;
 		})
 
-		//reset this users vote
-		globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
+
 	})
 
 	socket.on('update_user', function(msg)
 	{
-		globals.UserData.update({_id: msg._id},{$set: msg});
+		if(helpers.validateId(msg._id))
+		{
+			globals.UserData.update({_id: msg._id},{$set: msg})
+			.catch((err)=>{
+				console.log("Error - update_user: " + err);
+			});
+		}
 	});
 
 	socket.on('splat', function(msg){
@@ -171,18 +248,36 @@ exports.response = function(socket)
 	socket.on('disconnect', function()
 	{
 		if(globals.DEBUG)console.log('a player disconnected ' + id);
-		globals.UserData.update({_id: id},{$set: {connected: false}});
-		delete globals.checkins[id];
-		clearInterval(globals.procs[id]);
+
+		try
+		{
+			if(helpers.validateId(id))
+			{
+				globals.UserData.update({_id: id},{$set: {connected: false}})
+				.catch((err)=>{
+					console.log("Error - disconnect: " + err);
+				});
+				delete globals.checkins[id];
+				clearInterval(globals.checkinProcs[id]);
+				delete globals.checkinProcs[id];
+			}
+		}
+		catch(e)
+		{
+			console.log("Error - disconnect" + e);
+		}
 	});
 
 	//a process to check players are with us
-	globals.procs[id] = setInterval(function()
+	globals.checkinProcs[id] = setInterval(function()
 	{
 		socket.emit('checkAlive',function(data)
 		{
-			globals.checkins[data] = Date.now();
+			if(data != null)
+			{
+				globals.checkins[data] = Date.now();
+			}
 		});
-	},5000)
+	},5000);
 
 }
