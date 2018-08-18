@@ -8,7 +8,7 @@ var gCli_idx = 0;
 var gProcs = {};
 var idxs = [];
 //var socket = io('/admin');
-var socket = io('/admin', {path: "/www/276/socket.io"});
+var socket = io('/admin');
 
 var dummyPlayers = [];
 
