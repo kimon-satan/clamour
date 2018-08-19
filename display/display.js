@@ -125,6 +125,8 @@ function setupInstructions()
 function story(msg)
 {
 
+	//console.log(msg);
+
 	if(msg.blank)
 	{
 		if(typeof(vidProgRoutine) != "undefined")
@@ -142,7 +144,7 @@ function story(msg)
 			window.clearInterval(vidProgRoutine);
 			vidProgRoutine = undefined
 		}
-		var imgtag = $("<img src=" + img + ">");
+		var imgtag = $("<img src=" + msg.img + ">");
 		var imgdiv = $("<div id='storyContainer'></div>");
 
 

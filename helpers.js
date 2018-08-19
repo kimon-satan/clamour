@@ -595,7 +595,7 @@ exports.startStoryClip = function(room)
 		globals.display.emit('cmd', {type: 'story', img: img_path});
 		globals.DisplayState.storyMedia = "img";
 	}
-	else if (blank)
+	else
 	{
 		globals.display.emit('cmd', {type: 'story', blank: true});
 		globals.DisplayState.storyMedia = "blank";

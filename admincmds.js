@@ -570,7 +570,7 @@ exports.response = function(socket)
 		else if(msg.cmd == "dstory")
 		{
 			globals.DisplayState.mode = "story";
-			globals.display.emit("cmd", {type: "story"});
+			globals.display.emit("cmd", {type: "story", blank: true});
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
 		else if(msg.cmd == "dclear")
