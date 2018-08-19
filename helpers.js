@@ -490,12 +490,11 @@ exports.loadSettings = function()
 exports.loadStory = function(cb)
 {
 	//load the audio samples
-	globals.udpPort.send(
+	exports.sendTCPMessage(
 	{
 		address: "/loadSamples",
 		args: [globals.settings.samplePath]
-	},
-	globals.scAddr, 57120);
+	});
 
 	//load the story object
 
@@ -569,12 +568,11 @@ exports.playSound = function(options)
 			args.push(options[k[i]]);
 		}
 
-		globals.udpPort.send(
+		exports.sendTCPMessage(
 		{
 			address: "/playStereo",
 			args: args
-		},
-		globals.scAddr, 57120);
+		});
 }
 
 exports.startStoryClip = function(room)
@@ -613,11 +611,10 @@ exports.startStoryClip = function(room)
 	else
 	{
 		//we need to trigger the end of the old sound
-		globals.udpPort.send(
+		exports.sendTCPMessage(
 		{
 			address: "/allOff",
-		},
-		globals.scAddr, 57120);
+		});
 	}
 
 	//NB. at some point we might need the option not to clear the screen
@@ -629,4 +626,13 @@ exports.startStoryClip = function(room)
 }
 
 
-////////////////////////////VOTING////////////////////////////////////
+exports.sendTCPMessage = function(msg)
+{
+	//NB. message should be a object literal
+	//{address: , args []}
+	var k = Object.keys(globals.tcpSocks);
+	for(var i = 0; i < k.length; i++)
+	{
+		globals.tcpSocks[k[i]].write(JSON.stringify(msg));
+	}
+}

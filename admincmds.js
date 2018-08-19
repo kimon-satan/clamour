@@ -426,12 +426,11 @@ exports.response = function(socket)
 				clearTimeout(globals.procs[keys[i]]);
 			}
 
-			globals.udpPort.send(
+			helpers.sendTCPMessage(
 			{
 					address: "/resetPhrases",
 					args: []
-			},
-			globals.scAddr, 57120);
+			});
 		}
 		else if(msg.cmd == "stats")
 		{
@@ -455,12 +454,11 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "end")
 		{
-			globals.udpPort.send(
+			helpers.sendTCPMessage(
 			{
 					address: "/allOff",
 					args: []
-			},
-			globals.scAddr, 57120);
+			});
 			globals.admin.emit('server_report', {id: msg.cli_id});
 			globals.display.emit("cmd", {type: "end"});
 			globals.DisplayState.mode = "end";
@@ -516,12 +514,11 @@ exports.response = function(socket)
 	{
 		if(msg.cmd == "reloadsamples")
 		{
-			globals.udpPort.send(
+			helpers.sendTCPMessage(
 			{
 				address: "/loadSamples",
 				args: [globals.settings.samplePath]
-			},
-			globals.scAddr, 57120);
+			});
 			globals.admin.emit('server_report', {id: msg.cli_id});
 		}
 		else if(msg.cmd == "play")
@@ -532,10 +529,10 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "killsound")
 		{
-			globals.udpPort.send({
+			helpers.sendTCPMessage({
 					address: "/allOff",
 					args: []
-			}, globals.scAddr, 57120);
+			});
 			globals.admin.emit('server_report', {id: msg.cli_id});
 		}
 		else if(msg.cmd == "setscaddr")

@@ -152,10 +152,10 @@ exports.response = function(socket)
 
 			data.scores[msg.choice] += 1.0/data.population;
 
-			globals.udpPort.send({
+			helpers.sendTCPMessage({
 					address: "/speakPhrase",
 					args: [String(data._id), msg.choice, usrobj.voiceNum, usrobj.voicePan, usrobj.voicePitch]
-			}, globals.scAddr, 57120);
+			});
 
 
 			globals.display.emit('cmd', {
@@ -228,10 +228,10 @@ exports.response = function(socket)
 
 		var args = ["pan", msg.splatPan, "rate", msg.splatRate, "pos", msg.splatPos];
 
-		globals.udpPort.send({
+		helpers.SendTCPMessage({
 				address: "/splat",
 				args: args,
-		}, globals.scAddr, 57120);
+		});
 
 
 		globals.display.emit('cmd', {type: "splat", val: msg});

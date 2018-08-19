@@ -7,6 +7,10 @@ var displaycmds = require('./displaycmds.js');
 var playercmds = require('./playercmds.js');
 
 var path = require('path');
+var net  = require('net');
+var osc = require("osc");
+
+const TCP_PORT = 6969;
 
 //check the various collections exist if not create them
 
@@ -124,33 +128,93 @@ http.listen(globals.port, function () {
   console.log('Server listening at port %d', globals.port);
 });
 
+//////////////////////////TCP SERVER//////////////////////////////
+
+net.createServer(function(sock)
+{
+
+		// We have a connection - a socket object is assigned to the connection automatically
+		console.log('CONNECTED: ' + sock.remoteAddress +':'+ sock.remotePort);
+		globals.tcpSocks[sock.remotePort.toString()] = sock;
+
+		// Add a 'data' event handler to this instance of socket
+		sock.on('data', tcpHandler);
+
+		// Add a 'close' event handler to this instance of socket
+		sock.on('close', function(data)
+		{
+			console.log('CLOSED: ' + sock.remoteAddress +' '+ sock.remotePort);
+			delete globals.tcpSocks[sock.remotePort.toString()];
+		});
+
+
+}).listen(TCP_PORT, "localhost");
+
+console.log('TCP server listening on ' + TCP_PORT);
+
+
+//////////////TCP HANDLER////////////////////////////////
+
+function tcpHandler(msg){
+
+	msg = JSON.parse(msg.toString());
+
+	console.log(msg);
+
+	if(msg.address == "/poll")
+	{
+		 globals.display.emit('cmd', { type: 'update', id: msg.args[0], val: msg.args[1]});
+	}
+
+	if(msg.address == "/phraseComplete")
+	{
+		votehelpers.handlePhraseComplete(msg).catch((err)=>{
+			console.log(err);
+		});
+	}
+
+	if(msg.address == "/resumeVote") //TODO change name
+	{
+		globals.players.emit('cmd',{cmd: 'resume_vote'});
+		//allows other votes to happen
+		globals.currentConcludedVote = null;
+	}
+
+	if(msg.address == "/winSampleDone")
+	{
+		votehelpers.concludeDisplayAndPlayers();
+	}
+
+}
 
 //////////////OSC LISTENER////////////////////////////////
 
-globals.udpPort.on('message', (msg, rinfo) => {
+//NOT used here
 
-		if(msg.address == "/poll")
-		{
-			 globals.display.emit('cmd', { type: 'update', id: msg.args[0], val: msg.args[1]});
-		}
-
-		if(msg.address == "/phraseComplete")
-		{
-			votehelpers.handlePhraseComplete(msg).catch((err)=>{
-				console.log(err);
-			});
-		}
-
-		if(msg.address == "/resumeVote") //TODO change name
-		{
-			globals.players.emit('cmd',{cmd: 'resume_vote'});
-			//allows other votes to happen
-			globals.currentConcludedVote = null;
-		}
-
-		if(msg.address == "/winSampleDone")
-		{
-			votehelpers.concludeDisplayAndPlayers();
-		}
-
-});
+// globals.udpPort.on('message', (msg, rinfo) => {
+//
+// 		if(msg.address == "/poll")
+// 		{
+// 			 globals.display.emit('cmd', { type: 'update', id: msg.args[0], val: msg.args[1]});
+// 		}
+//
+// 		if(msg.address == "/phraseComplete")
+// 		{
+// 			votehelpers.handlePhraseComplete(msg).catch((err)=>{
+// 				console.log(err);
+// 			});
+// 		}
+//
+// 		if(msg.address == "/resumeVote") //TODO change name
+// 		{
+// 			globals.players.emit('cmd',{cmd: 'resume_vote'});
+// 			//allows other votes to happen
+// 			globals.currentConcludedVote = null;
+// 		}
+//
+// 		if(msg.address == "/winSampleDone")
+// 		{
+// 			votehelpers.concludeDisplayAndPlayers();
+// 		}
+//
+// });

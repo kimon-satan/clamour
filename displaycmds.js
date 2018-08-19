@@ -18,10 +18,10 @@ exports.response = function(socket)
 			args.push(msg[p]);
 		})
 
-		globals.udpPort.send({
+		helpers.sendTCPMessage({
 				address: "/addTone",
 				args: args,
-		}, globals.scAddr, 57120);
+		});
 
 	})
 
@@ -37,10 +37,10 @@ exports.response = function(socket)
 			args.push(msg[p]);
 		})
 
-		globals.udpPort.send({
+		helpers.sendTCPMessage({
 				address: "/updateTone",
 				args: args,
-		}, globals.scAddr, 57120);
+		});
 
 	})
 
@@ -56,10 +56,10 @@ exports.response = function(socket)
 			args.push(msg[p]);
 		})
 
-		globals.udpPort.send({
+		helpers.sendTCPMessage({
 				address: "/endTone",
 				args: args,
-		}, globals.scAddr, 57120);
+		});
 
 		globals.players.to(msg.id).emit('cmd', {cmd: 'set_params', value: {isMobile: true, isSplat: false}});
 
@@ -77,10 +77,10 @@ exports.response = function(socket)
 			args.push(msg[p]);
 		})
 
-		globals.udpPort.send({
+		helpers.sendTCPMessage({
 				address: "/startCrawler",
 				args: args,
-		}, globals.scAddr, 57120);
+		});
 
 	})
 
@@ -95,10 +95,10 @@ exports.response = function(socket)
 			args.push(msg[p]);
 		})
 
-		globals.udpPort.send({
+		helpers.sendTCPMessage({
 				address: "/updateCrawler",
 				args: args,
-		}, globals.scAddr, 57120);
+		});
 
 	})
 
@@ -113,10 +113,10 @@ exports.response = function(socket)
 			args.push(msg[p]);
 		})
 
-		globals.udpPort.send({
+		helpers.sendTCPMessage({
 				address: "/endCrawler",
 				args: args,
-		}, globals.scAddr, 57120);
+		});
 
 	})
 
@@ -132,10 +132,10 @@ exports.response = function(socket)
 			args.push(msg[p]);
 		})
 
-		globals.udpPort.send({
+		helpers.sendTCPMessage({
 				address: "/transTone",
 				args: args,
-		}, globals.scAddr, 57120);
+		});
 	})
 
 	socket.on('vidUpdate', function(msg){

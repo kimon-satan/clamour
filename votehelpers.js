@@ -323,15 +323,15 @@ exports.startVote = function(msg)
 		p = p.then(_=>
 		{
 			//Tell SC to record the phrases
-			globals.udpPort.send({
+			helpers.sendTCPMessage({
 					address: "/recordWinPhrase",
 					args: [String(vote._id) + "_win", winPair[0],winPair[1]],
-			}, globals.scAddr, 57120);
+			});
 
-			globals.udpPort.send({
+			helpers.sendTCPMessage({
 					address: "/recordPhrases",
 					args: [String(vote._id), pair[0],pair[1]],
-			}, globals.scAddr, 57120);
+			});
 
 			return Promise.resolve();
 		});
@@ -699,14 +699,14 @@ exports.joinVotes = function(msg)
 
 			for(var i = 0; i < votes.length; i++)
 			{
-				globals.udpPort.send({
+				helpers.sendTCPMessage({
 						address: "/recordJoinPhrases",
 						args: [String(votes[i]._id) + "_join",
 						joinPhrases[0],
 						joinPhrases[1],
 						joinPhrases[2],
 						joinPhrases[3]],
-				}, globals.scAddr, 57120);
+				});
 			}
 
 			return Promise.resolve();
@@ -908,19 +908,19 @@ var triggerVoteComplete = function(data)
 			p.then(_=>{
 
 				var winIdx = (idxs[0] * 2) + idxs[1];
-				globals.udpPort.send({
+				helpers.sendTCPMessage({
 						address: "/voteComplete", //pause audio in SC
 						args: [String(data._id) + "_join_" + winIdx + "_7"]
-				}, globals.scAddr, 57120);
+				});
 			})
 
 		}
 		else
 		{
-			globals.udpPort.send({
+			helpers.sendTCPMessage({
 					address: "/voteComplete", //pause audio in SC
 					args: [String(data._id) + "_win_" + data.winnerIdx + "_7"]
-			}, globals.scAddr, 57120);
+			});
 		}
 
 	}

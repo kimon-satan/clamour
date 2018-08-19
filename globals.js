@@ -1,15 +1,18 @@
 console.log("importing globals");
 
 express = require('express');
-exports.app = express();
+exports.app = express(); //FIXME  this is all shifty
 http = require('http').Server(exports.app);
 io = require('socket.io')(http);
+var osc = require("osc");
+
 
 
 //exports.DEBUG = true;
 //exports.NO_SC = true;
 
 exports.port = 80;
+exports.tcpSocks = {};
 
 //simple db using monk & mongodb
 exports.MONK = require('monk');
@@ -109,7 +112,7 @@ exports.voteDisplaySlots =
 
 exports.currentConcludedVote = null;
 
-var osc = require("osc");
+
 
 exports.scAddr = "127.0.0.1";
 
