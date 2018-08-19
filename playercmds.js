@@ -228,7 +228,7 @@ exports.response = function(socket)
 
 		var args = ["pan", msg.splatPan, "rate", msg.splatRate, "pos", msg.splatPos];
 
-		helpers.SendTCPMessage({
+		helpers.sendTCPMessage({
 				address: "/splat",
 				args: args,
 		});
