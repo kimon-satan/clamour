@@ -130,36 +130,49 @@ http.listen(globals.port, function () {
 
 //////////////////////////TCP SERVER//////////////////////////////
 
-net.createServer(function(sock)
+if(globals.IS_LOCAL)
+{
+	//an OSC handler
+	globals.udpPort.on('message', incomingHandler);
+
+}
+else
+{
+	net.createServer(function(sock)
+	{
+
+			// We have a connection - a socket object is assigned to the connection automatically
+			console.log('CONNECTED: ' + sock.remoteAddress +':'+ sock.remotePort);
+			globals.tcpSocks[sock.remotePort.toString()] = sock;
+
+			// Add a 'data' event handler to this instance of socket
+			sock.on('data', incomingHandler);
+
+			// Add a 'close' event handler to this instance of socket
+			sock.on('close', function(data)
+			{
+				console.log('CLOSED: ' + sock.remoteAddress +' '+ sock.remotePort);
+				delete globals.tcpSocks[sock.remotePort.toString()];
+			});
+
+
+	}).listen(TCP_PORT, "localhost");
+
+	console.log('TCP server listening on ' + TCP_PORT);
+}
+
+
+
+
+//////////////MESSAGE HANDLER////////////////////////////////
+
+function incomingHandler(msg)
 {
 
-		// We have a connection - a socket object is assigned to the connection automatically
-		console.log('CONNECTED: ' + sock.remoteAddress +':'+ sock.remotePort);
-		globals.tcpSocks[sock.remotePort.toString()] = sock;
-
-		// Add a 'data' event handler to this instance of socket
-		sock.on('data', tcpHandler);
-
-		// Add a 'close' event handler to this instance of socket
-		sock.on('close', function(data)
-		{
-			console.log('CLOSED: ' + sock.remoteAddress +' '+ sock.remotePort);
-			delete globals.tcpSocks[sock.remotePort.toString()];
-		});
-
-
-}).listen(TCP_PORT, "localhost");
-
-console.log('TCP server listening on ' + TCP_PORT);
-
-
-//////////////TCP HANDLER////////////////////////////////
-
-function tcpHandler(msg){
-
-	msg = JSON.parse(msg.toString());
-
-	console.log(msg);
+	if(!globals.IS_LOCAL)
+	{
+		msg = JSON.parse(msg.toString());
+	}
 
 	if(msg.address == "/poll")
 	{
@@ -168,7 +181,8 @@ function tcpHandler(msg){
 
 	if(msg.address == "/phraseComplete")
 	{
-		votehelpers.handlePhraseComplete(msg).catch((err)=>{
+		votehelpers.handlePhraseComplete(msg).catch((err)=>
+		{
 			console.log(err);
 		});
 	}
@@ -186,35 +200,3 @@ function tcpHandler(msg){
 	}
 
 }
-
-//////////////OSC LISTENER////////////////////////////////
-
-//NOT used here
-
-// globals.udpPort.on('message', (msg, rinfo) => {
-//
-// 		if(msg.address == "/poll")
-// 		{
-// 			 globals.display.emit('cmd', { type: 'update', id: msg.args[0], val: msg.args[1]});
-// 		}
-//
-// 		if(msg.address == "/phraseComplete")
-// 		{
-// 			votehelpers.handlePhraseComplete(msg).catch((err)=>{
-// 				console.log(err);
-// 			});
-// 		}
-//
-// 		if(msg.address == "/resumeVote") //TODO change name
-// 		{
-// 			globals.players.emit('cmd',{cmd: 'resume_vote'});
-// 			//allows other votes to happen
-// 			globals.currentConcludedVote = null;
-// 		}
-//
-// 		if(msg.address == "/winSampleDone")
-// 		{
-// 			votehelpers.concludeDisplayAndPlayers();
-// 		}
-//
-// });

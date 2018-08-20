@@ -1,9 +1,5 @@
 TODO
 
-### Playtest Prep ###
-
-	- VM test with many points - add some extras if time.
-
 ### Votes ###
 
 	- moving votes around / particularly making space for prepend append
@@ -23,20 +19,15 @@ TODO
 
 	- offering user input
 
-
-
-### VM Deployment ###
-
-	- deploy on VM and test
-
 ### Refactoring/ Tidying ####
 
-	- testing framework should be from admin not separate browser
+	- make switch between local and remote modes
+	- refactor story
 	- deal with/ check reset client issues - check all flags are cleared
 	- more robust error handling
 		- make sure every DB request is caught somehow
 		- no need for try/ catch -  errors can be thrown if caught
-	- refactor story
+
 	- display data persistence
 
 

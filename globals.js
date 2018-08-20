@@ -6,12 +6,13 @@ http = require('http').Server(exports.app);
 io = require('socket.io')(http);
 var osc = require("osc");
 
-
-
+//FLAGS should come from CL args
 //exports.DEBUG = true;
 //exports.NO_SC = true;
+exports.IS_LOCAL = true;
 
-exports.port = 80;
+
+exports.port = (exports.IS_LOCAL) ? 8000 : 80;
 exports.tcpSocks = {};
 
 //simple db using monk & mongodb
@@ -111,14 +112,14 @@ exports.voteDisplaySlots =
 };
 
 exports.currentConcludedVote = null;
-
-
-
 exports.scAddr = "127.0.0.1";
 
-exports.udpPort = new osc.UDPPort({
-		localAddress: "server.clamour.info",
-		localPort: 12345
-});
+if(exports.IS_LOCAL)
+{
+	exports.udpPort = new osc.UDPPort({
+			localAddress: "127.0.0.1",
+			localPort: 12345
+	});
 
-exports.udpPort.open();
+	exports.udpPort.open();
+}

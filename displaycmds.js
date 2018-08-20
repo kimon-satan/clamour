@@ -18,7 +18,7 @@ exports.response = function(socket)
 			args.push(msg[p]);
 		})
 
-		helpers.sendTCPMessage({
+		helpers.sendSCMessage({
 				address: "/addTone",
 				args: args,
 		});
@@ -37,7 +37,7 @@ exports.response = function(socket)
 			args.push(msg[p]);
 		})
 
-		helpers.sendTCPMessage({
+		helpers.sendSCMessage({
 				address: "/updateTone",
 				args: args,
 		});
@@ -56,7 +56,7 @@ exports.response = function(socket)
 			args.push(msg[p]);
 		})
 
-		helpers.sendTCPMessage({
+		helpers.sendSCMessage({
 				address: "/endTone",
 				args: args,
 		});
@@ -77,7 +77,7 @@ exports.response = function(socket)
 			args.push(msg[p]);
 		})
 
-		helpers.sendTCPMessage({
+		helpers.sendSCMessage({
 				address: "/startCrawler",
 				args: args,
 		});
@@ -95,7 +95,7 @@ exports.response = function(socket)
 			args.push(msg[p]);
 		})
 
-		helpers.sendTCPMessage({
+		helpers.sendSCMessage({
 				address: "/updateCrawler",
 				args: args,
 		});
@@ -113,7 +113,7 @@ exports.response = function(socket)
 			args.push(msg[p]);
 		})
 
-		helpers.sendTCPMessage({
+		helpers.sendSCMessage({
 				address: "/endCrawler",
 				args: args,
 		});
@@ -132,7 +132,7 @@ exports.response = function(socket)
 			args.push(msg[p]);
 		})
 
-		helpers.sendTCPMessage({
+		helpers.sendSCMessage({
 				address: "/transTone",
 				args: args,
 		});

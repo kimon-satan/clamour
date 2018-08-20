@@ -152,7 +152,7 @@ exports.response = function(socket)
 
 			data.scores[msg.choice] += 1.0/data.population;
 
-			helpers.sendTCPMessage({
+			helpers.sendSCMessage({
 					address: "/speakPhrase",
 					args: [String(data._id), msg.choice, usrobj.voiceNum, usrobj.voicePan, usrobj.voicePitch]
 			});
@@ -228,7 +228,7 @@ exports.response = function(socket)
 
 		var args = ["pan", msg.splatPan, "rate", msg.splatRate, "pos", msg.splatPos];
 
-		helpers.sendTCPMessage({
+		helpers.sendSCMessage({
 				address: "/splat",
 				args: args,
 		});

@@ -323,12 +323,12 @@ exports.startVote = function(msg)
 		p = p.then(_=>
 		{
 			//Tell SC to record the phrases
-			helpers.sendTCPMessage({
+			helpers.sendSCMessage({
 					address: "/recordWinPhrase",
 					args: [String(vote._id) + "_win", winPair[0],winPair[1]],
 			});
 
-			helpers.sendTCPMessage({
+			helpers.sendSCMessage({
 					address: "/recordPhrases",
 					args: [String(vote._id), pair[0],pair[1]],
 			});
@@ -699,7 +699,7 @@ exports.joinVotes = function(msg)
 
 			for(var i = 0; i < votes.length; i++)
 			{
-				helpers.sendTCPMessage({
+				helpers.sendSCMessage({
 						address: "/recordJoinPhrases",
 						args: [String(votes[i]._id) + "_join",
 						joinPhrases[0],
@@ -908,7 +908,7 @@ var triggerVoteComplete = function(data)
 			p.then(_=>{
 
 				var winIdx = (idxs[0] * 2) + idxs[1];
-				helpers.sendTCPMessage({
+				helpers.sendSCMessage({
 						address: "/voteComplete", //pause audio in SC
 						args: [String(data._id) + "_join_" + winIdx + "_7"]
 				});
@@ -917,7 +917,7 @@ var triggerVoteComplete = function(data)
 		}
 		else
 		{
-			helpers.sendTCPMessage({
+			helpers.sendSCMessage({
 					address: "/voteComplete", //pause audio in SC
 					args: [String(data._id) + "_win_" + data.winnerIdx + "_7"]
 			});

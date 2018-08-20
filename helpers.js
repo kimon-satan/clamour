@@ -490,7 +490,7 @@ exports.loadSettings = function()
 exports.loadStory = function(cb)
 {
 	//load the audio samples
-	exports.sendTCPMessage(
+	exports.sendSCMessage(
 	{
 		address: "/loadSamples",
 		args: [globals.settings.samplePath]
@@ -568,7 +568,7 @@ exports.playSound = function(options)
 			args.push(options[k[i]]);
 		}
 
-		exports.sendTCPMessage(
+		exports.sendSCMessage(
 		{
 			address: "/playStereo",
 			args: args
@@ -611,7 +611,7 @@ exports.startStoryClip = function(room)
 	else
 	{
 		//we need to trigger the end of the old sound
-		exports.sendTCPMessage(
+		exports.sendSCMessage(
 		{
 			address: "/allOff",
 		});
@@ -626,13 +626,22 @@ exports.startStoryClip = function(room)
 }
 
 
-exports.sendTCPMessage = function(msg)
+exports.sendSCMessage = function(msg)
 {
 	//NB. message should be a object literal
 	//{address: , args []}
-	var k = Object.keys(globals.tcpSocks);
-	for(var i = 0; i < k.length; i++)
+
+	if(globals.IS_LOCAL)
 	{
-		globals.tcpSocks[k[i]].write(JSON.stringify(msg));
+		globals.udpPort.send(msg, "127.0.0.1" ,57120);
 	}
+	else
+	{
+		var k = Object.keys(globals.tcpSocks);
+		for(var i = 0; i < k.length; i++)
+		{
+			globals.tcpSocks[k[i]].write(JSON.stringify(msg));
+		}
+	}
+
 }

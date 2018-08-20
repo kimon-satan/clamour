@@ -426,7 +426,7 @@ exports.response = function(socket)
 				clearTimeout(globals.procs[keys[i]]);
 			}
 
-			helpers.sendTCPMessage(
+			helpers.sendSCMessage(
 			{
 					address: "/resetPhrases",
 					args: []
@@ -454,7 +454,7 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "end")
 		{
-			helpers.sendTCPMessage(
+			helpers.sendSCMessage(
 			{
 					address: "/allOff",
 					args: []
@@ -514,7 +514,7 @@ exports.response = function(socket)
 	{
 		if(msg.cmd == "reloadsamples")
 		{
-			helpers.sendTCPMessage(
+			helpers.sendSCMessage(
 			{
 				address: "/loadSamples",
 				args: [globals.settings.samplePath]
@@ -529,7 +529,7 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "killsound")
 		{
-			helpers.sendTCPMessage({
+			helpers.sendSCMessage({
 					address: "/allOff",
 					args: []
 			});
