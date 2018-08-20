@@ -1,7 +1,7 @@
 {
 	"samplePath": "/samples/",
-	"storyPath": "config/mov1v3.json",
-	"imagePath": "/images/mov1v3/",
+	"storyPath": "config/mov1v4.json",
+	"imagePath": "/images/mov1v4/",
 	"videoPath": "",
 	"dictionaryPath": "config/dictionary.json"
 }
