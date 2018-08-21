@@ -6,23 +6,16 @@ http = require('http').Server(exports.app);
 io = require('socket.io')(http);
 var osc = require("osc");
 
-//FLAGS should come from CL args
-//exports.DEBUG = true;
-//exports.NO_SC = true;
-exports.IS_LOCAL = true;
-
-
-exports.port = (exports.IS_LOCAL) ? 8000 : 80;
-exports.tcpSocks = {};
-
-//simple db using monk & mongodb
 exports.MONK = require('monk');
 exports.URL = 'localhost:27017/ConditionalLove';
-exports.DB = exports.MONK(exports.URL);
 
-exports.DB.then(() => {
-	console.log('Connected correctly to server')
-})
+
+exports.tcpSocks = {};
+
+//FLAGS should come from CL args
+exports.DEBUG = false;
+exports.NO_SC = false;
+exports.IS_LOCAL = false;
 
 exports.DisplayState = {
 	mode: "instruct",
@@ -31,10 +24,6 @@ exports.DisplayState = {
 	videoLoadProgress: 0
 }
 
-exports.UserData = exports.DB.get('UserData');
-exports.Votes = exports.DB.get('Votes');
-exports.Rooms = exports.DB.get('Rooms'); //This might become a variable ?
-exports.Presets = exports.DB.get('Presets'); //not using so far - probably should just be json
 
 exports.usrobj =
 {
@@ -93,12 +82,6 @@ exports.storyCurrText = [""];
 exports.storyNumChars = 0;
 exports.storyRooms = [];
 
-
-
-
-exports.admin = io.of('/admin');
-exports.display = io.of('/display');
-exports.players = io.of('/player');
 exports.sockets = {};
 exports.checkins = {};
 exports.checkinProcs = {}; //checkin processes only
@@ -114,12 +97,33 @@ exports.voteDisplaySlots =
 exports.currentConcludedVote = null;
 exports.scAddr = "127.0.0.1";
 
-if(exports.IS_LOCAL)
+exports.setup = function()
 {
-	exports.udpPort = new osc.UDPPort({
-			localAddress: "127.0.0.1",
-			localPort: 12345
-	});
 
-	exports.udpPort.open();
+	exports.port = (exports.IS_LOCAL) ? 8000 : 80;
+
+	exports.admin = io.of('/admin');
+	exports.display = io.of('/display');
+	exports.players = io.of('/player');
+
+	if(exports.IS_LOCAL)
+	{
+		exports.udpPort = new osc.UDPPort({
+				localAddress: "127.0.0.1",
+				localPort: 12345
+		});
+
+		exports.udpPort.open();
+	}
+
+	exports.DB = exports.MONK(exports.URL);
+	return exports.DB.then(_ =>
+	{
+		console.log('Connected correctly to server');
+		exports.UserData = exports.DB.get('UserData');
+		exports.Votes = exports.DB.get('Votes');
+		exports.Rooms = exports.DB.get('Rooms'); //This might become a variable ?
+		exports.Presets = exports.DB.get('Presets'); //not using so far - probably should just be json
+	})
+
 }
