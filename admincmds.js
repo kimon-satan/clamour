@@ -493,6 +493,20 @@ exports.response = function(socket)
 			});
 
 		}
+		else if(msg.cmd == "vfix")
+		{
+			votehelpers.fixVote(msg)
+
+			.then((resp)=>
+			{
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
+			})
+
+			.catch((resp)=>{
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
+			});
+
+		}
 		else if(msg.cmd == "lvotes")
 		{
 			//make a list of votes

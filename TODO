@@ -12,7 +12,6 @@ TODO
 
 ### Votes ###
 
-	- font format
 	- moving votes around / particularly making space for prepend append
 	- prevent overwriting slots and other bad things
 	- command to conclude stalled votes
@@ -32,7 +31,6 @@ TODO
 
 ### Refactoring/ Tidying ####
 
-	- command line args for switch and other options
 	- refactor story
 	- deal with/ check reset client issues - check all flags are cleared
 	- more robust error handling

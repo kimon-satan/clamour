@@ -162,7 +162,7 @@ exports.response = function(socket)
 				type: "vote", cmd: "displayVote" ,
 				val: {
 					choice: msg.choice,
-					text: data.pair[msg.choice],
+					text: data.pair,
 					font: usrobj.font,
 					col: usrobj.fontCol,
 					score: data.scores,

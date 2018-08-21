@@ -276,6 +276,51 @@ hslToRgb = function(h, s, l){
 
 Math.fmod = function (a,b) { return Number((a - (Math.floor(a / b) * b)).toPrecision(8)); };
 
+getMaxFontSize = function(text, dims, font, fontSize, context)
+{
+	//gets the maximum fontSize so that all strings in an array will fit into a rect
+	context.font = fontSize + "pt " + font;
+
+	//reduce fontSize to fit
+	var metrics = context.measureText(text);
+	while((metrics.width > dims.w * 0.95 || metrics.height > dims.h * 0.95) && fontSize > 0)
+	{
+		fontSize -= 1; //reduce the fontSize a bit
+		context.font = fontSize + "pt " + font;
+		metrics = context.measureText(text);
+	}
+
+	return fontSize;
+
+}
+
+drawText = function(text, dims, font, fontSize, context, align)
+{
+	//iterate and draw text
+	var offset = 0;
+	var vStart = dims.y + dims.h/2;
+	context.font = fontSize + "pt " + font;
+
+	if(align == undefined || align == "center")
+	{
+		context.textAlign = "center";
+		offset = dims.w/2;
+	}
+	else if(align == "left")
+	{
+		context.textAlign = "left";
+		offset = 0;
+	}
+	else if(align == "right")
+	{
+		context.textAlign = "right";
+		offset = dims.w;
+	}
+
+	context.fillText(text, dims.x + offset, vStart);
+
+}
+
 fitText = function(text, dims, font, fontSize, context, align)
 {
 

@@ -60,7 +60,10 @@ socket.on('cmd', function(msg){
 		}
 		else
 		{
-			voteDisplayer.cmd(msg);
+			if(voteDisplayer != undefined)
+			{
+				voteDisplayer.cmd(msg);
+			}
 		}
 	}
 	else if (msg.type == "end")

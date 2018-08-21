@@ -29,7 +29,10 @@ exports.loadDictionary = function(cb)
 exports.listVotes = function()
 {
 	var ids = globals.voteDisplaySlots.a.concat(globals.voteDisplaySlots.b);
-	var p = globals.Votes.find({_id: {$in: ids }},{sort: {pos: 1}});
+	var p = globals.Votes.find({_id: {$in: ids }},{sort: {pos: 1}})
+	.catch((e)=>{
+		console.log("caught u !");
+	});
 
 	p = p.then((docs)=>
 	{
@@ -564,6 +567,71 @@ exports.concludeVote = function(data)
 
 }
 
+exports.fixVote = function(msg)
+{
+
+	var response = "";
+	var options = helpers.parseOptions(msg.args);
+
+	var pos = options.pos;
+	var text = options.text;
+
+	if(pos == undefined)
+	{
+		//try to find an empty slot
+		pos = findEmptySlot();
+		if(!pos)
+		{
+			return Promise.reject("No free display slots for vote");
+		}
+	}
+
+	if(text == undefined)
+	{
+		return Promise.reject("You need to set some text");
+	}
+
+	var p = globals.Votes.insert(
+		{ pair: [text,text],
+			available: [[],[]],
+			winAvailable: [false,false],
+			joinAvailable: [false,false,false,false],
+			scores: [0,0],
+			voting: [],
+			voted: [],
+			notvoted: 0,
+			population: 0,
+			num: 0,
+			room: "",
+			pos: pos,
+			open: false,
+			winnerIdx: 0,
+			append: "",
+			prepend: "",
+			lock: false
+	});
+
+	p = p.then((doc)=>
+	{
+		globals.voteDisplaySlots[pos[0]][Number(pos[1])] = doc._id;
+
+		globals.display.emit('cmd',
+		{
+			type: "vote", cmd: "concludeVote" ,
+			val:{
+				pos: pos,
+				text: [text,""],
+				winner: 0,
+				slots: globals.voteDisplaySlots
+			}
+		});
+	})
+
+
+
+	return p;
+}
+
 exports.concludeDisplayAndPlayers = function()
 {
 
@@ -606,7 +674,8 @@ exports.concludeDisplayAndPlayers = function()
 		type: "vote", cmd: "concludeVote" ,
 		val:{
 			pos: pos,
-			text: displayTxt,
+			text: globals.currentConcludedVote.pair,
+			winner: globals.currentConcludedVote.winnerIdx,
 			slots: globals.voteDisplaySlots
 		}
 	});

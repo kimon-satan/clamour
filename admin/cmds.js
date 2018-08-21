@@ -29,6 +29,7 @@ var cmdList = [
 
 	"vnew",
 	"vjoin",
+	"vfix",
 	"lvotes"
 ];
 

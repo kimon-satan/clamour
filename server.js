@@ -1,5 +1,10 @@
 
 var globals = require('./globals.js');
+var helpers;
+var votehelpers;
+var admincmds;
+var displaycmds;
+var playercmds;
 
 for(var i = 2; i < process.argv.length; i++)
 {
@@ -22,19 +27,19 @@ for(var i = 2; i < process.argv.length; i++)
 	}
 }
 
+const TCP_PORT = 6969;
+
 globals.setup().then(_=>{
 
-	var helpers = require('./helpers.js');
-	var votehelpers = require('./votehelpers.js');
-	var admincmds = require('./admincmds.js');
-	var displaycmds = require('./displaycmds.js');
-	var playercmds = require('./playercmds.js');
+	helpers = require('./helpers.js');
+	votehelpers = require('./votehelpers.js');
+	admincmds = require('./admincmds.js');
+	displaycmds = require('./displaycmds.js');
+	playercmds = require('./playercmds.js');
 
-	var path = require('path');
-	var net  = require('net');
-	var osc = require("osc");
-
-	const TCP_PORT = 6969;
+	path = require('path');
+	net  = require('net');
+	osc = require("osc");
 
 	//check the various collections exist if not create them
 
