@@ -213,6 +213,15 @@ exports.startVote = function(msg)
 		}
 	}
 
+	if(pair == undefined)
+	{
+		return Promise.reject("choice not defined");
+	}
+	else if(typeof(pair) != "object")
+	{
+		return Promise.reject("incorrectly defined");
+	}
+
 	var p = handlePairRefs(pair);
 
 	p = p.then(_=>
@@ -851,8 +860,9 @@ var handlePairRefs = function(pair)
 {
 	var p = Promise.resolve();
 
-	for(var i = 0; i < 2; i++)
+	for(var i = 0; i < pair.length; i++)
 	{
+		pair[i] = String(pair[i]);
 		let m = pair[i].match(/([ab])(\d)/);
 
 		if(m)

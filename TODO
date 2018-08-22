@@ -9,12 +9,17 @@ TODO
 	- refactor
 	- image fades
 	- always make the longest line the primary
+	- 2nd channel independent of 1 + commands to fade independently
 
 ### Votes ###
 
+	- command to conclude stalled votes
+	- command to increase num of voters for a vote
+
+
 	- moving votes around / particularly making space for prepend append
 	- prevent overwriting slots and other bad things
-	- command to conclude stalled votes
+
 
 	- prevent vote stallers - options:
 		- client side timer (weak if client is actually broken)
@@ -27,7 +32,12 @@ TODO
 	- more font colour combinations ?
 	- prevent sample duplicates in SC
 
+	- IDEAS:
+	- perhaps just a ping for regular vote concluded
+	- longer music for final amalgamation of a rule (new end routine need for this)
+	- append, prepend should happen all within a slot
 	- offering user input
+
 
 ### Refactoring/ Tidying ####
 
@@ -41,10 +51,11 @@ TODO
 
 
 ### Love ###
-	- investigate chrome issue
+
+	- investigate chrome issue - investigate web audio overlap bug
 	- why does updatereactionMaps happen 4 times on iface init ?
-	- investigate web audio overlap bug
 	- splats rendered on mobile screen
 	- linear progression of blobs
 	- adjust states / more variation between blobs
 	- poisson disk for splat distribution
+	- general tidy up of sound

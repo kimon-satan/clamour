@@ -3,7 +3,7 @@
 		[
 			{},
 			{
-				"audio": {"path" : "chapter1/intro", "loop": "false", "in" : 0.0, "out" : 5.0, "amp" : 0.5, "solo": "false", "dur": 120},
+				"audio": {"path" : "chapter1/intro", "loop": "false", "in" : 0.0, "out" : 10.0, "amp" : 0.5, "solo": "false", "dur": 120},
 				"texts" : []
 			}
 		]
@@ -61,7 +61,7 @@
 				]
 			},
 			{
-				"audio": {"path" : "chapter2/trolley", "loop": "true", "in" : 0.0, "out" : 0.5, "amp" : 0.6, "solo": "false"},
+				"audio": {"path" : "chapter2/trolley", "loop": "true", "in" : 0.5, "out" : 1.0, "amp" : 0.6, "solo": "false"},
 				"img": "chapter2/6-boat1.jpg",
 				"texts":
 				[
@@ -70,7 +70,7 @@
 				]
 			},
 			{
-			"audio": {"path" : "chapter2/underwater", "loop": "true", "in" : 0.2, "out" : 0.5, "amp" : 0.2, "solo": "true"},
+			"audio": {"path" : "chapter2/underwater", "loop": "true", "in" : 0.5, "out" : 0.5, "amp" : 0.2, "solo": "true"},
 			"img": "chapter2/7-marine-archeology-1.jpg",
 				"texts":
 				[
@@ -79,12 +79,12 @@
 				]
 			},
 			{
-				"audio": {"path" : "chapter2/waves", "loop": "true", "in" : 0.2, "out" : 0.5, "amp" : 0.5, "solo": "true"},
+				"audio": {"path" : "chapter2/waves", "loop": "true", "in" : 0.5, "out" : 0.5, "amp" : 0.5, "solo": "true"},
 				"img": "chapter2/8-trolley-1.jpg",
 				"texts":[]
 			},
 			{
-				"audio": {"path" : "chapter2/fossil", "loop": "false", "in" : 0.2, "out" : 0.5, "amp" : 0.2, "solo": "true"},
+				"audio": {"path" : "chapter2/fossil", "loop": "false", "in" : 0.0, "out" : 0.0, "amp" : 0.5, "solo": "true"},
 				"img": "chapter2/9-mammoth-crop1.jpg",
 				"texts":
 				[
@@ -94,7 +94,7 @@
 			},
 			{
 				"img": "chapter2/10-skull-2.jpg",
-				"audio": {"path" : "chapter2/skull", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter2/skull", "loop": "false", "in" : 0.5, "out" : 5.0, "amp" : 0.5, "solo": "false"},
 				"texts":
 				[
 					"and not all of us have survived",
@@ -113,7 +113,7 @@
 				]
 			},
 			{
-				"audio": {"path" : "chapter3/7_complete", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter3/7_complete", "loop": "false", "in" : 0.0, "out" : 5.0, "amp" : 0.2, "solo": "false"},
 				"img": "chapter3/12-Doggerland-CGI-1.jpg",
 				"texts":
 				[
@@ -166,7 +166,7 @@
 				]
 			},
 			{
-				"audio": {"path" : "chapter4/1_underwater_and_low_synths", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter4/1_underwater_and_low_synths", "loop": "false", "in" : 0.0, "out" : 5.0, "amp" : 0.5, "solo": "false"},
 				"img": "chapter4/18-marine-archeology-2.jpg",
 				"texts":
 				[
@@ -175,7 +175,7 @@
 				]
 			},
 			{
-				"audio": {"path" : "chapter4/2_high_synth_1", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter4/2_high_synth_1", "loop": "false", "in" : 0.0, "out" : 20.0, "amp" : 0.5, "solo": "false"},
 				"img": "chapter4/19-clipboard-1.jpg",
 				"texts":
 				[
@@ -184,7 +184,7 @@
 				]
 			},
 			{
-				"audio": {"path" : "chapter4/3_high_synth_2", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter4/3_high_synth_2", "loop": "false", "in" : 0.0, "out" : 20.0, "amp" : 0.5, "solo": "false"},
 				"img": "chapter4/20-dday-1.jpg",
 				"texts":
 				[
@@ -192,9 +192,11 @@
 					"have revealed a bloody past"
 				]
 			},
-			{},
 			{
-				"audio": {"path" : "chapter4/4_boardroom", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"solo": "false"}
+			},
+			{
+				"audio": {"path" : "chapter4/4_boardroom", "loop": "false", "in" : 0.0, "out" : 0.5, "amp" : 0.7, "solo": "true"},
 				"img": "chapter4/22-boardroom.jpg",
 				"texts":
 				[
@@ -203,7 +205,7 @@
 				]
 			},
 			{
-				"audio": {"path" : "chapter4/5_classified", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter4/5_classified", "loop": "false", "in" : 0.0, "out" : 0.5, "amp" : 0.7, "solo": "true"},
 				"img": "chapter4/23-classified-doc-1.jpg",
 				"texts":
 				[
@@ -213,7 +215,7 @@
 			},
 			{
 				"audio": {},
-				"audio": {"path" : "chapter4/6_drainage_2_shots", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter4/6_drainage_2_shots", "loop": "false", "in" : 0.0, "out" : 0.5, "amp" : 0.7, "solo": "true"},
 				"img": "chapter4/24-drainage-upper-TEMP.png",
 				"texts":
 				[
@@ -236,13 +238,14 @@
 	{"name": "chapter5", "clips":
 		[
 			{
+				"audio": {"path" : "chapter5/14_black", "loop": "false", "in" : 0.0, "out" : 0.0, "amp" : 0.5, "solo": "false"},
 				"texts":
 				[
 					"However ..."
 				]
 			},
 			{
-				"audio": {"path" : "chapter5/15complete", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter5/15complete", "loop": "false", "in" : 0.0, "out" : 5.0, "amp" : 0.5, "solo": "false"},
 				"img": "chapter5/27-Shadowy-figures-1.jpg",
 				"texts":
 				[
@@ -312,7 +315,7 @@
 	{"name": "chapter6", "clips":
 		[
 			{
-				"audio": {"path" : "chapter6/1_waves", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter6/1_waves", "loop": "false", "in" : 0.0, "out" : 10.0, "amp" : 0.5, "solo": "false"},
 				"img": "chapter6/35-waves-1.jpg",
 				"texts":
 				[
@@ -322,7 +325,7 @@
 			},
 
 			{
-				"audio": {"path" : "chapter6/2_roughs_arial_1", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter6/2_roughs_arial_1", "loop": "false", "in" : 0.0, "out" : 10.0, "amp" : 0.5, "solo": "false"},
 				"img": "chapter6/35-waves-1.jpg",
 				"texts":
 				[
@@ -332,7 +335,7 @@
 			},
 
 			{
-				"audio": {"path" : "chapter6/3_roughs_2", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter6/3_roughs_2", "loop": "false", "in" : 0.0, "out" : 10.0, "amp" : 0.5, "solo": "false"},
 				"img": "chapter6/36-Roughs-Arial-1.jpg",
 				"texts":
 				[
@@ -342,7 +345,7 @@
 			},
 
 			{
-				"audio": {"path" : "chapter6/4_roughs_1", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter6/4_roughs_1", "loop": "false", "in" : 0.0, "out" : 10.0, "amp" : 0.5, "solo": "false"},
 				"img": "chapter6/37-Roughs2.jpg",
 				"texts":
 				[
@@ -352,12 +355,12 @@
 			},
 
 			{
-				"audio": {"path" : "chapter6/5_roughs_3", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter6/5_roughs_3", "loop": "false", "in" : 0.0, "out" : 10.0, "amp" : 0.5, "solo": "false"},
 				"img": "chapter6/38-roughs-1.jpg",
 				"texts":
 				[
-					"To house those on our side we could save",
-					"To house those on their side they could save"
+					"To house those we could save",
+					"To house those they could save"
 				]
 			},
 
@@ -372,7 +375,7 @@
 			},
 
 			{
-				"audio": {"path" : "chapter6/6_passport", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter6/6_passport", "loop": "false", "in" : 0.0, "out" : 10.0, "amp" : 0.5, "solo": "false"},
 				"img": "chapter6/40-Sealand-passport.jpg",
 				"texts":
 				[
@@ -382,7 +385,7 @@
 			},
 
 			{
-				"audio": {"path" : "chapter6/7_blob", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter6/7_blob", "loop": "false", "in" : 0.0, "out" : 10.0, "amp" : 0.5, "solo": "false"},
 				"img": "chapter6/41-blobs-1.png",
 				"texts":
 				[
@@ -392,7 +395,7 @@
 			},
 
 			{
-				"audio": {"path" : "chapter6/8_coins", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter6/8_coins", "loop": "false", "in" : 0.0, "out" : 10.0, "amp" : 0.5, "solo": "false"},
 				"img": "chapter6/42-Sealand-coins.png",
 				"texts":
 				[
@@ -402,7 +405,7 @@
 			},
 
 			{
-				"audio": {"path" : "chapter6/9_waves", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter6/9_waves", "loop": "false", "in" : 0.0, "out" : 10.0, "amp" : 0.5, "solo": "false"},
 				"img": "chapter6/43-waves-1.jpg",
 				"texts":
 				[
