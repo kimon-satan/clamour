@@ -3,7 +3,7 @@
 		[
 			{},
 			{
-				"audio": {"path" : "story/chapter1", "loop": "false", "in" : 0.0, "out" : 5.0, "amp" : 0.5, "solo": "false", "dur": 120},
+				"audio": {"path" : "chapter1/intro", "loop": "false", "in" : 0.0, "out" : 5.0, "amp" : 0.5, "solo": "false", "dur": 120},
 				"texts" : []
 			}
 		]
@@ -61,7 +61,7 @@
 				]
 			},
 			{
-				"audio": {"path" : "story/chapter2_trolley", "loop": "true", "in" : 0.0, "out" : 0.5, "amp" : 0.6, "solo": "false"},
+				"audio": {"path" : "chapter2/trolley", "loop": "true", "in" : 0.0, "out" : 0.5, "amp" : 0.6, "solo": "false"},
 				"img": "chapter2/6-boat1.jpg",
 				"texts":
 				[
@@ -70,7 +70,7 @@
 				]
 			},
 			{
-			"audio": {"path" : "story/chapter2_underwater", "loop": "true", "in" : 0.2, "out" : 0.5, "amp" : 0.2, "solo": "true"},
+			"audio": {"path" : "chapter2/underwater", "loop": "true", "in" : 0.2, "out" : 0.5, "amp" : 0.2, "solo": "true"},
 			"img": "chapter2/7-marine-archeology-1.jpg",
 				"texts":
 				[
@@ -79,12 +79,12 @@
 				]
 			},
 			{
-				"audio": {"path" : "story/chapter2_waves", "loop": "true", "in" : 0.2, "out" : 0.5, "amp" : 0.5, "solo": "true"},
+				"audio": {"path" : "chapter2/waves", "loop": "true", "in" : 0.2, "out" : 0.5, "amp" : 0.5, "solo": "true"},
 				"img": "chapter2/8-trolley-1.jpg",
 				"texts":[]
 			},
 			{
-				"audio": {"path" : "story/chapter2_fossil", "loop": "false", "in" : 0.2, "out" : 0.5, "amp" : 0.2, "solo": "true"},
+				"audio": {"path" : "chapter2/fossil", "loop": "false", "in" : 0.2, "out" : 0.5, "amp" : 0.2, "solo": "true"},
 				"img": "chapter2/9-mammoth-crop1.jpg",
 				"texts":
 				[
@@ -94,7 +94,7 @@
 			},
 			{
 				"img": "chapter2/10-skull-2.jpg",
-				"audio": {"path" : "story/chapter2_skull", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"audio": {"path" : "chapter2/skull", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
 				"texts":
 				[
 					"and not all of us have survived",
@@ -112,39 +112,48 @@
 					"We have now discovered ..."
 				]
 			},
-			{ "img": "chapter3/12-Doggerland-CGI-1.jpg",
+			{
+				"audio": {"path" : "chapter3/7_complete", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter3/12-Doggerland-CGI-1.jpg",
 				"texts":
 				[
 					"Separated from Mainland by vast swathes of water..."
 				]
 			},
-			{ "img": "chapter3/13-Doggerland-CGI-3-rev.jpg",
+			{
+				"audio": {},
+				"img": "chapter3/13-Doggerland-CGI-3-rev.jpg",
 				"texts":
 				[
 					"Sealand was once rich and fertile"
 				]
 			},
-			{ "img": "chapter3/14-Doggerland-CGI-4.jpg",
+			{
+				"audio": {},
+				"img": "chapter3/14-Doggerland-CGI-4.jpg",
 				"texts":
 				[
 					"Technologically and culturally advanced"
 				]
 			},
-			{ "img": "chapter3/15-Doggerland-CGI-5.jpg",
+			{
+				"audio": {},
+				"img": "chapter3/15-Doggerland-CGI-5.jpg",
 				"texts":
 				[
 					"We built a just and equal society",
 					"With a developed system of governance"
 				]
 			},
-			{ "img": "chapter3/16-Doggerland-CGI-2.jpg",
+			{
+				"audio": {},
+				"img": "chapter3/16-Doggerland-CGI-2.jpg",
 				"texts":
 				[
 					"Which we believed could spread far and wide.",
 					"And the will and capability for expansion"
 				]
 			}
-
 		]
 	},
 	{"name": "chapter4", "clips":
@@ -156,21 +165,27 @@
 					"Yet we now know more ..."
 				]
 			},
-			{ "img": "chapter4/18-marine-archeology-2.jpg",
+			{
+				"audio": {"path" : "chapter4/1_underwater_and_low_synths", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter4/18-marine-archeology-2.jpg",
 				"texts":
 				[
 					"Surveys of the seafloor",
 					"Newly recovered documents"
 				]
 			},
-			{ "img": "chapter4/19-clipboard-1.jpg",
+			{
+				"audio": {"path" : "chapter4/2_high_synth_1", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter4/19-clipboard-1.jpg",
 				"texts":
 				[
 					"led to the dawn of a new technology",
 					"perfectly preserved on the seafloor"
 				]
 			},
-			{ "img": "chapter4/20-dday-1.jpg",
+			{
+				"audio": {"path" : "chapter4/3_high_synth_2", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter4/20-dday-1.jpg",
 				"texts":
 				[
 					"enabling our plans for expansion",
@@ -178,28 +193,37 @@
 				]
 			},
 			{},
-			{ "img": "chapter4/22-boardroom.jpg",
+			{
+				"audio": {"path" : "chapter4/4_boardroom", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter4/22-boardroom.jpg",
 				"texts":
 				[
 					"Our elders gathered together",
 					"At the height of their civilisation"
 				]
 			},
-			{ "img": "chapter4/23-classified-doc-1.jpg",
+			{
+				"audio": {"path" : "chapter4/5_classified", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter4/23-classified-doc-1.jpg",
 				"texts":
 				[
 					"and devised a radical plan",
 					"a radical plan was devised"
 				]
 			},
-			{ "img": "chapter4/24-drainage-upper-TEMP.png",
+			{
+				"audio": {},
+				"audio": {"path" : "chapter4/6_drainage_2_shots", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter4/24-drainage-upper-TEMP.png",
 				"texts":
 				[
 					"to unify Sealand with Mainland",
 					"to weld Sealand to Mainland"
 				]
 			},
-			{ "img": "chapter4/25-drainage-lower-TEMP.png",
+			{
+				"audio": {},
+				"img": "chapter4/25-drainage-lower-TEMP.png",
 				"texts":
 				[
 					"by draining the waters between us",
@@ -217,45 +241,59 @@
 					"However ..."
 				]
 			},
-			{ "img": "chapter5/27-Shadowy-figures-1.jpg",
+			{
+				"audio": {"path" : "chapter5/15complete", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter5/27-Shadowy-figures-1.jpg",
 				"texts":
 				[
 					"As we progressed, mistrust developed between us",
 					"As they progressed, mistrust developed"
 				]
 			},
-			{ "img": "chapter5/28-Pitchforks-orig.jpg",
+			{
+				"audio": {},
+				"img": "chapter5/28-Pitchforks-orig.jpg",
 				"texts":
 				[
 					"Dissent spread far and wide"
 				]
 			},
-			{ "img": "chapter5/29-Medieval-weapons.jpg",
+			{
+				"audio": {},
+				"img": "chapter5/29-Medieval-weapons.jpg",
 				"texts":
 				[
 					"And open conflict ensued"
 				]
 			},
-			{ "img": "chapter5/30-militias4.jpg",
+			{
+				"audio": {},
+				"img": "chapter5/30-militias4.jpg",
 				"texts":
 				[
 					"Rebels conspired to re-flood our newly created land"
 				]
 			},
-			{ "img": "chapter5/31-Apocalypse-1.jpg",
+			{
+				"audio": {},
+				"img": "chapter5/31-Apocalypse-1.jpg",
 				"texts":
 				[
 					"But their sabotage had severe repercussions",
 					"But the sabotage had severe repercussions"
 				]
 			},
-			{ "img": "chapter5/32-Apocalypse-2.jpg",
+			{
+				"audio": {},
+				"img": "chapter5/32-Apocalypse-2.jpg",
 				"texts":
 				[
 					"Resulting in total destruction"
 				]
 			},
-			{ "img": "chapter5/33-Apocalypse-3.jpg",
+			{
+				"audio": {},
+				"img": "chapter5/33-Apocalypse-3.jpg",
 				"texts":
 				[
 					"Soon all the lands were drowned"
@@ -273,7 +311,9 @@
 	},
 	{"name": "chapter6", "clips":
 		[
-			{ "img": "chapter6/35-waves-1.jpg",
+			{
+				"audio": {"path" : "chapter6/1_waves", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter6/35-waves-1.jpg",
 				"texts":
 				[
 					"Yet for some of us there was salvation.",
@@ -281,7 +321,9 @@
 				]
 			},
 
-			{ "img": "chapter6/35-waves-1.jpg",
+			{
+				"audio": {"path" : "chapter6/2_roughs_arial_1", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter6/35-waves-1.jpg",
 				"texts":
 				[
 					"Upon the waters of our drowned land",
@@ -289,7 +331,9 @@
 				]
 			},
 
-			{ "img": "chapter6/36-Roughs-Arial-1.jpg",
+			{
+				"audio": {"path" : "chapter6/3_roughs_2", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter6/36-Roughs-Arial-1.jpg",
 				"texts":
 				[
 					"Our people survive... ",
@@ -297,7 +341,9 @@
 				]
 			},
 
-			{ "img": "chapter6/37-Roughs2.jpg",
+			{
+				"audio": {"path" : "chapter6/4_roughs_1", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter6/37-Roughs2.jpg",
 				"texts":
 				[
 					"In the hour of our near-destruction a stronghold was built",
@@ -305,7 +351,9 @@
 				]
 			},
 
-			{ "img": "chapter6/38-roughs-1.jpg",
+			{
+				"audio": {"path" : "chapter6/5_roughs_3", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter6/38-roughs-1.jpg",
 				"texts":
 				[
 					"To house those on our side we could save",
@@ -313,7 +361,9 @@
 				]
 			},
 
-			{ "img": "chapter6/39-roughs-3.jpg",
+			{
+				"audio": {},
+				"img": "chapter6/39-roughs-3.jpg",
 				"texts":
 				[
 					"Now, as we stand alone in this world",
@@ -321,7 +371,9 @@
 				]
 			},
 
-			{ "img": "chapter6/40-Sealand-passport.jpg",
+			{
+				"audio": {"path" : "chapter6/6_passport", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter6/40-Sealand-passport.jpg",
 				"texts":
 				[
 					"we must create a new nation ",
@@ -329,7 +381,9 @@
 				]
 			},
 
-			{ "img": "chapter6/41-blobs-1.png",
+			{
+				"audio": {"path" : "chapter6/7_blob", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter6/41-blobs-1.png",
 				"texts":
 				[
 					"We must channel our will and technology to draft a constitution",
@@ -337,7 +391,9 @@
 				]
 			},
 
-			{ "img": "chapter6/42-Sealand-coins.png",
+			{
+				"audio": {"path" : "chapter6/8_coins", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter6/42-Sealand-coins.png",
 				"texts":
 				[
 					"We will ensure a better future",
@@ -345,7 +401,9 @@
 				]
 			},
 
-			{ "img": "chapter6/43-waves-1.jpg",
+			{
+				"audio": {"path" : "chapter6/9_waves", "loop": "false", "in" : 0.2, "out" : 5.0, "amp" : 0.2, "solo": "false"},
+				"img": "chapter6/43-waves-1.jpg",
 				"texts":
 				[
 					"History must not be allowed to repeat itself"
