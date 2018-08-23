@@ -930,7 +930,7 @@ var triggerVoteComplete = function(data)
 			globals.players.emit('cmd',{cmd: 'resume_vote'});
 			//allows other votes to happen
 			globals.currentConcludedVote = null;
-		},1000);
+		},500);
 	}
 	else
 	{
