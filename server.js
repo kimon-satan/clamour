@@ -203,32 +203,52 @@ function incomingHandler(msg)
 
 	if(!globals.IS_LOCAL)
 	{
-		msg = JSON.parse(msg.toString());
-	}
-
-	if(msg.address == "/poll")
-	{
-		 globals.display.emit('cmd', { type: 'update', id: msg.args[0], val: msg.args[1]});
-	}
-
-	if(msg.address == "/phraseComplete")
-	{
-		votehelpers.handlePhraseComplete(msg).catch((err)=>
+		var s = msg.toString();
+		var r = /\{.*?\}/g
+		var m = r.exec(s);
+		while(m != null)
 		{
-			console.log(err);
-		});
+			try
+			{
+				msg = JSON.parse(m[0],s);
+
+				if(msg.address == "/poll")
+				{
+					 globals.display.emit('cmd', { type: 'update', id: msg.args[0], val: msg.args[1]});
+				}
+
+				if(msg.address == "/phraseComplete")
+				{
+					votehelpers.handlePhraseComplete(msg).catch((err)=>
+					{
+						console.log(err);
+					});
+				}
+
+				if(msg.address == "/resumeVote") //TODO change name
+				{
+					globals.players.emit('cmd',{cmd: 'resume_vote'});
+					//allows other votes to happen
+					globals.currentConcludedVote = null;
+				}
+
+				if(msg.address == "/winSampleDone")
+				{
+					votehelpers.concludeDisplayAndPlayers();
+				}
+				
+				m = r.exec(s);
+			}
+			catch(e)
+			{
+				console.log(m);
+				console.log(e);
+			}
+		}
+
+
 	}
 
-	if(msg.address == "/resumeVote") //TODO change name
-	{
-		globals.players.emit('cmd',{cmd: 'resume_vote'});
-		//allows other votes to happen
-		globals.currentConcludedVote = null;
-	}
 
-	if(msg.address == "/winSampleDone")
-	{
-		votehelpers.concludeDisplayAndPlayers();
-	}
 
 }
