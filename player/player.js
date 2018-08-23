@@ -210,7 +210,7 @@ Player = function(isDummy)
 		console.log("inform:" , msg);
 		msg._id = this.data._id;
 		this.socket.emit('update_user', msg); //tell the server that we have changed mode
-		
+
 	}.bind(this);
 
 	var parseMsgParams = function(msg)
@@ -366,8 +366,9 @@ Player = function(isDummy)
 			{
 				$('#container').empty();
 				$('#container').append( "<div id='chatContainer'> \
-				<h1>Conditional Love</h1> \
-				<h2>Whilst you're waiting ...</h2>\
+				<h1>Clamour</h1> \
+				<h2>The performance will begin shortly ...</h2>\
+				<h2>but whilst you're waiting ...</h2>\
 					<h3>Put your volume on full</h3> \
 					<h3>Turn silent OFF!</h3> \
 					<h3>Turn autolock OFF!</h3> \

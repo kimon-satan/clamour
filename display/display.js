@@ -118,7 +118,7 @@ function setupInstructions()
 		<h1>Clamour - Instructions</h1> \
 		<h3>1. Take out your phone or laptop</h3> \
 		<h3>2. Open a browser</h3> \
-		<h3>3. Type the address https://goo.gl/1Cahy5</h3> \
+		<h3>3. Type the address http://clamour.info</h3> \
 		<h3><i>Tell us if it doesn't work</i></h3></div>"
 	);
 
