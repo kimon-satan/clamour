@@ -1,4 +1,4 @@
-function VoteDisplayer()
+function VoteDisplayer(canvas)
 {
 	this.positions = {ax: 0, bx: 0, y: [0,0,0,0]};
 	this.staticFades = {a: [], b: []};
@@ -7,7 +7,7 @@ function VoteDisplayer()
 	this.slotHeight = innerHeight * 0.75/4;
 	this.slotWidth = innerWidth * 0.4;
 	this.colsAlign = ["center", "center"];
-
+	this.isActive = false;
 
 
 	for(var i = 0; i < 4; i++)
@@ -18,10 +18,7 @@ function VoteDisplayer()
 		this.activeFades.b.push([]);
 	}
 
-	$('#displayscreen').append("<canvas id='voteContainer' width='" + innerWidth + "px' height='" + innerHeight + "px'></canvas>");
-
-	var c = $("#voteContainer")[0];
-	var ctx = c.getContext("2d");
+	var ctx = canvas.getContext("2d");
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'middle'
 
@@ -292,12 +289,25 @@ function VoteDisplayer()
 		}
 
 
-		requestAnimationFrame(this.draw);
+		if(this.isActive)requestAnimationFrame(this.draw);
 
 	}.bind(this)
 
-	this.setAllSlotsOn();
 
-	requestAnimationFrame(this.draw);
+	this.setActive = function(isActive)
+	{
+		if(!this.isActive && isActive)
+		{
+			this.isActive = isActive;
+			this.draw();
+		}
+		else
+		{
+			this.isActive = isActive;
+		}
+
+	}.bind(this);
+
+	this.setAllSlotsOn();
 
 }

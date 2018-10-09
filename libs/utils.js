@@ -323,6 +323,7 @@ drawText = function(text, dims, font, fontSize, context, align)
 
 fitText = function(text, dims, font, fontSize, context, align)
 {
+	//console.log("fit text");
 
 	//dims = {x: y: w: h:}
 	//fits and centers text into rectangle

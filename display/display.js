@@ -1,69 +1,87 @@
 var globals;
-
-
-
-
-love = undefined;
-
-var voteDisplayer;
-
-var lastFrameTime, framePeriod, fps, mode;
-var vidProgRoutine;
-var myVid;// make a video element
-
+var love;
+var voteDisplayer, textDisplayer;
+var story;
+var mode;
+var lastFrameTime, framePeriod, fps;
+var simple_canvas;
+var threejs_canvas;
 lastFrameTime = 0;
 
 var socket = io('/display');
 
-$('document').ready(function(){
+$('document').ready(function()
+{
 
-	setupInstructions();
-
-	$.getJSON("/config/settings.json", function(json) {
-	    globals = json;
-
-			myVid = $("<video id='vidPlayer'><source preload=true src='" + globals.videoPath + "intro.mp4" + "'type='video/mp4'></vid>");
-			myVid[0].onprogress = function()
-			{
-				socket.emit("vidLoading", myVid[0].readyState);
-			};
-			myVid[0].oncanplaythrough = function()
-			{
-				socket.emit("vidLoaded");
-			};
+	$.getJSON("/config/settings.json", function(json)
+	{
+		globals = json;
 	});
+
+	simple_canvas = $('#simple_display')[0];
+	$('#simple_display').attr('width', innerWidth);
+	$('#simple_display').attr('height', innerHeight);
+	$('#simple_display').show();
+	threejs_canvas = $('#threejs_display')[0];
+	$('#threejs_display').attr('width', innerWidth);
+	$('#threejs_display').attr('height', innerHeight);
+	$('#threejs_display').hide();
+
+	textDisplayer = new TextDisplayer(simple_canvas);
+	voteDisplayer = new VoteDisplayer(simple_canvas);
+	love = new Love(socket, threejs_canvas);
+	story = new Story(simple_canvas);
+
+	textDisplayer.setActive(true);
 
 })
 
 
-socket.on('cmd', function(msg){
+socket.on('cmd', function(msg)
+{
 
 	//console.log(msg);
 	if (msg.type == "instruct")
 	{
-		setupInstructions();
+		$('#simple_display').show();
+		$('#threejs_display').hide();
+		voteDisplayer.setActive(false);
+		story.setActive(false);
+		love.setActive(false);
+		textDisplayer.setActive(true);
 	}
 	else if (msg.type == "love" )
 	{
-		setupLove();
+		$('#simple_display').hide();
+		$('#threejs_display').show();
+		voteDisplayer.setActive(false);
+		story.setActive(false);
+		love.setActive(true);
+		textDisplayer.setActive(false);
+		console.log("love");
 	}
 	else if (msg.type == "story" )
 	{
-		story(msg);
+		console.log("story");
+		$('#simple_display').show();
+		$('#threejs_display').hide();
+		voteDisplayer.setActive(false);
+		love.setActive(false);
+		story.setActive(true);
+		textDisplayer.setActive(false);
+		//story(msg);
+		mode = "story";
 	}
 	else if (msg.type == "vote" )
 	{
+
 		if(msg.cmd == "reset" || msg.cmd == "new")
 		{
-			$('#displayscreen').empty();
-			voteDisplayer = new VoteDisplayer();
+			voteDisplayer.setActive(true);
 		}
 		else
 		{
-			if(voteDisplayer != undefined)
-			{
-				voteDisplayer.cmd(msg);
-			}
+			voteDisplayer.cmd(msg);
 		}
 	}
 	else if (msg.type == "end")
@@ -77,6 +95,9 @@ socket.on('cmd', function(msg){
 	{
 		if(mode == "love")
 		{
+			textDisplayer.setActive(false);
+			voteDisplayer.setActive(false);
+			love.setActive(true);
 			love.splatManager.clearAll();
 			love.blobManager.clearAll(love.scene);
 			love.branchManager.clearAll(love.scene);
@@ -84,7 +105,7 @@ socket.on('cmd', function(msg){
 		}
 		else
 		{
-			$('#displayscreen').empty();
+			//
 		}
 	}
 	else if(msg.type == "splat")
@@ -108,103 +129,46 @@ socket.on('cmd', function(msg){
 
 });
 
+// TODO:
+
+//1. clean up commands interface
+//2. cross-fading images
+//3. screen resize event
+//4. cookies/local storage to save state (at least some of it)
+
 ////////////////////////////////////////////INSTRUCTIONS/////////////////////////////
 
-function setupInstructions()
-{
-	$('#displayscreen').empty();
-	$('#displayscreen').append( " \
-		<div id='displayInstructions'> \
-		<h1>Clamour - Instructions</h1> \
-		<h3>1. Take out your phone or laptop</h3> \
-		<h3>2. Open a browser</h3> \
-		<h3>3. Type the address http://clamour.info</h3> \
-		<h3><i>Tell us if it doesn't work</i></h3></div>"
-	);
 
-	mode = "instruct";
-}
-
-function story(msg)
-{
-
-	//console.log(msg);
-
-	if(msg.blank)
-	{
-		if(typeof(vidProgRoutine) != "undefined")
-		{
-			window.clearInterval(vidProgRoutine);
-			vidProgRoutine = undefined
-		}
-		$('#displayscreen').empty(); //just empty the screen
-	}
-	else if(msg.img)
-	{
-		$('#displayscreen').empty();
-		if(typeof(vidProgRoutine) != "undefined")
-		{
-			window.clearInterval(vidProgRoutine);
-			vidProgRoutine = undefined
-		}
-		var imgtag = $("<img src=" + msg.img + ">");
-		var imgdiv = $("<div id='storyContainer'></div>");
-
-
-		imgtag.css('width', innerWidth);
-		//imgtag.css('height', innerHeight);
-
-		imgdiv.append(imgtag);
-		$('#displayscreen').append(imgdiv);
-	}
-	else if (msg.video)
-	{
-		if(typeof(vidProgRoutine) != "undefined")
-		{
-			window.clearInterval(vidProgRoutine);
-			vidProgRoutine = undefined
-		}
-
-		myVid[0].currentTime = 0;
-		$('#displayscreen').empty();
-		$('#displayscreen').append(myVid[0]);
-		$('#vidPlayer').attr('width',window.innerWidth);
-		$('#vidPlayer').get(0).play();
-
-		vidProgRoutine = window.setInterval(function(){
-			var p = $('#vidPlayer').get(0).currentTime;
-			socket.emit("vidUpdate", p);
-		},500);
-	}
-
-	mode = "story";
-}
+// function story(msg)
+// {
+//
+// 	//console.log(msg);
+//
+// 	if(msg.blank)
+// 	{
+// 		//$('#displayscreen').empty(); //just empty the screen
+// 	}
+// 	else if(msg.img)
+// 	{
+// 		// $('#displayscreen').empty();
+// 		// var imgtag = $("<img src=" + msg.img + ">");
+// 		// var imgdiv = $("<div id='storyContainer'></div>");
+//
+//
+// 		//imgtag.css('width', innerWidth);
+// 		//imgtag.css('height', innerHeight);
+//
+// 		//imgdiv.append(imgtag);
+// 		//$('#displayscreen').append(imgdiv);
+// 	}
+//
+// 	mode = "story";
+// }
 
 
 ///////////////////////////////////////LOVE//////////////////////////////////////////
 
-function setupLove ()
-{
-	$('#displayscreen').empty();
-	var d = $('#displayscreen');
-	if(d.length > 0)
-	{
-		if(love == undefined)
-		{
-			love = new Love(socket);
-		}
-		else{
-			$('#displayscreen').append( love.renderer.domElement );
-			love.canvas = love.renderer.domElement;
-		}
-	}
-	else
-	{
-		window.setTimeout(setupLove, 10);
-	}
 
-	mode = "love";
-}
 
 newBranch = function(parent)
 {
@@ -212,164 +176,4 @@ newBranch = function(parent)
 	var branch = love.branchManager.addBranch(parent);
 	parent.branch = branch;
 	love.scene.add(branch.mesh);
-}
-
-
-Love = function(socket)
-{
-	this.renderer = new THREE.WebGLRenderer();
-	this.renderer.setSize( window.innerWidth, window.innerHeight );
-
-	$('#displayscreen').append( this.renderer.domElement );
-	this.canvas = this.renderer.domElement;
-
-	var p = this.renderer.domElement.width/this.renderer.domElement.height;
-	this.camera = new THREE.OrthographicCamera(-p, p, -1, 1, -100, 100);
-	this.camera.position.z = 1;
-	this.startTime = new Date().getTime();
-	this.accumulator = 0;
-	this.ellapsedTime = 0;
-	this.resolution = new THREE.Vector2(this.renderer.domElement.width,this.renderer.domElement.height);
-	this.fps = 0;
-
-	this.scene = new THREE.Scene();
-	this.splatManager = new SplatManager(p, socket);
-	this.blobManager = new BlobManager(p, socket);
-	this.branchManager = new BranchManager(newBranch);
-	this.scene.add(this.splatManager.mesh);
-
-
-	this.mousePos = new THREE.Vector2();
-
-	var gridGeometry = new THREE.Geometry();
-
-	this.cellNorm = 0.2;
-	var l = Math.sqrt(p*p + 1.0) + this.cellNorm;
-	var num = l * 2.0/this.cellNorm;
-
-	for(var i = 0; i < num; i++)
-	{
-		var d = i * this.cellNorm;
-		gridGeometry.vertices.push( new THREE.Vector3(-l , -l + d, -10 ) );
-		gridGeometry.vertices.push( new THREE.Vector3( l , -l + d, -10 ) );
-		gridGeometry.vertices.push( new THREE.Vector3( -l + d, -l , -10 ) );
-		gridGeometry.vertices.push( new THREE.Vector3( -l + d, l, -10 ) );
-	}
-
-	var g_material = new THREE.LineBasicMaterial( { color: 0x666666 } );
-	this.grid = new THREE.LineSegments( gridGeometry, g_material );
-	this.grid.visible = true;
-	this.scene.add( this.grid);
-
-/////////////////////////////////////
-
-	this.canvas.addEventListener('mousedown', function(e)
-	{
-
-		this.isMouseDown = true;
-
-	}.bind(this)
-	, false);
-
-	this.canvas.addEventListener("mousemove", function (e)
-	{
-
-	}.bind(this)
-	, false);
-
-	this.canvas.addEventListener('mouseup', function()
-	{
-		this.isMouseDown = false;
-
-
-	}.bind(this)
-	, false);
-
-	//////////////////////////////////////////////////////////////////
-
-	this.splat = function(msg)
-	{
-		this.splatManager.addSplat(msg.val);
-		if(msg.val.state >= 4 && msg.val.state_z > 0.9) // utilmately make these flexible
-		{
-			if(this.splatManager.getEnergy(msg.val._id) >= 0.9)
-			{
-
-				var pos = new THREE.Vector2().copy(this.splatManager.playerInfo[msg.val._id].center);
-				var blob = this.blobManager.addBlob(pos, msg.val);
-				blob.updateState(msg.val.state_z);
-				blob.updateUniforms();
-
-				this.splatManager.transform(msg.val._id, function()
-				{
-							newBranch(blob);
-							love.scene.add(blob.mesh);
-				});
-
-			}
-		}
-	}
-
-	this.transform = function(msg)
-	{
-		for(var i = 0; i < msg.val.length; i++)
-		{
-			if(this.splatManager.playerInfo[msg.val[i]._id] != undefined)
-			{
-				if(!this.splatManager.playerInfo[msg.val[i]._id].transform)
-				{
-					var pos = new THREE.Vector2().copy(this.splatManager.playerInfo[msg.val[i]._id].center);
-					var blob = this.blobManager.addBlob(pos, msg.val[i]);
-					blob.updateState(msg.val[i].state_z);
-					blob.updateUniforms();
-
-					this.splatManager.transform(msg.val[i]._id, function()
-					{
-								newBranch(blob);
-								love.scene.add(blob.mesh);
-					});
-				}
-			}
-		}
-	}
-
-	this.moveBlob = function(msg)
-	{
-		if(this.blobManager.blobs[msg.val._id].currStateIdx != msg.val.state)
-		{
-			this.blobManager.changeState(msg.val._id, msg.val.state);
-		}
-		this.blobManager.blobs[msg.val._id].updateState(msg.val.state_z);
-		this.blobManager.blobs[msg.val._id].updateUniforms();
-		this.blobManager.moveBlob(msg.val._id,  msg.val.rot, msg.val.trans * 0.5, msg.val.death);
-	}
-
-
-	//////////////////////////////////////////////////////////////////////////////////////
-
-	this.draw = function()
-	{
-		var n_et = (new Date().getTime() - this.startTime) * 0.001;
-		this.accumulator += (n_et - this.ellapsedTime);
-		this.ellapsedTime = n_et;
-
-		if(this.accumulator > 1.0/60)
-		{
-			framePeriod = this.ellapsedTime - lastFrameTime;
-			this.fps = (this.fps + 1.0/framePeriod)/2.0;
-			this.accumulator = 0;
-			this.splatManager.updateSpots(this.ellapsedTime);
-			//debug code
-			this.blobManager.update(this.ellapsedTime);
-			this.branchManager.update(this.ellapsedTime);
-			this.renderer.render( this.scene, this.camera );
-			lastFrameTime = this.ellapsedTime;
-		}
-
-
-		requestAnimationFrame(this.draw);
-	}.bind(this);
-
-	this.draw();
-
 }

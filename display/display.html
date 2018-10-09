@@ -1,10 +1,13 @@
 <html lang=en>
-  <head>
-    <title>Conditional Love - Display</title>
-    <link rel="stylesheet" type="text/css" href="/style/myStyle.css">
+	<head>
+		<title>Conditional Love - Display</title>
+		<style>
+			body { margin: 0; }
+		</style>
   </head>
   <body>
-		<div id="displayscreen"></div>
+		<canvas id="simple_display"></canvas>
+		<canvas id="threejs_display" style="z-index: -1; position: absolute; top: 0; float: left"></canvas>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="/libs/jquery-3.1.1.min.js"></script>
@@ -21,6 +24,9 @@
     <script src= 'blobs.js'></script>
     <script src= 'splat.js'></script>
 		<script src= 'voteDisplayer.js'></script>
+		<script src= 'love.js'></script>
+		<script src= 'story.js'></script>
+		<script src= 'textDisplayer.js'></script>
     <script src= 'display.js'></script>
 
   </body>
