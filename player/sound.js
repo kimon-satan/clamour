@@ -13,22 +13,22 @@ Sound.prototype.init = function(){
 
   this.seed = Math.random();
 
-  if (this.audioContext.decodeAudioData)
-  {
-    this.applyGrainWindow = true;
-
-    var grainWindowLength = 16384;
-    grainWindow = new Float32Array(grainWindowLength);
-    for (var i = 0; i < grainWindowLength; ++i)
-    {
-      grainWindow[i] = Math.sin(Math.PI * i / grainWindowLength);
-    }
-  }
-  else
-  {
-    //grain window not supported
+  // if (this.audioContext.decodeAudioData)
+  // {
+  //   this.applyGrainWindow = true;
+	//
+  //   var grainWindowLength = 16384;
+  //   grainWindow = new Float32Array(grainWindowLength);
+  //   for (var i = 0; i < grainWindowLength; ++i)
+  //   {
+  //     grainWindow[i] = Math.sin(Math.PI * i / grainWindowLength);
+  //   }
+  // }
+  // else
+  // {
+  //   //grain window not supported
     this.applyGrainWindow = false;
-  }
+  //}
 
   if (this.audioContext.createDynamicsCompressor)
   {
@@ -183,20 +183,20 @@ Sound.prototype.nextGrain = function()
 
   var grainWindowNode;
 
-  if (this.applyGrainWindow)
-  {
-
-    //console.log("applying grain window");
-    //shape the grain window
-    grainWindowNode = this.audioContext.createGain();
-    source.connect(grainWindowNode);
-    grainWindowNode.connect(gainNode);
-  }
-  else
-  {
-    console.log("no grain window")
+  // if (this.applyGrainWindow)
+  // {
+	//
+  //   //console.log("applying grain window");
+  //   //shape the grain window
+  //   grainWindowNode = this.audioContext.createGain();
+  //   source.connect(grainWindowNode);
+  //   grainWindowNode.connect(gainNode);
+  // }
+  // else
+  // {
+  //   console.log("no grain window")
     source.connect(gainNode);
-  }
+  //}
 
   // Pitch
   var totalPitch = this.parameters.pitch.value + r1 * this.parameters.pitchRandomization.value;
@@ -214,22 +214,22 @@ Sound.prototype.nextGrain = function()
 
   // Schedule the grain window.
 
-  if (this.applyGrainWindow)
-  {
-    var windowDuration = this.parameters.grainDuration.value / pitchRate;
-    grainWindowNode.gain.setValueAtTime(0.0, this.realTime); // make default value 0
-		try
-		{
-			grainWindowNode.gain.setValueCurveAtTime(grainWindow, this.realTime, windowDuration);
-		}
-		catch(e)
-		{
-			//TODO investigate overlap bug here
-			//
-			console.log(e);
-		}
-
-  }
+  // if (this.applyGrainWindow)
+  // {
+  //   var windowDuration = this.parameters.grainDuration.value / pitchRate;
+  //   grainWindowNode.gain.setValueAtTime(0.0, this.realTime); // make default value 0
+	// 	try
+	// 	{
+	// 		grainWindowNode.gain.setValueCurveAtTime(grainWindow, this.realTime, windowDuration);
+	// 	}
+	// 	catch(e)
+	// 	{
+	// 		//TODO investigate overlap bug here
+	// 		//
+	// 		console.log(e);
+	// 	}
+	//
+  // }
 
 
   // Update time params
@@ -331,38 +331,10 @@ Sound.prototype.setReaction  = function(idx)
 
 }
 
-//IOS workaround
 
 Sound.prototype.unlock = function()
 {
-
-  console.log("unlocking")
-
-  // create empty buffer and play it
-  var buffer = this.audioContext.createBuffer(1, 1, 22050);
-  var source = this.audioContext.createBufferSource();
-
-  source.buffer = buffer;
-  console.log(source);
-  source.connect(this.audioContext.destination);
-  //source.noteOn(0);
-  source.start();
-
-
-  var host = this;
-  // by checking the play reaction after some time, we know if we're really unlocked
-
-
-  var f = window.setInterval(function() {
-
-    if(source.playbackState > 0)
-    {
-      host.isUnlocked = true;
-      console.log("unlocked");
-      window.clearInterval(f);
-    }
-  }, 10);
-
+	return this.audioContext.resume();
 }
 
 Sound.prototype.getFileId = function(url)

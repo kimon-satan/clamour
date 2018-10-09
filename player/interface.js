@@ -214,15 +214,19 @@ Interface = function(parent, callback){
 				e.touches[0].clientY / this.canvas.height
 			);
 
-			if(!this.sound.isUnlocked)
-			{
-				this.sound.unlock();
-			}
 
-			if(!this.isMouseDown){
-				this.gestureStart();
-			}
-			this.isMouseDown = true;
+			this.sound.unlock()
+
+			.then(()=>
+			{
+				if(!this.isMouseDown){
+					this.gestureStart();
+				}
+				this.isMouseDown = true;
+			})
+
+
+			e.preventDefault();
 
 
 		}.bind(this)
@@ -244,6 +248,8 @@ Interface = function(parent, callback){
 				this.gestureMove(p);
 			}
 
+			e.preventDefault();
+
 		}.bind(this)
 		, false);
 
@@ -257,6 +263,8 @@ Interface = function(parent, callback){
 				this.triggerMove();
 			}
 
+			e.preventDefault();
+
 		}.bind(this)
 		, false);
 
@@ -268,20 +276,17 @@ Interface = function(parent, callback){
 				e.clientY/this.canvas.height
 			);
 
+			this.sound.unlock()
 
-			if(!this.sound.isUnlocked)
+			.then(()=>
 			{
-				this.sound.isUnlocked = true;
-			}
+				if(!this.isMouseDown )
+				{
+					this.gestureStart();
+					this.isMouseDown = true;
+				}
+			})
 
-			//also firing on touch up on ios
-			//dont know what to do about this problem !!!!!!!!
-			//
-			if(!this.isMouseDown )
-			{
-				this.gestureStart();
-				this.isMouseDown = true;
-			}
 		}.bind(this)
 		, false);
 
