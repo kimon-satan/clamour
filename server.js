@@ -2,6 +2,7 @@
 var globals = require('./globals.js');
 var helpers;
 var votehelpers;
+var storyhelpers;
 var admincmds;
 var displaycmds;
 var playercmds;
@@ -33,13 +34,15 @@ globals.setup().then(_=>{
 
 	helpers = require('./helpers.js');
 	votehelpers = require('./votehelpers.js');
+	storyhelpers = require('./storyhelpers.js');
 	admincmds = require('./admincmds.js');
 	displaycmds = require('./displaycmds.js');
 	playercmds = require('./playercmds.js');
 
-	path = require('path');
-	net  = require('net');
-	osc = require("osc");
+	var path = require('path');
+	var net  = require('net');
+	var osc = require("osc");
+	var fs = require('fs');
 
 	//check the various collections exist if not create them
 
@@ -53,7 +56,15 @@ globals.setup().then(_=>{
 
 	});
 
-	helpers.loadSettings(); //make native
+	//load global settings from JSON file
+	fs.readFile('config/settings.json', 'utf8', function (err, data)
+	{
+			if (err) throw err;
+			globals.settings = JSON.parse(data);
+			storyhelpers.load();
+			//exports.loadDictionary(); //needs to be called from elsewhere
+	});
+
 
 	//check whether any existing users rejoin
 
@@ -236,7 +247,7 @@ function incomingHandler(msg)
 				{
 					votehelpers.concludeDisplayAndPlayers();
 				}
-				
+
 				m = r.exec(s);
 			}
 			catch(e)

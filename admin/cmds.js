@@ -21,6 +21,7 @@ var cmdList = [
 	"set",
 	"sub",
 	"end",
+	"add",
 
 	"sreload", //story stuff
 	"sreset",

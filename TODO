@@ -6,7 +6,6 @@ TODO
 
 ### Story ###
 
-	- refactor
 	- image fades
 	- always make the longest line the primary
 	- 2nd channel independent of 1 + commands to fade independently

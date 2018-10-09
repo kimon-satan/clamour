@@ -480,65 +480,11 @@ exports.loadPresets = function(args, options, cb)
 
 }
 
-//TODO doesn't belong here
-exports.loadSettings = function()
-{
-	//load global settings from JSON file
-	fs.readFile('config/settings.json', 'utf8', function (err, data)
-	{
-			if (err) throw err;
-			globals.settings = JSON.parse(data);
-			exports.loadStory();
-			//exports.loadDictionary(); //needs to be called from elsewhere
-	});
-}
 
-/////////////////////////////STORY//////////////////////////////////
 
-exports.loadStory = function(cb)
-{
-	//load the audio samples
-	exports.sendSCMessage(
-	{
-		address: "/loadSamples",
-		args: [globals.settings.samplePath]
-	});
+/////////////////////////////SC SOUND//////////////////////////////////
 
-	//load the story object
 
-	fs.readFile(globals.settings.storyPath, 'utf8', function (err, data)
-	{
-		globals.story = JSON.parse(data);
-		globals.storyChapter = 0;
-		globals.storyClip = 0;
-		globals.storyCurrText = [""];
-		globals.storyNumChars = 0;
-
-		if(cb != undefined)
-		{
-			cb(err);
-		}
-	});
-}
-
-exports.incrementStoryClip = function()
-{
-	globals.storyClip += 1;
-
-	if(globals.storyClip > globals.story[globals.storyChapter].clips.length - 1)
-	{
-		if(globals.storyChapter < globals.story.length -1)
-		{
-			globals.storyChapter += 1;  //increment the stage
-			globals.storyClip = 0;
-		}
-		else
-		{
-			globals.storyClip = globals.story[globals.storyChapter].clips.length - 1; //stay where we are
-		}
-	}
-
-}
 
 exports.playSound = function(options)
 {
@@ -583,55 +529,7 @@ exports.playSound = function(options)
 		});
 }
 
-exports.startStoryClip = function(room)
-{
 
-	//TODO add video handler here
-	var vid = globals.story[globals.storyChapter].clips[globals.storyClip].video;
-	var img = globals.story[globals.storyChapter].clips[globals.storyClip].img;
-	var blank = globals.story[globals.storyChapter].clips[globals.storyClip].blank;
-
-	if(vid)
-	{
-		var vid_path = globals.settings.videoPath + vid;
-		globals.display.emit('cmd', {type: 'story', video: vid_path});
-		globals.DisplayState.storyMedia = "video";
-	}
-	else if(img)
-	{
-		var img_path = globals.settings.imagePath + img;
-		globals.display.emit('cmd', {type: 'story', img: img_path});
-		globals.DisplayState.storyMedia = "img";
-	}
-	else
-	{
-		globals.display.emit('cmd', {type: 'story', blank: true});
-		globals.DisplayState.storyMedia = "blank";
-	}
-
-
-	var audio_options = globals.story[globals.storyChapter].clips[globals.storyClip].audio;
-	if(audio_options)
-	{
-		var cloned = Object.assign({}, audio_options);
-		exports.playSound(cloned);
-	}
-	else
-	{
-		//we need to trigger the end of the old sound
-		exports.sendSCMessage(
-		{
-			address: "/allOff",
-		});
-	}
-
-	//NB. at some point we might need the option not to clear the screen
-	if(room != undefined)globals.players.to(room).emit('cmd', {cmd: 'chat_clear'});
-
-	globals.storyCurrText = [""];
-	globals.storyNumChars = 0;
-
-}
 
 
 exports.sendSCMessage = function(msg)
