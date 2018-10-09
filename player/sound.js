@@ -4,51 +4,35 @@
 
 var grainWindow;
 
-Sound.prototype.init = function(){
+Sound.prototype.init = function()
+{
 
-  window.AudioContext = window.AudioContext || window.webkitAudioContext;
-  this.audioContext = new AudioContext();
+	window.AudioContext = window.AudioContext || window.webkitAudioContext;
+	this.audioContext = new AudioContext();
 
-  this.realTime = Math.max(0, this.audioContext.currentTime);
+	this.realTime = Math.max(0, this.audioContext.currentTime);
 
-  this.seed = Math.random();
+	this.seed = Math.random();
 
-  // if (this.audioContext.decodeAudioData)
-  // {
-  //   this.applyGrainWindow = true;
-	//
-  //   var grainWindowLength = 16384;
-  //   grainWindow = new Float32Array(grainWindowLength);
-  //   for (var i = 0; i < grainWindowLength; ++i)
-  //   {
-  //     grainWindow[i] = Math.sin(Math.PI * i / grainWindowLength);
-  //   }
-  // }
-  // else
-  // {
-  //   //grain window not supported
-    this.applyGrainWindow = false;
-  //}
+	if (this.audioContext.createDynamicsCompressor)
+	{
+		console.log("compressor created");
+		this.compressor = this.audioContext.createDynamicsCompressor();
+		this.compressor.connect(this.audioContext.destination);
+	}
+	else
+	{
+		//Compressor not available
+		this.compressor = this.audioContext.destination;
+	}
 
-  if (this.audioContext.createDynamicsCompressor)
-  {
-    console.log("compressor created");
-    this.compressor = this.audioContext.createDynamicsCompressor();
-    this.compressor.connect(this.audioContext.destination);
-  }
-  else
-  {
-    //Compressor not available
-    this.compressor = this.audioContext.destination;
-  }
+	//for each reaction load the sound file
+	for(var s in this.reactions)
+	{
+		this.loadSample( globals.samplePath + this.reactions[s].file.value);
+	}
 
-  //for each reaction load the sound file
-  for(var s in this.reactions)
-  {
-    this.loadSample( globals.samplePath + this.reactions[s].file.value);
-  }
-
-  this.loadSample(globals.samplePath + "232211_spit.wav");
+	this.loadSample(globals.samplePath + "232211_spit.wav");
 
 	console.log("initialised");
 
@@ -56,101 +40,101 @@ Sound.prototype.init = function(){
 
 Sound.prototype.update = function(ellapsedTime, mousePos, envsActive, env)
 {
-  if(!this.audioContext)return; //not initialised yet
-  if(this.reaction == undefined)return; //no sound reaction
+	if(!this.audioContext)return; //not initialised yet
+	if(this.reaction == undefined)return; //no sound reaction
 
-  var currentTime = this.audioContext.currentTime;
+	var currentTime = this.audioContext.currentTime;
 
-  //mapping to envelopes this will need sorting
+	//mapping to envelopes this will need sorting
 
-  if(envsActive)
-  {
+	if(envsActive)
+	{
 
-    for (var property in this.parameters)
-    {
+		for (var property in this.parameters)
+		{
 
-      if(typeof(this.parameters[property].map) == "number")
-      {
-        this.parameters[property].value = linlin
-        (
-          env[this.parameters[property].map].z,
-          0.0, 1.0,
-          this.parameters[property].min, this.parameters[property].max
-        );
-      }
-    }
+			if(typeof(this.parameters[property].map) == "number")
+			{
+				this.parameters[property].value = linlin
+				(
+					env[this.parameters[property].map].z,
+					0.0, 1.0,
+					this.parameters[property].min, this.parameters[property].max
+				);
+			}
+		}
 
-    while (this.realTime < currentTime + 0.100 )
-    {
+		while (this.realTime < currentTime + 0.100 )
+		{
 
-      if(!this.nextGrain()){
-        break;
-      };
+			if(!this.nextGrain()){
+				break;
+			};
 
-    }
+		}
 
 
 
-  }
+	}
 }
 
 Sound.prototype.loadSample = function(url) {
 
-  //TODO fix audio loading bug
+	//TODO fix audio loading bug
 
-  var fileId = this.getFileId(url);
+	var fileId = this.getFileId(url);
 
-  if(this.buffers[fileId] != undefined)
-  {
-    return;
-  }
+	if(this.buffers[fileId] != undefined)
+	{
+		return;
+	}
 
-  this.buffers[fileId] = {duration: 0, isSourceLoaded: false, buffer: 0 };
+	this.buffers[fileId] = {duration: 0, isSourceLoaded: false, buffer: 0 };
 
-  var request = new XMLHttpRequest();
-  request.open("GET", url, true);
-  request.responseType = "arraybuffer";
+	var request = new XMLHttpRequest();
+	request.open("GET", url, true);
+	request.responseType = "arraybuffer";
 
-  var ptr = this;
+	var ptr = this;
 
-  request.onload = function() {
-    ptr.audioContext.decodeAudioData(
-      request.response,
-      function(b) {
+	request.onload = function() {
+		ptr.audioContext.decodeAudioData(
+			request.response,
+			function(b) {
 
-        ptr.buffers[fileId].buffer = b;
-        ptr.buffers[fileId].duration = b.duration - 0.050;
-        ptr.buffers[fileId].isSourceLoaded = true;
+				ptr.buffers[fileId].buffer = b;
+				ptr.buffers[fileId].duration = b.duration - 0.050;
+				ptr.buffers[fileId].isSourceLoaded = true;
 
-      },
+			},
 
-      function(b) {
-        console.log("Error loading " + url);
-      }
-    );
-  };
+			function(b) {
+				console.log("Error loading " + url);
+			}
+		);
+	};
 
-  request.onerror = function() {
-    alert("error loading");
-  };
+	request.onerror = function() {
+		alert("error loading");
+	};
 
-  request.send();
+	request.send();
 }
 
 Sound.prototype.simplePlay = function(file){
 
-  var bobj = this.buffers[this.getFileId(file)];
+	var bobj = this.buffers[this.getFileId(file)];
 
-  var source = this.audioContext.createBufferSource();
-  source.buffer = bobj.buffer;
+	var source = this.audioContext.createBufferSource();
+	source.buffer = bobj.buffer;
 
-  var gainNode = this.audioContext.createGain();
-  gainNode.gain.value =  1.0;
+	var gainNode = this.audioContext.createGain();
+	gainNode.gain.value =  1.0;
 
-  source.connect(gainNode);
-  gainNode.connect(this.compressor);
+	source.connect(gainNode);
+	gainNode.connect(this.compressor);
 
-  source.start();
+	source.start();
 
 
 }
@@ -158,111 +142,85 @@ Sound.prototype.simplePlay = function(file){
 
 Sound.prototype.nextGrain = function()
 {
-  //plays an individual grain
+	//plays an individual grain
+	if (!this.buffer)
+	{
+		console.log("no buffer");
+		return false;
+	}
+
+	var source = this.audioContext.createBufferSource();
+	source.buffer = this.buffer;
 
 
-  if (!this.buffer)
-  {
-    console.log("no buffer");
-    return false;
-  }
+	var r1 = Math.random();
+	var r2 = Math.random();
+
+	r1 = (r1 - 0.5) * 2.0;
+	r2 = (r2 - 0.5) * 2.0;
+
+	var gainNode = this.audioContext.createGain();
+	gainNode.gain.value =  this.parameters.amp.value;
+
+	var grainWindowNode;
+
+	grainWindowNode = this.audioContext.createGain();
+	source.connect(grainWindowNode);
+	grainWindowNode.connect(gainNode);
+
+	// Pitch
+	var totalPitch = this.parameters.pitch.value + r1 * this.parameters.pitchRandomization.value;
+	var pitchRate = Math.pow(2.0, totalPitch / 1200.0);
+	source.playbackRate.value = pitchRate;
+
+	gainNode.connect(this.compressor);
+
+	// Time randomization
+	var randomGrainOffset = r2 * this.parameters.timeRandomization.value;
+
+	// Schedule sound grain
+	var offset = Math.max(0,this.grainTime + randomGrainOffset);
+	source.start(this.realTime,offset , this.parameters.grainDuration.value);
 
 
-  var source = this.audioContext.createBufferSource();
-  source.buffer = this.buffer;
+	var windowDuration = this.parameters.grainDuration.value / pitchRate;
+	grainWindowNode.gain.value =  0.0;
+	grainWindowNode.gain.setValueAtTime(0.0,this.realTime );
+	grainWindowNode.gain.linearRampToValueAtTime(1.0, this.realTime + windowDuration * 0.5);
+	grainWindowNode.gain.linearRampToValueAtTime(0.0, this.realTime + windowDuration );
 
 
-  var r1 = Math.random();
-  var r2 = Math.random();
+	// Update time params
+	this.realTime += this.parameters.grainSpacing.value;
 
-  r1 = (r1 - 0.5) * 2.0;
-  r2 = (r2 - 0.5) * 2.0;
-
-  var gainNode = this.audioContext.createGain();
-  gainNode.gain.value =  this.parameters.amp.value;
-
-  var grainWindowNode;
-
-  // if (this.applyGrainWindow)
-  // {
-	//
-  //   //console.log("applying grain window");
-  //   //shape the grain window
-  //   grainWindowNode = this.audioContext.createGain();
-  //   source.connect(grainWindowNode);
-  //   grainWindowNode.connect(gainNode);
-  // }
-  // else
-  // {
-  //   console.log("no grain window")
-    source.connect(gainNode);
-  //}
-
-  // Pitch
-  var totalPitch = this.parameters.pitch.value + r1 * this.parameters.pitchRandomization.value;
-  var pitchRate = Math.pow(2.0, totalPitch / 1200.0);
-  source.playbackRate.value = pitchRate;
-
-  gainNode.connect(this.compressor);
-
-  // Time randomization
-  var randomGrainOffset = r2 * this.parameters.timeRandomization.value;
-
-  // Schedule sound grain
-  var offset = Math.max(0,this.grainTime + randomGrainOffset);
-  source.start(this.realTime,offset , this.parameters.grainDuration.value);
-
-  // Schedule the grain window.
-
-  // if (this.applyGrainWindow)
-  // {
-  //   var windowDuration = this.parameters.grainDuration.value / pitchRate;
-  //   grainWindowNode.gain.setValueAtTime(0.0, this.realTime); // make default value 0
-	// 	try
-	// 	{
-	// 		grainWindowNode.gain.setValueCurveAtTime(grainWindow, this.realTime, windowDuration);
-	// 	}
-	// 	catch(e)
-	// 	{
-	// 		//TODO investigate overlap bug here
-	// 		//
-	// 		console.log(e);
-	// 	}
-	//
-  // }
+	if(Math.abs(this.parameters.speed.value) > 0)
+	{
 
 
-  // Update time params
-  this.realTime += this.parameters.grainSpacing.value;
-
-  if(Math.abs(this.parameters.speed.value) > 0)
-  {
+		this.grainTime += this.parameters.speed.value * this.parameters.grainDuration.value;
 
 
-    this.grainTime += this.parameters.speed.value * this.parameters.grainDuration.value;
+		//grain time wrapping
+		var regionStart = this.parameters.regionStart.value * this.bufferDuration;
+		var regionEnd = Math.min(this.bufferDuration, regionStart  + this.parameters.regionLength.value);
 
+		if (this.grainTime > regionEnd)
+		{
+			this.grainTime = regionStart;
+		}
+		else if (this.grainTime < regionStart)
+		{
+			this.grainTime += Math.min( this.bufferDuration - regionStart, this.parameters.regionLength.value);
 
-    //grain time wrapping
-    var regionStart = this.parameters.regionStart.value * this.bufferDuration;
-    var regionEnd = Math.min(this.bufferDuration, regionStart  + this.parameters.regionLength.value);
+		}
 
-    if (this.grainTime > regionEnd)
-    {
-      this.grainTime = regionStart;
-    }
-    else if (this.grainTime < regionStart)
-    {
-      this.grainTime += Math.min( this.bufferDuration - regionStart, this.parameters.regionLength.value);
-
-    }
-
-  }else{
-    this.grainTime = this.parameters.regionStart.value * this.bufferDuration;
-  }
+	}else{
+		this.grainTime = this.parameters.regionStart.value * this.bufferDuration;
+	}
 
 
 
-  return true;
+	return true;
 
 }
 
@@ -271,63 +229,63 @@ Sound.prototype.nextGrain = function()
 Sound.prototype.setReaction  = function(idx)
 {
 
-  if(idx == undefined)
-  {
-    this.reaction = undefined;
-    return;
-  }
+	if(idx == undefined)
+	{
+		this.reaction = undefined;
+		return;
+	}
 
 
 
-  if(this.reactions[idx] == undefined)
-  {
-    console.log("reaction: " + idx + " not found");
-    this.reaction = undefined;
-    return;
-  }
+	if(this.reactions[idx] == undefined)
+	{
+		console.log("reaction: " + idx + " not found");
+		this.reaction = undefined;
+		return;
+	}
 
-  this.reaction = idx;
+	this.reaction = idx;
 
-  for(property in this.reactions[idx])
-  {
+	for(property in this.reactions[idx])
+	{
 
-    for(p in this.parameters[property])
-    {
+		for(p in this.parameters[property])
+		{
 
-      if(this.reactions[idx][property][p] != undefined){
-        this.parameters[property][p] = this.reactions[idx][property][p];
-      }else{
-        if(property == "map"){
-          this.parameters[property][p] = "none";
-        }
-      }
-    }
+			if(this.reactions[idx][property][p] != undefined){
+				this.parameters[property][p] = this.reactions[idx][property][p];
+			}else{
+				if(property == "map"){
+					this.parameters[property][p] = "none";
+				}
+			}
+		}
 
-    if(this.parameters[property].map == "rand")
-    {
-      this.parameters[property].value = linlin(
-        this.seed, 0, 1,
-        this.parameters[property].min,
-        this.parameters[property].max
-      );
-    }
+		if(this.parameters[property].map == "rand")
+		{
+			this.parameters[property].value = linlin(
+				this.seed, 0, 1,
+				this.parameters[property].min,
+				this.parameters[property].max
+			);
+		}
 
-    if(this.parameters[property].map == "trand")
-    {
-      this.parameters[property].value = linlin(
-        Math.random(), 0, 1,
-        this.parameters[property].min,
-        this.parameters[property].max
-      );
-    }
-  }
+		if(this.parameters[property].map == "trand")
+		{
+			this.parameters[property].value = linlin(
+				Math.random(), 0, 1,
+				this.parameters[property].min,
+				this.parameters[property].max
+			);
+		}
+	}
 
 
 
-  var bobj = this.buffers[this.getFileId(this.parameters.file.value)];
-  this.buffer =  bobj.buffer;
-  this.bufferDuration = bobj.duration;
-  this.isSourceLoaded = bobj.isSourceLoaded;
+	var bobj = this.buffers[this.getFileId(this.parameters.file.value)];
+	this.buffer =  bobj.buffer;
+	this.bufferDuration = bobj.duration;
+	this.isSourceLoaded = bobj.isSourceLoaded;
 
 }
 
@@ -339,8 +297,8 @@ Sound.prototype.unlock = function()
 
 Sound.prototype.getFileId = function(url)
 {
-  var fileId = url.substring(url.lastIndexOf('/') + 1);
-  fileId = fileId.substring(0, fileId.lastIndexOf('.'));
+	var fileId = url.substring(url.lastIndexOf('/') + 1);
+	fileId = fileId.substring(0, fileId.lastIndexOf('.'));
 
-  return fileId
+	return fileId
 }
