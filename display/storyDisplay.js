@@ -1,8 +1,13 @@
-var Story = function(canvas)
+var StoryDisplay = function(canvas)
 {
 
 	this.isActive = false;
 	var ctx = canvas.getContext("2d");
+
+	this.cmd = function(msg)
+	{
+
+	}
 
 	this.draw = function()
 	{

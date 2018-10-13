@@ -20,12 +20,13 @@ exports.response = function(socket)
 				if(msg.mode == "story")
 				{
 					globals.DisplayState.mode = "story";
+					globals.display.emit('cmd', {type: 'story', cmd: 'change'});
 					storyhelpers.startClip();
 				}
 				else if(msg.mode == "love")
 				{
 					globals.DisplayState.mode = "love";
-					globals.display.emit('cmd', {type: 'love'});
+					globals.display.emit('cmd', {type: 'love', cmd: 'change'});
 				}
 
 				//handle subrooms for story
@@ -224,9 +225,9 @@ exports.response = function(socket)
 				globals.players.emit('whoareyou'); //causes any connected players to reset
 
 			})
-			globals.DisplayState.mode = "instruct";
-			globals.display.emit("cmd", {type: "instruct"});
-			globals.display.emit('cmd', {type: 'clear_display'});
+			globals.display.emit('cmd', {type: 'all', cmd: 'clear'});
+			globals.DisplayState.mode = "text";
+			globals.display.emit("cmd", {type: "text", cmd: "change"});
 			globals.storyChapter = 0;
 			globals.storyClip = 0;
 
@@ -271,7 +272,7 @@ exports.response = function(socket)
 					args: []
 			});
 			globals.admin.emit('server_report', {id: msg.cli_id});
-			globals.display.emit("cmd", {type: "end"});
+			globals.display.emit("cmd", {type: "all", cmd: "end"});
 			globals.DisplayState.mode = "end";
 			globals.players.emit('cmd', {cmd: 'change_mode', value: {mode: "blank"}});
 
@@ -374,33 +375,33 @@ exports.response = function(socket)
 	socket.on('disp_cmd', function(msg)
 	{
 
-		if(msg.cmd == "dinstruct")
+		if(msg.cmd == "dinstruct") //TODO rationalise this
 		{
-			globals.DisplayState.mode = "instruct";
-			globals.display.emit("cmd", {type: "instruct"});
+			globals.DisplayState.mode = "text";
+			globals.display.emit("cmd", {type: "text", cmd: "change"});
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
 		else if(msg.cmd == "dlove")
 		{
 			globals.DisplayState.mode = "love";
-			globals.display.emit("cmd", {type: "love"});
+			globals.display.emit("cmd", {type: "love", cmd: "change"});
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
 		else if(msg.cmd == "dvote")
 		{
-			globals.display.emit("cmd", {type: "vote", cmd: "new"});
+			globals.display.emit("cmd", {type: "vote", cmd: "change"});
 			globals.voteDisplayIndexes = {};
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
 		else if(msg.cmd == "dstory")
 		{
 			globals.DisplayState.mode = "story";
-			globals.display.emit("cmd", {type: "story", blank: true});
+			globals.display.emit("cmd", {type: "story", cmd: "change"});
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
 		else if(msg.cmd == "dclear")
 		{
-			globals.display.emit("cmd", {type: "clear"});
+			globals.display.emit("cmd", {type: "all", cmd: "clear"});
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
 		else if(msg.cmd == "dsplat")
@@ -414,7 +415,7 @@ exports.response = function(socket)
 					var id = generateTempId(5);
 			}
 
-			globals.display.emit("cmd", {type: "splat", val: {_id: id,
+			globals.display.emit("cmd", {type: "love", cmd: "splat", val: {_id: id,
 				colSeed: globals.LoveParameters.colSeed,
 				colMode: globals.LoveParameters.colMode,
 				blobSeed: Math.random(),
@@ -435,7 +436,7 @@ exports.response = function(socket)
 				{
 					globals.UserData.find({_id: {$in: uids}, isMobile: false}).then((docs)=>
 					{
-						globals.display.emit("cmd", {type: "transform", val: docs});
+						globals.display.emit("cmd", {type: "love", cmd: "transform", val: docs});
 						globals.admin.emit('server_report', {id: msg.cli_id, msg: docs.length + " splats have been transformed"});
 					})
 				})
@@ -449,7 +450,7 @@ exports.response = function(socket)
 					{
 						globals.UserData.find({_id: {$in: docs[0].population}, isMobile: false}).then((docs2)=>
 						{
-							globals.display.emit("cmd", {type: "transform", val: docs2});
+							globals.display.emit("cmd", {type: "love", cmd: "transform", val: docs2});
 							globals.admin.emit('server_report', {id: msg.cli_id, msg: docs2.length + " splats have been transformed"});
 						});
 					}

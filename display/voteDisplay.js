@@ -1,22 +1,32 @@
-function VoteDisplayer(canvas)
+function VoteDisplay(canvas)
 {
-	this.positions = {ax: 0, bx: 0, y: [0,0,0,0]};
-	this.staticFades = {a: [], b: []};
-	this.activeFades = {a: [], b: []};
-	this.slots = {a: [0,0,0,0], b: [0,0,0,0]};
+
 	this.slotHeight = innerHeight * 0.75/4;
 	this.slotWidth = innerWidth * 0.4;
 	this.colsAlign = ["center", "center"];
 	this.isActive = false;
 
 
-	for(var i = 0; i < 4; i++)
+	var reset = function()
 	{
-		this.staticFades.a.push([{text: "", alpha: 0},{text: "", alpha: 0}]);
-		this.staticFades.b.push([{text: "", alpha: 0},{text: "", alpha: 0}]);
-		this.activeFades.a.push([]);
-		this.activeFades.b.push([]);
-	}
+		this.positions = {ax: 0, bx: 0, y: [0,0,0,0]};
+		this.staticFades = {a: [], b: []};
+		this.activeFades = {a: [], b: []};
+		this.slots = {a: [0,0,0,0], b: [0,0,0,0]};
+
+		for(var i = 0; i < 4; i++)
+		{
+			this.staticFades.a.push([{text: "", alpha: 0},{text: "", alpha: 0}]);
+			this.staticFades.b.push([{text: "", alpha: 0},{text: "", alpha: 0}]);
+			this.activeFades.a.push([]);
+			this.activeFades.b.push([]);
+		}
+
+	}.bind(this);
+
+	reset();
+
+
 
 	var ctx = canvas.getContext("2d");
 	ctx.textAlign = 'center';
@@ -36,8 +46,12 @@ function VoteDisplayer(canvas)
 		{
 			this.updatePositions(msg.val);
 		}
+		else if(msg.cmd == "reset" || msg.cmd == "clear")
+		{
+			reset();
+		}
 
-	}.bind(this);
+	}
 
 	this.setAllSlotsOn = function()
 	{

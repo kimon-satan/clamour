@@ -1,7 +1,12 @@
-var TextDisplayer = function(canvas)
+var TextDisplay = function(canvas)
 {
 	this.isActive = false;
 	var ctx = canvas.getContext("2d");
+
+	this.cmd = function(msg)
+	{
+
+	}
 
 	this.draw = function()
 	{

@@ -1,7 +1,6 @@
 var globals;
-var love;
-var voteDisplayer, textDisplayer;
-var story;
+var displays;
+
 var mode;
 var lastFrameTime, framePeriod, fps;
 var simple_canvas;
@@ -27,107 +26,93 @@ $('document').ready(function()
 	$('#threejs_display').attr('height', innerHeight);
 	$('#threejs_display').hide();
 
-	textDisplayer = new TextDisplayer(simple_canvas);
-	voteDisplayer = new VoteDisplayer(simple_canvas);
-	love = new Love(socket, threejs_canvas);
-	story = new Story(simple_canvas);
+	displays = {};
 
-	textDisplayer.setActive(true);
+
+	displays.text = new TextDisplay(simple_canvas);
+	displays.vote = new VoteDisplay(simple_canvas);
+	displays.love = new LoveDisplay(socket, threejs_canvas);
+	displays.story = new StoryDisplay(simple_canvas);
+
+	displays.text.setActive(true);
 
 })
 
 
 socket.on('cmd', function(msg)
 {
+	console.log(msg);
 
-	//console.log(msg);
-	if (msg.type == "instruct")
+	if(msg.cmd == "change")
 	{
-		$('#simple_display').show();
-		$('#threejs_display').hide();
-		voteDisplayer.setActive(false);
-		story.setActive(false);
-		love.setActive(false);
-		textDisplayer.setActive(true);
+		changeDisplay(msg.type)
 	}
-	else if (msg.type == "love" )
+	else if(msg.type == "all")
 	{
-		$('#simple_display').hide();
-		$('#threejs_display').show();
-		voteDisplayer.setActive(false);
-		story.setActive(false);
-		love.setActive(true);
-		textDisplayer.setActive(false);
-		console.log("love");
+		var k = Object.keys(displays);
+		for(var i = 0; i < k.length; i++)
+		{
+			displays[k[i]].cmd(msg);
+		}
 	}
-	else if (msg.type == "story" )
+	else
 	{
-		console.log("story");
-		$('#simple_display').show();
-		$('#threejs_display').hide();
-		voteDisplayer.setActive(false);
-		love.setActive(false);
-		story.setActive(true);
-		textDisplayer.setActive(false);
-		//story(msg);
-		mode = "story";
+		displays[msg.type].cmd(msg);
 	}
-	else if (msg.type == "vote" )
-	{
+	// else if (msg.cmd == "end") //TODO change on server
+	// {
+	// 	love.splatManager.clearAll();
+	// 	love.blobManager.clearAll(love.scene);
+	// 	love.branchManager.clearAll(love.scene);
+	// 	love.grid.visible = false;
+	// }
+	// else if (msg.cmd == "clear") //
+	// {
+	// 	if(msg.type == "love")
+	// 	{
+	// 		love.splatManager.clearAll();
+	// 		love.blobManager.clearAll(love.scene);
+	// 		love.branchManager.clearAll(love.scene);
+	// 		love.grid.visible = true;
+	// 	}
+	// 	else
+	// 	{
+	// 		//
+	// 	}
+	//} //TODO move all of these to Love
 
-		if(msg.cmd == "reset" || msg.cmd == "new")
-		{
-			voteDisplayer.setActive(true);
-		}
-		else
-		{
-			voteDisplayer.cmd(msg);
-		}
-	}
-	else if (msg.type == "end")
-	{
-		love.splatManager.clearAll();
-		love.blobManager.clearAll(love.scene);
-		love.branchManager.clearAll(love.scene);
-		love.grid.visible = false;
-	}
-	else if (msg.type == "clear")
-	{
-		if(mode == "love")
-		{
-			textDisplayer.setActive(false);
-			voteDisplayer.setActive(false);
-			love.setActive(true);
-			love.splatManager.clearAll();
-			love.blobManager.clearAll(love.scene);
-			love.branchManager.clearAll(love.scene);
-			love.grid.visible = true;
-		}
-		else
-		{
-			//
-		}
-	}
-	else if(msg.type == "splat")
-	{
-		love.splat(msg);
-	}
-	else if(msg.type == "transform")
-	{
-		love.transform(msg);
-	}
-	else if(msg.type == "moveBlob")
-	{
-		love.moveBlob(msg);
-	}
-	else if(msg.type == "update")
-	{
-		love.splatManager.updateGlow(msg.id, msg.val);
-	}
 
 
 
 });
+
+function changeDisplay(display)
+{
+	var k = Object.keys(displays);
+	for(var i = 0; i < k.length; i++)
+	{
+		if(k[i] == display)
+		{
+			console.log("set active" , k[i])
+			displays[k[i]].setActive(true);
+		}
+		else
+		{
+			displays[k[i]].setActive(false);
+		}
+	}
+
+	if(display == "love")
+	{
+		$('#simple_display').hide();
+		$('#threejs_display').show();
+	}
+	else
+	{
+		$('#simple_display').show();
+		$('#threejs_display').hide();
+	}
+}
 
 // TODO:
 

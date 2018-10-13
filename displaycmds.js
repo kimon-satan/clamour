@@ -138,15 +138,4 @@ exports.response = function(socket)
 		});
 	})
 
-	socket.on('vidUpdate', function(msg){
-		globals.DisplayState.videoProgress = msg;
-	})
-
-	socket.on('vidLoading', function(msg){
-		globals.DisplayState.videoLoadProgress = msg;
-	})
-
-	// socket.on('vidLoaded', function(){
-	// 	globals.DisplayState.videoLoadProgress = "loaded";
-	// })
 }

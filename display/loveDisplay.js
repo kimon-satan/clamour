@@ -1,4 +1,4 @@
-var Love = function(socket, canvas)
+var LoveDisplay = function(socket, canvas)
 {
 	this.renderer = new THREE.WebGLRenderer({canvas: canvas});
 	this.renderer.setSize( window.innerWidth, window.innerHeight );
@@ -66,6 +66,27 @@ var Love = function(socket, canvas)
 
 	}.bind(this)
 	, false);
+
+	//////////////////////////////////////////////////////////////////
+	this.cmd = function(msg)
+	{
+		if(msg.cmd == "splat")
+		{
+			this.splat(msg);
+		}
+		else if(msg.cmd == "transform")
+		{
+			this.transform(msg);
+		}
+		else if(msg.cmd == "moveBlob")
+		{
+			this.moveBlob(msg);
+		}
+		else if(msg.cmd == "update")
+		{
+			this.splatManager.updateGlow(msg.id, msg.val);
+		}
+	}
 
 	//////////////////////////////////////////////////////////////////
 

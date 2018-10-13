@@ -14,8 +14,8 @@ exports.tcpSocks = {};
 
 //FLAGS should come from CL args
 exports.DEBUG = false;
-exports.NO_SC = false;
-exports.IS_LOCAL = false;
+exports.NO_SC = true;
+exports.IS_LOCAL = true;
 
 exports.DisplayState = {
 	mode: "instruct",
