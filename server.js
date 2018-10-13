@@ -225,7 +225,7 @@ function incomingHandler(msg)
 
 				if(msg.address == "/poll")
 				{
-					 globals.display.emit('cmd', { type: 'update', id: msg.args[0], val: msg.args[1]});
+					 globals.display.emit('cmd', { type: 'love', cmd: 'update', id: msg.args[0], val: msg.args[1]});
 				}
 
 				if(msg.address == "/phraseComplete")

@@ -86,6 +86,20 @@ var LoveDisplay = function(socket, canvas)
 		{
 			this.splatManager.updateGlow(msg.id, msg.val);
 		}
+		else if (msg.cmd == "end")
+		{
+			this.splatManager.clearAll();
+			this.blobManager.clearAll(this.scene);
+			this.branchManager.clearAll(this.scene);
+			this.grid.visible = false;
+		}
+		else if (msg.cmd == "clear") //
+		{
+			this.splatManager.clearAll();
+			this.blobManager.clearAll(this.scene);
+			this.branchManager.clearAll(this.scene);
+			this.grid.visible = true;
+		}
 	}
 
 	//////////////////////////////////////////////////////////////////

@@ -59,30 +59,6 @@ socket.on('cmd', function(msg)
 	{
 		displays[msg.type].cmd(msg);
 	}
-	// else if (msg.cmd == "end") //TODO change on server
-	// {
-	// 	love.splatManager.clearAll();
-	// 	love.blobManager.clearAll(love.scene);
-	// 	love.branchManager.clearAll(love.scene);
-	// 	love.grid.visible = false;
-	// }
-	// else if (msg.cmd == "clear") //
-	// {
-	// 	if(msg.type == "love")
-	// 	{
-	// 		love.splatManager.clearAll();
-	// 		love.blobManager.clearAll(love.scene);
-	// 		love.branchManager.clearAll(love.scene);
-	// 		love.grid.visible = true;
-	// 	}
-	// 	else
-	// 	{
-	// 		//
-	// 	}
-	//} //TODO move all of these to Love
-
-
-
 
 });
 
@@ -115,8 +91,6 @@ function changeDisplay(display)
 }
 
 // TODO:
-
-//1. clean up commands interface
 //2. cross-fading images
 //3. screen resize event
 //4. cookies/local storage to save state (at least some of it)
