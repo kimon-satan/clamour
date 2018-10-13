@@ -176,7 +176,8 @@
 				]
 			},
 			{
-				"audio": {"path" : "chapter4/2_high_synth_1", "loop": "false", "in" : 0.0, "out" : 20.0, "amp" : 0.5, "solo": "false"},
+				"audio": {"solo": "false"},
+				"audio1": {"path" : "chapter4/2_high_synth_1", "loop": "false", "in" : 0.0, "out" : 20.0, "amp" : 0.5, "solo": "true"},
 				"img": "chapter4/19-clipboard-1.jpg",
 				"texts":
 				[
@@ -185,7 +186,8 @@
 				]
 			},
 			{
-				"audio": {"path" : "chapter4/3_high_synth_2", "loop": "false", "in" : 0.0, "out" : 20.0, "amp" : 0.5, "solo": "false"},
+				"audio": {"solo": "false"},
+				"audio1": {"path" : "chapter4/3_high_synth_2", "loop": "false", "in" : 0.0, "out" : 20.0, "amp" : 0.5, "solo": "true"},
 				"img": "chapter4/20-dday-1.jpg",
 				"texts":
 				[
@@ -194,7 +196,8 @@
 				]
 			},
 			{
-				"audio": {"solo": "false"}
+				"audio": {"solo": "true"},
+				"audio1": {"solo": "true"}
 			},
 			{
 				"audio": {"path" : "chapter4/4_boardroom", "loop": "false", "in" : 0.0, "out" : 0.5, "amp" : 0.7, "solo": "true"},

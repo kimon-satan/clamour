@@ -61,12 +61,6 @@ $('document').ready(function()
 
 
 
-
-
-
-
-
-
 })
 
 

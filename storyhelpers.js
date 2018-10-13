@@ -100,20 +100,27 @@ exports.startClip = function(room)
 		globals.DisplayState.storyMedia = "blank";
 	}
 
+	var audio_options = [];
+	audio_options.push(globals.story[globals.storyChapter].clips[globals.storyClip].audio);
+	audio_options.push(globals.story[globals.storyChapter].clips[globals.storyClip].audio1);
 
-	var audio_options = globals.story[globals.storyChapter].clips[globals.storyClip].audio;
-	if(audio_options)
+	for(var i = 0; i < 2; i++)
 	{
-		var cloned = Object.assign({}, audio_options);
-		helpers.playSound(cloned);
-	}
-	else
-	{
-		//we need to trigger the end of the old sound
-		helpers.sendSCMessage(
+		if(audio_options[i])
 		{
-			address: "/allOff",
-		});
+			var cloned = Object.assign({}, audio_options[i]);
+			cloned.channel = i;
+			helpers.playSound(cloned);
+		}
+		else
+		{
+			//we need to trigger the end of the old sound
+			helpers.sendSCMessage(
+			{
+				address: "/polyOff",
+				args: ["channel", i]
+			});
+		}
 	}
 
 	//NB. at some point we might need the option not to clear the screen
