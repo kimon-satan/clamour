@@ -1,4 +1,8 @@
-var globals;
+// TODO:
+//3. screen resize event
+//4. cookies/local storage to save state (at least some of it)
+
+var settings;
 var displays;
 
 var mode;
@@ -11,12 +15,6 @@ var socket = io('/display');
 
 $('document').ready(function()
 {
-
-	$.getJSON("/config/settings.json", function(json)
-	{
-		globals = json;
-	});
-
 	simple_canvas = $('#simple_display')[0];
 	$('#simple_display').attr('width', innerWidth);
 	$('#simple_display').attr('height', innerHeight);
@@ -28,13 +26,46 @@ $('document').ready(function()
 
 	displays = {};
 
-
 	displays.text = new TextDisplay(simple_canvas);
 	displays.vote = new VoteDisplay(simple_canvas);
 	displays.love = new LoveDisplay(socket, threejs_canvas);
-	displays.story = new StoryDisplay(simple_canvas);
 
 	displays.text.setActive(true);
+
+	var p = new Promise(function(resolve, reject)
+	{
+		$.getJSON("/config/settings.json", function(json)
+		{
+			resolve(json);
+		});
+	})
+
+	.then((doc)=>
+	{
+		settings = doc;
+
+		return new Promise(function(resolve, reject)
+		{
+			$.getJSON("/" + settings.storyPath, function(json)
+			{
+				resolve(json);
+			});
+		})
+	})
+
+	.then((doc)=>
+	{
+		displays.story = new StoryDisplay(settings.imagePath, doc, simple_canvas);
+	})
+
+
+
+
+
+
+
+
+
 
 })
 
@@ -90,42 +121,8 @@ function changeDisplay(display)
 	}
 }
 
-// TODO:
-//2. cross-fading images
-//3. screen resize event
-//4. cookies/local storage to save state (at least some of it)
-
-////////////////////////////////////////////INSTRUCTIONS/////////////////////////////
 
 
-// function story(msg)
-// {
-//
-// 	//console.log(msg);
-//
-// 	if(msg.blank)
-// 	{
-// 		//$('#displayscreen').empty(); //just empty the screen
-// 	}
-// 	else if(msg.img)
-// 	{
-// 		// $('#displayscreen').empty();
-// 		// var imgtag = $("<img src=" + msg.img + ">");
-// 		// var imgdiv = $("<div id='storyContainer'></div>");
-//
-//
-// 		//imgtag.css('width', innerWidth);
-// 		//imgtag.css('height', innerHeight);
-//
-// 		//imgdiv.append(imgtag);
-// 		//$('#displayscreen').append(imgdiv);
-// 	}
-//
-// 	mode = "story";
-// }
-
-
-///////////////////////////////////////LOVE//////////////////////////////////////////
 
 
 

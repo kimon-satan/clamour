@@ -13,6 +13,7 @@
 			{
 			"audio": {},
 			"img": "chapter1/1-waves-1-gloomier.jpg",
+			"isFade": "true",
 			"texts": [
 				"Our landless world",
 				"Our story begins in the past"

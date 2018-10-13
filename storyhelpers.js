@@ -84,26 +84,19 @@ var incrementClip = function()
 exports.startClip = function(room)
 {
 
-	//TODO add video handler here
-	var vid = globals.story[globals.storyChapter].clips[globals.storyClip].video;
 	var img = globals.story[globals.storyChapter].clips[globals.storyClip].img;
 	var blank = globals.story[globals.storyChapter].clips[globals.storyClip].blank;
+	var isFade = globals.story[globals.storyChapter].clips[globals.storyClip].isFade ? true : false;
 
-	if(vid)
+	if(img)
 	{
-		var vid_path = globals.settings.videoPath + vid;
-		globals.display.emit('cmd', {type: 'story', video: vid_path});
-		globals.DisplayState.storyMedia = "video";
-	}
-	else if(img)
-	{
-		var img_path = globals.settings.imagePath + img;
-		globals.display.emit('cmd', {type: 'story', img: img_path});
+		var img_path = img;
+		globals.display.emit('cmd', {type: 'story', cmd: "image", val: {src: img_path, isFade: isFade}});
 		globals.DisplayState.storyMedia = "img";
 	}
 	else
 	{
-		globals.display.emit('cmd', {type: 'story', blank: true});
+		globals.display.emit('cmd', {type: 'story', cmd: "blank", val: {isFade: isFade}});
 		globals.DisplayState.storyMedia = "blank";
 	}
 
