@@ -106,6 +106,7 @@ exports.handlePhraseComplete = function(msg)
 			//console.log("start vote")
 			globals.pendingVotes.splice(i,1);
 			//WARNING: possibility of race condition ... ? probably not as SC records phrases one by one
+			console.log(vote);
 			exports.sendVote(vote, vote.num);
 			return Promise.resolve();
 		}
@@ -188,6 +189,7 @@ exports.startVote = function(msg)
 				pos: pos,
 				open: true,
 				winnerIdx: -1,
+				rig: options.rig,
 				lock: false
 		});
 	});
@@ -286,6 +288,12 @@ exports.sendVote = function(data, num)
 		if(!data.open)return;
 
 		var omsg = {pair: data.pair, id: data._id};
+
+		if(data.rig != undefined)
+		{
+			omsg.rig = data.rig;
+			console.log(omsg);
+		}
 
 		if(num == undefined)num = 1;
 

@@ -10,8 +10,10 @@ TODO
 
 ### Votes ###
 
-	- rigging votes
-	- progress bar on client
+	- progress bar on client (80%)
+		- store in cookie to prevent page refresh
+		- check pause timer whilst paused
+	- clear votes ... check old votes removed
 	- concluded vote routine (how ?)
 	- remove win as separate voice recording (80%)
 

@@ -335,8 +335,8 @@ exports.response = function(socket)
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
 			})
 
-			.catch((resp)=>{
-				console.log(resp);
+			.catch((resp)=>
+			{
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
 			});
 		}

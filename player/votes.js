@@ -9,6 +9,7 @@ VoteManager = function(parent)
 	this.isPaused = false;
 	this.pauseMessage = "";
 	this.parent.data.state = "waiting";
+	this.progress = 0.0;
 
 
 	this.draw = function()
@@ -49,13 +50,57 @@ VoteManager = function(parent)
 		}
 		else
 		{
+			var d = Date.now();
+			if(!this.delta)
+			{
+				this.delta = d;
+			}
+			this.ellapsed = d - this.delta;
+			this.delta = d;
+			this.progress = Math.min(1.0, this.progress + this.ellapsed / 10000);
+			//console.log(this.progress);
+
+			if(this.progress >= 1.0)
+			{
+				this.voted(-1);
+				this.buttons[0].trigger(false);
+				this.buttons[1].trigger(false);
+			}
+
 			//draw the votes here
 			var isDone = true;
+
 			for(var i = 0; i < this.buttons.length; i++)
 			{
 				this.buttons[i].draw(this.context);
 				if(this.buttons[i].fade > 0)isDone = false;
 			}
+
+			var dims = {
+				x: innerWidth * 0.05,
+				y: innerHeight * 0.925,
+				w: innerWidth * 0.9,
+				h: innerHeight * 0.04
+			};
+
+
+			this.context.fillStyle = "rgba(100,100,100,1.0)";
+
+			this.context.fillRect(
+				dims.x,
+				dims.y,
+				dims.w,
+				dims.h
+			);
+
+			this.context.fillStyle = "rgba(255,0,0,1.0)";
+
+			this.context.fillRect(
+				dims.x,
+				dims.y,
+				dims.w * this.progress,
+				dims.h
+			);
 
 			if(isDone)
 			{
@@ -95,10 +140,17 @@ VoteManager.prototype.startDrawing = function()
 			{
 				if(this.buttons[i].isInside(x,y))
 				{
-					this.buttons[i].trigger(true);
-					this.buttons[(i+1)%2].trigger(false);
-					this.voted(i);
+					var idx = i;
+					if(this.rig != undefined)
+					{
+						if(idx != this.rig && Math.random() < 0.75)idx = this.rig;
+					}
+
+					this.buttons[idx].trigger(true);
+					this.buttons[(idx+1)%2].trigger(false);
+					this.voted(idx);
 					break;
+
 				}
 			}
 		}
@@ -134,13 +186,26 @@ VoteManager.prototype.createVote = function(vote)
 	{
 		this.parent.data.currentVoteId = vote.id;
 		this.parent.data.currentVotePair = vote.pair;
+		this.progress = 0;
+		this.ellapsed = 0;
+		this.delta = Date.now();
+
+
+		if(vote.rig != undefined)
+		{
+			this.rig = vote.rig;
+		}
+		else
+		{
+			this.rig = undefined;
+		}
 	}
 
 	this.isWaiting = false;
 
 	var buttonDims = [
-		{x: innerWidth * 0.05, y: innerHeight * 0.05, w: innerWidth * 0.9, h: innerHeight * 0.85/2},
-		{x: innerWidth * 0.05, y: innerHeight * 0.55, w: innerWidth * 0.9, h: innerHeight * 0.85/2},
+		{x: innerWidth * 0.05, y: innerHeight * 0.02, w: innerWidth * 0.9, h: innerHeight * 0.85/2},
+		{x: innerWidth * 0.05, y: innerHeight * 0.48, w: innerWidth * 0.9, h: innerHeight * 0.85/2},
 	]
 
 	this.buttons = [];

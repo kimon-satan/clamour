@@ -154,26 +154,31 @@ exports.response = function(socket)
 				return Promise.reject("vote concluded");
 			}
 
-			data.scores[msg.choice] += 1.0/data.population;
+			if(msg.choice >= 0)
+			{
 
-			helpers.sendSCMessage({
-					address: "/speakPhrase",
-					args: [String(data._id), msg.choice, usrobj.voiceNum, usrobj.voicePan, usrobj.voicePitch]
-			});
+				data.scores[msg.choice] += 1.0/data.population;
+
+				helpers.sendSCMessage({
+						address: "/speakPhrase",
+						args: [String(data._id), msg.choice, usrobj.voiceNum, usrobj.voicePan, usrobj.voicePitch]
+				});
 
 
-			globals.display.emit('cmd', {
-				type: "vote", cmd: "displayVote" ,
-				val: {
-					choice: msg.choice,
-					text: data.pair,
-					font: usrobj.font,
-					col: usrobj.fontCol,
-					score: data.scores,
-					pos: data.pos,
-					slots: globals.voteDisplaySlots //Indicates the current state of the slots
-				}
-			});
+				globals.display.emit('cmd', {
+					type: "vote", cmd: "displayVote" ,
+					val: {
+						choice: msg.choice,
+						text: data.pair,
+						font: usrobj.font,
+						col: usrobj.fontCol,
+						score: data.scores,
+						pos: data.pos,
+						slots: globals.voteDisplaySlots //Indicates the current state of the slots
+					}
+				});
+
+			}
 
 			return globals.Votes.update(
 				{
