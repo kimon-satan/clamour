@@ -160,12 +160,18 @@ VoteManager.prototype.createVote = function(vote)
 
 }
 
-VoteManager.prototype.pauseVote = function()
+VoteManager.prototype.pauseVote = function(text)
 {
 	this.isPaused = true;
-	this.pauseMessage = "...";
+	if(text != undefined)
+	{
+		this.pauseMessage = text;
+	}
+	else
+	{
+		this.pauseMessage = "..."
+	}
 	this.parent.data.state = "paused";
-	//if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
 }
 
 VoteManager.prototype.displayWinner = function(msg)

@@ -126,7 +126,8 @@ Player = function(isDummy)
 			}
 			else if(msg.cmd == 'pause_vote' && this.mode == "vote")
 			{
-				this.voteManager.pauseVote();
+				console.log(msg);
+				this.voteManager.pauseVote(msg.value);
 			}
 			else if(msg.cmd == 'resume_vote' && this.mode == "vote")
 			{
@@ -164,7 +165,7 @@ Player = function(isDummy)
 			}
 			else if(msg.cmd == 'pause_vote' && this.mode == "vote")
 			{
-				this.voteManager.pauseVote();
+				this.voteManager.pauseVote(msg.value);
 			}
 			else if(msg.cmd == 'display_winner' && this.mode == "vote")
 			{

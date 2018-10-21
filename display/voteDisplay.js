@@ -9,6 +9,7 @@ function VoteDisplay(canvas)
 
 	var reset = function()
 	{
+
 		this.positions = {ax: 0, bx: 0, y: [0,0,0,0]};
 		this.staticFades = {a: [], b: []};
 		this.activeFades = {a: [], b: []};
@@ -21,6 +22,7 @@ function VoteDisplay(canvas)
 			this.activeFades.a.push([]);
 			this.activeFades.b.push([]);
 		}
+
 
 	}.bind(this);
 
@@ -49,6 +51,7 @@ function VoteDisplay(canvas)
 		else if(msg.cmd == "reset" || msg.cmd == "clear")
 		{
 			reset();
+			this.setAllSlotsOn();
 		}
 
 	}
@@ -163,6 +166,7 @@ function VoteDisplay(canvas)
 		//12 colours and 12 fonts styles
 
 		f.push({text: vote.text[vote.choice], alpha: 1.0, font: vote.font, col: vote.col});
+		this.updatePositions(vote.slots);
 
 		//bias fade towards the winner
 		this.staticFades[col][row][0].alpha = Math.pow(vote.score[0],2);
@@ -171,15 +175,13 @@ function VoteDisplay(canvas)
 		this.staticFades[col][row][vote.choice].text = vote.text[vote.choice];
 		this.staticFades[col][row][(vote.choice+1)%2].text = vote.text[(vote.choice+1)%2];
 
-		this.updatePositions(vote.slots);
-
 
 	}.bind(this);
 
 	this.concludeVote = function(vote)
 	{
 
-		console.log("concl", vote);
+		//console.log("concl", vote);
 
 		var col = vote.pos[0];
 		var row = Number(vote.pos[1]);

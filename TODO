@@ -6,18 +6,23 @@ TODO
 
 ### Story ###
 
-	- image fades (50%)
 	- always make the longest line the primary
-	- 2nd audio control channel independent of 1 + commands to fade independently
 
 ### Votes ###
 
+	- remove pause and vote display on phones for small win (60%)
+	- remove win as separate voice recording (60%)
+	- type in a slot
 	- command to conclude stalled votes
-	- command to increase num of voters for a vote
+	- command to add one or more threads to a vote
+	- progress bar on client
+	- concluded vote routine (how ?)
+
+	- emoji stuff
+	- survey !
 
 
-	- moving votes around / particularly making space for prepend append ??? is this needed
-	- prevent overwriting slots and other bad things
+	- prevent overwriting slots and other bad things ?
 
 
 	- prevent vote stallers - options:

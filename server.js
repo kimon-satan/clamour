@@ -221,33 +221,7 @@ function incomingHandler(msg)
 		{
 			try
 			{
-				msg = JSON.parse(m[0],s);
-
-				if(msg.address == "/poll")
-				{
-					 globals.display.emit('cmd', { type: 'love', cmd: 'update', id: msg.args[0], val: msg.args[1]});
-				}
-
-				if(msg.address == "/phraseComplete")
-				{
-					votehelpers.handlePhraseComplete(msg).catch((err)=>
-					{
-						console.log(err);
-					});
-				}
-
-				if(msg.address == "/resumeVote") //TODO change name
-				{
-					globals.players.emit('cmd',{cmd: 'resume_vote'});
-					//allows other votes to happen
-					globals.currentConcludedVote = null;
-				}
-
-				if(msg.address == "/winSampleDone")
-				{
-					votehelpers.concludeDisplayAndPlayers();
-				}
-
+				parseIncomingMsg(JSON.parse(m[0],s))
 				m = r.exec(s);
 			}
 			catch(e)
@@ -256,10 +230,41 @@ function incomingHandler(msg)
 				console.log(e);
 			}
 		}
-
-
+	}
+	else
+	{
+		parseIncomingMsg(msg);
 	}
 
+}
+
+function parseIncomingMsg(msg)
+{
 
 
+	if(msg.address == "/poll")
+	{
+		 globals.display.emit('cmd', { type: 'love', cmd: 'update', id: msg.args[0], val: msg.args[1]});
+	}
+
+	if(msg.address == "/phraseComplete")
+	{
+		votehelpers.handlePhraseComplete(msg).catch((err)=>
+		{
+			console.log(err);
+		});
+	}
+
+	if(msg.address == "/resumeVote")
+	{
+		// NB. we don't need this as we're not pausing concurrent votes
+		globals.players.emit('cmd',{cmd: 'resume_vote'});
+		//allows other votes to happen
+		globals.currentConcludedVote = null;
+	}
+
+	if(msg.address == "/winSampleDone")
+	{
+		votehelpers.concludeDisplayAndPlayers();
+	}
 }
