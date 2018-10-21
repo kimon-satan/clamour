@@ -291,23 +291,31 @@ exports.response = function(socket)
 			});
 
 		}
-		else if(msg.cmd == "vjoin")
+		else if(msg.cmd == "vman")
 		{
-			votehelpers.joinVotes(msg)
+			votehelpers.startManual(msg)
 
 			.then((resp)=>
 			{
-				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp.text, isinteract: true, pos: resp.pos});
 			})
 
-			.catch((resp)=>{
+			.catch((resp)=>
+			{
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
 			});
 
 		}
-		else if(msg.cmd == "vfix")
+		else if (msg.cmd == "vman_update")
 		{
-			votehelpers.fixVote(msg)
+			votehelpers.manualUpdate(msg.value)
+
+			globals.admin.emit('server_report', {id: msg.cli_id, msg: ""});
+
+		}
+		else if(msg.cmd == "vend")
+		{
+			votehelpers.endVote(msg)
 
 			.then((resp)=>
 			{
@@ -317,7 +325,20 @@ exports.response = function(socket)
 			.catch((resp)=>{
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
 			});
+		}
+		else if(msg.cmd == "vadd")
+		{
+			votehelpers.addThreadsToVote(msg)
 
+			.then((resp)=>
+			{
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
+			})
+
+			.catch((resp)=>{
+				console.log(resp);
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
+			});
 		}
 		else if(msg.cmd == "lvotes")
 		{

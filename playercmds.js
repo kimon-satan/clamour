@@ -149,6 +149,10 @@ exports.response = function(socket)
 			{
 				return Promise.reject("vote " + msg.id + " return invalid id");
 			}
+			else if(!data.open)
+			{
+				return Promise.reject("vote concluded");
+			}
 
 			data.scores[msg.choice] += 1.0/data.population;
 

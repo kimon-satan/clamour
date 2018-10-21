@@ -62,7 +62,6 @@ globals.setup().then(_=>{
 			if (err) throw err;
 			globals.settings = JSON.parse(data);
 			storyhelpers.load();
-			//exports.loadDictionary(); //needs to be called from elsewhere
 	});
 
 
@@ -263,8 +262,8 @@ function parseIncomingMsg(msg)
 		globals.currentConcludedVote = null;
 	}
 
-	if(msg.address == "/winSampleDone")
-	{
-		votehelpers.concludeDisplayAndPlayers();
-	}
+	// if(msg.address == "/winSampleDone")
+	// {
+	// 	votehelpers.concludeDisplayAndPlayers();
+	// }
 }

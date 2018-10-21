@@ -27,6 +27,19 @@ socket.on('server_report', function(msg)
 		gClis[msg.id].sus_idx = gClis[msg.id].sus_list.indexOf(msg.selected);
 		gClis[msg.id].println(gClis[msg.id].sus_list[gClis[msg.id].sus_idx]);
 	}
+	else if (msg.isinteract)
+	{
+		if(gClis[msg.id].cli_mode == "vote")
+		{
+			gClis[msg.id].println(msg.msg);
+			gClis[msg.id].cli_mode = "vote_man";
+			gClis[msg.id].man_pos = msg.pos;
+		}
+		else
+		{
+			gClis[msg.id].newCursor(true);
+		}
+	}
 	else if(msg.msg != undefined && msg.isproc == undefined)
 	{
 		gClis[msg.id].println(msg.msg);
@@ -169,6 +182,25 @@ function CLI(idx, mode, room)
 
 	}
 
+	this.handleManKeys = function(e, cmd)
+	{
+
+		if(e.keyCode == 13 && this.cli_mode == "vote_man")
+		{
+			//end the manual insert
+			this.cli_mode = "vote";
+			this.newCursor(true);
+		}
+		else if(this.cli_mode == "vote_man")
+		{
+			let r = /.*\n(.*)/g;
+			let m = r.exec(cmd);
+			console.log(m);
+			socket.emit('cmd', { cmd: 'vman_update', value:  {text: m[1], pos: this.man_pos}, room: this.room});
+		}
+
+	}
+
 
 	//////////////////////////////SETUP THE domElement /////////////////////
 
@@ -249,6 +281,10 @@ function CLI(idx, mode, room)
 		{
 			//NB sometimes this is getting called when there is no new text
 			this.handleChatKeys(e, cmd);
+		}
+		else if(this.cli_mode == "vote_man")
+		{
+			this.handleManKeys(e, cmd);
 		}
 		else if(e.keyCode == 13)
 		{

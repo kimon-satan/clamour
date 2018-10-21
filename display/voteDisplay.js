@@ -44,6 +44,10 @@ function VoteDisplay(canvas)
 		{
 			this.concludeVote(msg.val);
 		}
+		else if (msg.cmd == "updateVote")
+		{
+			this.concludeVote(msg.val);
+		}
 		else if (msg.cmd == "updateSlots")
 		{
 			this.updatePositions(msg.val);
@@ -155,6 +159,7 @@ function VoteDisplay(canvas)
 
 
 	}.bind(this);
+
 
 	this.displayVote = function(vote)
 	{

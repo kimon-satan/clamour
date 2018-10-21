@@ -10,13 +10,10 @@ TODO
 
 ### Votes ###
 
-	- remove pause and vote display on phones for small win (60%)
-	- remove win as separate voice recording (60%)
-	- type in a slot
-	- command to conclude stalled votes
-	- command to add one or more threads to a vote
+	- rigging votes
 	- progress bar on client
 	- concluded vote routine (how ?)
+	- remove win as separate voice recording (80%)
 
 	- emoji stuff
 	- survey !
@@ -24,23 +21,18 @@ TODO
 
 	- prevent overwriting slots and other bad things ?
 
-
 	- prevent vote stallers - options:
 		- client side timer (weak if client is actually broken)
 		- server side
 			- starts a new thread if the old one is stalled
 			- time stamps votes and removes and resets if too long
 
-
-
+	- type in a slot (80%) - could make cursor ?
 	- more font colour combinations ?
 	- prevent sample duplicates in SC
 
 	- IDEAS:
-	- perhaps just a ping for regular vote concluded
 	- longer music for final amalgamation of a rule (new end routine need for this)
-	- append, prepend should happen all within a slot
-	- offering user input
 
 
 ### Refactoring/ Tidying ####

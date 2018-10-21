@@ -29,8 +29,9 @@ var cmdList = [
 	"ldisplay", //display stats
 
 	"vnew",
-	"vjoin",
-	"vfix",
+	"vman",
+	"vend",
+	"vadd",
 	"lvotes"
 ];
 
@@ -245,6 +246,8 @@ CLMR_CMDS["_ivotes"] = function(args, cli){
   cli.proc = proc;
 
 }
+
+
 
 
 CLMR_CMDS["_closeall"] = function(args,  cli)
