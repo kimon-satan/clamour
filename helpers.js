@@ -22,6 +22,18 @@ exports.validateId = function(id)
 
 }
 
+exports.generateTempId = function(num)
+{
+	var s = "";
+	var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	for(var i = 0; i < num; i++)
+	{
+		s += exports.choose(alphabet);
+	}
+
+	return s;
+}
+
 exports.choose = function(list)
 {
 	return list[Math.floor(Math.random() * list.length)];

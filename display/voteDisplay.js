@@ -1,3 +1,48 @@
+function FadeObj()
+{
+	this.text = "";
+	this.alpha = 0;
+	this.highlight = 0;
+	this.fadedout = 0;
+	this.col = undefined;
+	this.font = "Arial";
+
+	this.getFillStyle = function()
+	{
+		var r = 255;
+		var g = 255 * (1 - this.highlight);
+		var b = 255 * (1 - this.highlight);
+		var a = this.alpha * (1 - this.fadedout);
+
+		if(this.col != undefined)
+		{
+			return "rgba(" + this.col +  "," + a + ")";
+		}
+		else
+		{
+			return "rgba(" + r + "," + g +"," + b + "," + a + ")";
+		}
+
+
+
+
+	}
+
+	this.increment = function()
+	{
+		if(this.fadedout > 0)
+		{
+			this.fadedout = Math.min(1, this.fadedout + 0.01);
+		}
+
+		if(this.highlight > 0)
+		{
+			this.highlight = Math.min(1, this.highlight + 0.01);
+		}
+
+	}
+}
+
 function VoteDisplay(canvas)
 {
 
@@ -13,18 +58,21 @@ function VoteDisplay(canvas)
 		this.positions = {ax: 0, bx: 0, y: [0,0,0,0]};
 		this.staticFades = {a: [], b: []};
 		this.activeFades = {a: [], b: []};
+
 		this.slots = {a: [0,0,0,0], b: [0,0,0,0]};
 
 		for(var i = 0; i < 4; i++)
 		{
-			this.staticFades.a.push([{text: "", alpha: 0},{text: "", alpha: 0}]);
-			this.staticFades.b.push([{text: "", alpha: 0},{text: "", alpha: 0}]);
+			this.staticFades.a.push([new FadeObj(),new FadeObj()]);
+			this.staticFades.b.push([new FadeObj(),new FadeObj()]);
 			this.activeFades.a.push([]);
 			this.activeFades.b.push([]);
 		}
 
 
 	}.bind(this);
+
+
 
 	reset();
 
@@ -36,13 +84,14 @@ function VoteDisplay(canvas)
 
 	this.cmd = function(msg)
 	{
+
 		if(msg.cmd == "displayVote")
 		{
 			this.displayVote(msg.val);
 		}
-		else if (msg.cmd == "concludeVote")
+		else if (msg.cmd == "makeCall")
 		{
-			this.concludeVote(msg.val);
+			this.makeCall(msg.val);
 		}
 		else if (msg.cmd == "updateVote")
 		{
@@ -116,7 +165,15 @@ function VoteDisplay(canvas)
 			this.slots[col][row] = "active";
 		}
 
-		f.push({text: vote.text[vote.choice], alpha: 1.0, font: vote.font, col: vote.col});
+		var fo = new FadeObj();
+
+		fo.text = vote.text[vote.choice];
+		fo.col = vote.col;
+		fo.alpha = 1.0;
+		fo.font = vote.font;
+		fo.fadedout = 0.01;
+
+		f.push(fo);
 
 		//bias fade towards the winner
 		this.staticFades[col][row][0].alpha = Math.pow(vote.score[0],2);
@@ -127,21 +184,6 @@ function VoteDisplay(canvas)
 
 	}.bind(this);
 
-	this.concludeVote = function(vote)
-	{
-
-		//probably don't need this
-		//console.log("concl", vote);
-
-		var col = vote.pos[0];
-		var row = Number(vote.pos[1]);
-
-		this.staticFades[col][row][vote.winner].alpha = 1.0;
-		this.staticFades[col][row][(vote.winner+1)%2].alpha = 0.0;
-		this.staticFades[col][row][0].text = String(vote.text[0]);
-		this.staticFades[col][row][1].text = String(vote.text[1]);
-
-	}.bind(this);
 
 	this.updateSlots = function(slots)
 	{
@@ -169,6 +211,14 @@ function VoteDisplay(canvas)
 			}
 		}
 
+	}
+
+	this.makeCall = function(val)
+	{
+		for(var i = 0; i < val.seq.length; i++)
+		{
+
+		}
 	}
 
 	this.draw = function()
@@ -213,14 +263,14 @@ function VoteDisplay(canvas)
 			{
 				//DEBUG DRAWING
 
-				ctx.strokeStyle="red";
-				ctx.lineWidth="1";
-				ctx.strokeRect(
-					this.positions[cols[i]+"x"] - this.slotWidth/2,
-					this.positions.y[j] - this.slotHeight/2,
-					this.slotWidth,
-					this.slotHeight
-				);
+				// ctx.strokeStyle="red";
+				// ctx.lineWidth="1";
+				// ctx.strokeRect(
+				// 	this.positions[cols[i]+"x"] - this.slotWidth/2,
+				// 	this.positions.y[j] - this.slotHeight/2,
+				// 	this.slotWidth,
+				// 	this.slotHeight
+				// );
 
 				if(this.slots[cols[i]][j] != 0)
 				{
@@ -230,9 +280,8 @@ function VoteDisplay(canvas)
 					{
 						if(this.staticFades[cols[i]][j][k].alpha > 0)
 						{
-							ctx.fillStyle = "rgba(255,255,255," + String(this.staticFades[cols[i]][j][k].alpha) + ")";
-							// ctx.fillText(this.staticFades[cols[i]][j][k].text,
-							// 	this.positions[cols[i]+"x"], this.positions.y[j]);
+							ctx.fillStyle = this.staticFades[cols[i]][j][k].getFillStyle();
+
 							drawText(
 								this.staticFades[cols[i]][j][k].text, //text to fit
 								{x: this.positions[cols[i] + "x"] - this.slotWidth/2, y: this.positions.y[j] - this.slotHeight/2, w: this.slotWidth, h: this.slotHeight}, //rect
@@ -241,6 +290,8 @@ function VoteDisplay(canvas)
 								ctx, //the canvas context
 								this.colsAlign[i]
 							);
+
+							this.staticFades[cols[i]][j][k].increment();
 						}
 					}
 
@@ -248,7 +299,7 @@ function VoteDisplay(canvas)
 					{
 						//draw the text
 						//console.log(this.activeFades[i][j]);
-						ctx.fillStyle = "rgba(" + this.activeFades[cols[i]][j][k].col + "," + String(this.activeFades[cols[i]][j][k].alpha) + ")";
+						ctx.fillStyle = this.activeFades[cols[i]][j][k].getFillStyle();
 
 						drawText(
 							this.activeFades[cols[i]][j][k].text, //text to fit
@@ -267,8 +318,8 @@ function VoteDisplay(canvas)
 				for(var k = this.activeFades[cols[i]][j].length -1; k >= 0; k--)
 				{
 					//decrement the fades
-					this.activeFades[cols[i]][j][k].alpha -= 0.01; // decrement separately
-					if(this.activeFades[cols[i]][j][k].alpha <= 0)
+					this.activeFades[cols[i]][j][k].increment();
+					if(this.activeFades[cols[i]][j][k].fadedout == 1)
 					{
 						this.activeFades[cols[i]][j].splice(k,1);
 					}

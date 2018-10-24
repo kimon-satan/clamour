@@ -66,7 +66,6 @@ $('document').ready(function()
 
 socket.on('cmd', function(msg)
 {
-	console.log(msg);
 
 	if(msg.cmd == "change")
 	{

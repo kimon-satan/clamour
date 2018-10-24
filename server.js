@@ -248,7 +248,9 @@ function parseIncomingMsg(msg)
 
 	if(msg.address == "/phraseComplete")
 	{
-		votehelpers.handlePhraseComplete(msg).catch((err)=>
+		votehelpers.handlePhraseComplete(msg)
+
+		.catch((err)=>
 		{
 			console.log(err);
 		});

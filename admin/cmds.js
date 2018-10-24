@@ -33,6 +33,7 @@ var cmdList = [
 	"vend",
 	"vadd",
 	"vclear",
+	"vcall",
 	"lvotes"
 ];
 

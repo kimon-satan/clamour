@@ -335,6 +335,11 @@ exports.response = function(socket)
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
 			});
 		}
+		else if (msg.cmd == "vcall")
+		{
+			votehelpers.startCall(msg);
+			globals.admin.emit('server_report', {id: msg.cli_id, msg: ""});
+		}
 		else if (msg.cmd == "vclear")
 		{
 			votehelpers.reset();

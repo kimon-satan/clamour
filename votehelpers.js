@@ -53,51 +53,60 @@ exports.updateDisplay = function()
 exports.handlePhraseComplete = function(msg)
 {
 
-	var id = helpers.validateId(msg.args[0]);
-
-	if(!id)
+	if(msg.args[0].substr(0,4) == "call")
 	{
-		return Promise.reject("Error /phraseComplete: Invalid argument msg.args[0] " + msg.args[0]);
+		exports.completeCall(msg.args[0]);
+		return Promise.resolve();
 	}
-
-	var p = globals.Votes.findOne({_id: id});
-	var vote;
-
-	p = p.then((data)=>
+	else
 	{
-		if(data != null && helpers.validateId(data._id))
+
+		var id = helpers.validateId(msg.args[0]);
+
+		if(!id)
 		{
-			vote = data;
-			vote.available[msg.args[1]].push(msg.args[2]);
-			return globals.Votes.update({_id: vote._id}, {$set: {available: vote.available}});
+			return Promise.reject("Error /phraseComplete: Invalid argument msg.args[0] " + msg.args[0]);
 		}
-		else
+
+		var p = globals.Votes.findOne({_id: id});
+		var vote;
+
+		p = p.then((data)=>
 		{
-			return Promise.reject("vote not found");
-		}
-	});
+			if(data != null && helpers.validateId(data._id))
+			{
+				vote = data;
+				vote.available[msg.args[1]].push(msg.args[2]);
+				return globals.Votes.update({_id: vote._id}, {$set: {available: vote.available}});
+			}
+			else
+			{
+				return Promise.reject("vote not found");
+			}
+		});
 
-	p = p.then(_=>
-	{
-		//We're ready to start a vote
-		var i = globals.pendingVotes.indexOf(String(vote._id));
-		//Check that this is a pending vote and that the two win conditions are available
-
-		if(i > -1)
+		p = p.then(_=>
 		{
-			//console.log("start vote")
-			globals.pendingVotes.splice(i,1);
-			//WARNING: possibility of race condition ... ? probably not as SC records phrases one by one
-			exports.sendVote(vote, vote.num);
-			return Promise.resolve();
-		}
-	})
+			//We're ready to start a vote
+			var i = globals.pendingVotes.indexOf(String(vote._id));
+			//Check that this is a pending vote and that the two win conditions are available
 
-	p.catch((reason)=>{
-		console.log("Error - phraseComplete: " + reason);
-	});
+			if(i > -1)
+			{
+				//console.log("start vote")
+				globals.pendingVotes.splice(i,1);
+				//WARNING: possibility of race condition ... ? probably not as SC records phrases one by one
+				exports.sendVote(vote, vote.num);
+				return Promise.resolve();
+			}
+		})
 
-	return p;
+		p.catch((reason)=>{
+			console.log("Error - phraseComplete: " + reason);
+		});
+
+		return p;
+	}
 }
 
 
@@ -511,6 +520,84 @@ exports.reset = function()
 
 }
 
+exports.startCall = function(msg)
+{
+	var options = helpers.parseOptions(msg.args);
+
+	var seq = options.seq;
+	seq = seq.split(",");
+	globals.currentCallSeq = seq;
+
+	var text = "";
+
+	var p = Promise.resolve();
+	var c = 0;
+
+	for(var i = 0; i < seq.length; i++)
+	{
+		p = p.then(_=>
+		{
+			return globals.Votes.findOne({pos: seq[c]});
+		})
+
+		p = p.then((doc)=>
+		{
+			if(doc.winnerIdx > -1)
+			{
+				text += " " + doc.pair[doc.winnerIdx];
+			}
+			c++;
+			return Promise.resolve();
+		})
+	}
+
+	p.then(_=>
+	{
+
+		if(!globals.NO_SC)
+		{
+			//send the record message to SC
+			helpers.sendSCMessage({address: '/recordCallPhrase', args: ['call_' + helpers.generateTempId(10), text]})
+		}
+		else
+		{
+			exports.completeCall();
+		}
+	})
+
+
+}
+
+exports.completeCall = function(call_id)
+{
+
+	if(!globals.NO_SC)
+	{
+		helpers.sendSCMessage({
+				address: "/speakPhrase",
+				args: [call_id, 0, 7, 0, 1]
+		});
+	}
+
+	getDisplaySlots()
+
+	.then((doc)=>
+	{
+
+		globals.display.emit('cmd',{
+			type: "vote", cmd: "makeCall",
+			val: {
+				seq: globals.currentCallSeq,
+				slots: doc
+			}
+		})
+	})
+
+	//TODO reset the other slots
+
+
+}
+
 
 /////////////////////////////// private helper functions ////////////////////////////
 
@@ -599,13 +686,8 @@ var triggerVoteComplete = function(data)
 	{
 		globals.display.emit('cmd',
 		{
-			type: "vote", cmd: "concludeVote" ,
-			val:{
-				pos: globals.currentConcludedVote.pos,
-				text: globals.currentConcludedVote.pair,
-				winner: globals.currentConcludedVote.winnerIdx,
-				slots: doc
-			}
+			type: "vote", cmd: "updateSlots",
+			val:doc
 		})
 	})
 
