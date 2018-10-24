@@ -1,12 +1,12 @@
 var globals = require('./globals.js');
 var helpers = require('./helpers.js');
-
+var deepcopy = require('deepcopy');
 
 exports.listVotes = function()
 {
-	var ids = globals.voteDisplaySlots.a.concat(globals.voteDisplaySlots.b);
-	var p = globals.Votes.find({_id: {$in: ids }},{sort: {pos: 1}})
-	.catch((e)=>{
+	var p = globals.Votes.find({},{sort: {pos: 1}})
+	.catch((e)=>
+	{
 		console.log("caught u !");
 	});
 
@@ -37,34 +37,16 @@ exports.listVotes = function()
 
 }
 
-exports.getVoteFromSlot = function(slot)
+exports.updateDisplay = function()
 {
-	var m = slot.match(/[ab]\d/);
+	getDisplaySlots()
 
-	if(!m)
-	{
-		return Promise.reject("Error - incorrect slot format");
-	}
-
-	var slot_id = globals.voteDisplaySlots[slot[0]][slot[1]];
-
-	if(!slot_id)return Promise.reject("No vote at " + slot);
-
-	var p = globals.Votes.findOne(slot_id);
-
-	p = p.then((doc)=>
-	{
-		if(!doc)
-		{
-			return Promise.reject("No valid vote at " + slot);
-		}
-		else
-		{
-			return Promise.resolve(doc);
-		}
-	});
-
-	return p;
+	.then((doc)=>{
+		globals.display.emit('cmd', {
+			type: "vote", cmd: "updateSlots" ,
+			val: doc
+		});
+	})
 }
 
 
@@ -106,7 +88,6 @@ exports.handlePhraseComplete = function(msg)
 			//console.log("start vote")
 			globals.pendingVotes.splice(i,1);
 			//WARNING: possibility of race condition ... ? probably not as SC records phrases one by one
-			console.log(vote);
 			exports.sendVote(vote, vote.num);
 			return Promise.resolve();
 		}
@@ -136,38 +117,29 @@ exports.startVote = function(msg)
 
 	if(pos == undefined)
 	{
-		//try to find an empty slot
-		pos = findEmptySlot();
-		if(!pos)
-		{
-			return Promise.reject("No free display slots for vote");
-		}
+		return Promise.reject("pos not defined");
 	}
-
 	if(pair == undefined)
 	{
 		return Promise.reject("choice not defined");
 	}
 	else if(typeof(pair) != "object")
 	{
-		return Promise.reject("incorrectly defined");
+		return Promise.reject("choice incorrectly defined");
 	}
 
-	var p = handlePairRefs(pair);
 
-	p = p.then(_=>
+	response = "choice: ";
+
+	for(var i = 0; i < pair.length; i++)
 	{
-		response = "choice: ";
+		response += pair[i] + ", ";
+	}
 
-		for(var i = 0; i < pair.length; i++)
-		{
-			response += pair[i] + ", ";
-		}
+	winPair = [pair[0], pair[1]];
 
-		winPair = [pair[0], pair[1]];
+	var p = helpers.useRoom(msg);
 
-		return helpers.useRoom(msg);
-	});
 
 	p = p.then((rm)=>
 	{
@@ -176,35 +148,29 @@ exports.startVote = function(msg)
 
 	p = p.then((doc)=>
 	{
-		return globals.Votes.insert(
-			{ pair: pair,
-				available: [[],[]],
-				scores: [0,0],
-				voting: [],
-				voted: [],
-				notvoted: doc.population,
-				population: doc.population.length,
-				num: num,
-				room: doc.room,
-				pos: pos,
-				open: true,
-				winnerIdx: -1,
-				rig: options.rig,
-				lock: false
-		});
+		var v = deepcopy(globals.defaultVote);
+		v.pos = pos;
+		v.rig = options.rig;
+		v.room = doc.room;
+		v.notvoted = doc.population;
+		v.population = doc.population.length;
+		v.pair = pair;
+		v.num = num;
+		v.open = true;
+
+		return globals.Votes.update({pos: pos},v);
 	});
 
-	p = p.then((data)=>
+	p = p.then(_=>
 	{
-		vote = data;
-		globals.voteDisplaySlots[pos[0]][Number(pos[1])] = data._id;
-		return Promise.resolve();
-	});
+		return globals.Votes.findOne({pos: pos});
+	})
 
 	if(globals.NO_SC)
 	{
-		p = p.then(_=>
+		p = p.then((doc)=>
 		{
+			vote = doc;
 			vote.available = [[ 0, 1, 2, 3, 4, 5, 6, 7 ], [ 0, 1, 2, 3, 4, 5, 6, 7 ]];
 			return globals.Votes.update(
 				{_id : vote._id},
@@ -221,8 +187,9 @@ exports.startVote = function(msg)
 	}
 	else
 	{
-		p = p.then(_=>
+		p = p.then((doc)=>
 		{
+			vote  = doc;
 			//Tell SC to record the phrases
 
 			// helpers.sendSCMessage({
@@ -264,7 +231,7 @@ exports.addThreadsToVote = function(msg)
 		return Promise.reject("No position specified");
 	}
 
-	var p = exports.getVoteFromSlot(pos);
+	var p = globals.Votes.findOne({pos: pos});
 
 	p = p.then((doc)=>
 	{
@@ -292,7 +259,6 @@ exports.sendVote = function(data, num)
 		if(data.rig != undefined)
 		{
 			omsg.rig = data.rig;
-			console.log(omsg);
 		}
 
 		if(num == undefined)num = 1;
@@ -405,7 +371,7 @@ exports.endVote = function(msg)
 		return Promise.reject("No position specified");
 	}
 
-	var p = exports.getVoteFromSlot(pos);
+	var p = globals.Votes.findOne({pos: pos});
 
 	p = p.then((doc)=>
 	{
@@ -469,44 +435,33 @@ exports.startManual = function(msg)
 		return Promise.reject("No position specified");
 	}
 
-	var slot = globals.voteDisplaySlots[pos[0]][Number(pos[1])];
+	p = globals.Votes.findOne({pos: pos});
 
-	if(slot == 0)
-	{
-		p = globals.Votes.insert(
-				{ pair: ["",""],
-					available: [[],[]],
-					scores: [0,0],
-					voting: [],
-					voted: [],
-					notvoted: 0,
-					population: 0,
-					num: 0,
-					room: "",
-					pos: pos,
-					open: false,
-					winnerIdx: 0,
-					lock: false
-			});
-	}
-	else
-	{
-		p = globals.Votes.findOne({_id: slot});
-	}
-
+	var t = "";
 	p = p.then((doc)=>
 	{
-		globals.voteDisplaySlots[pos[0]][Number(pos[1])] = doc._id;
-
 		if(doc.open)
 		{
 			return Promise.reject("Vote is currently open");
 		}
 		else
 		{
-			var t = doc.pair[doc.winnerIdx];
-			return Promise.resolve({text: t, pos: pos});
+			if(doc.winnerIdx > -1)
+			{
+				t = doc.pair[doc.winnerIdx];
+				return Promise.resolve();
+			}
+			else
+			{
+				doc.winnerIdx = 0;
+				return globals.Votes.update(doc._id, doc);
+			}
+
 		}
+	})
+
+	p = p.then(_=>{
+		return Promise.resolve({text: t, pos: pos});
 	})
 
 	return p;
@@ -514,84 +469,63 @@ exports.startManual = function(msg)
 
 exports.manualUpdate = function(msg)
 {
-	var slot = globals.voteDisplaySlots[msg.pos[0]][Number(msg.pos[1])];
+	var p = globals.Votes.update({pos: msg.pos},{$set: {pair: [msg.text, msg.text]}})
 
-	console.log(slot);
+	.then(_=>
+	{
+		return getDisplaySlots();
+	})
 
-	var p = globals.Votes.update({_id: slot},{$set: {pair: [msg.text, msg.text]}});
+	.then((doc)=>
+	{
+		globals.display.emit('cmd', {
+			type: "vote", cmd: "updateVote" ,
+			val: {
+				winner: 0,
+				text: [msg.text, ""],
+				pos: msg.pos,
+				slots: doc
+			}
+		});
+	})
 
-	console.log(msg.text);
-
-	globals.display.emit('cmd', {
-		type: "vote", cmd: "updateVote" ,
-		val: {
-			winner: 0,
-			text: [msg.text, ""],
-			pos: msg.pos,
-			slots: globals.voteDisplaySlots //Indicates the current state of the slots
-		}
-	});
 }
 
 
 /////////////////////////////// private helper functions ////////////////////////////
 
-var findEmptySlot = function()
+
+var getDisplaySlots = function()
 {
-	var pos = false;
-	var a = globals.voteDisplaySlots.a.indexOf(0);
-	var b  = globals.voteDisplaySlots.b.indexOf(0);
-	if(a != -1)
-	{
-		pos = "a" + a;
-	}
-	else if(b != -1)
-	{
-		pos = "b" + b;
-	}
-	return pos;
-}
 
-var handlePairRefs = function(pair)
-{
-	var p = Promise.resolve();
+	var slots = {a: [0,0,0,0], b: [0,0,0,0]};
 
-	for(var i = 0; i < pair.length; i++)
+	return globals.Votes.find({})
+
+	.then((docs)=>
 	{
-		pair[i] = String(pair[i]);
-		let m = pair[i].match(/([ab])(\d)/);
-
-		if(m)
+		for(var i = 0; i < docs.length; i++)
 		{
-			var vid = globals.voteDisplaySlots[m[1]][Number(m[2])];
-			if(!vid)continue;
+			var col = docs[i].pos[0];
+			var row = Number(docs[i].pos[1]);
 
-			p = p.then(_=>
+			if(docs[i].open)
 			{
-				return globals.Votes.findOne(vid)
-			});
-
-			p = p.then((doc)=>
+				slots[col][row] = "_active_";
+			}
+			else if(docs[i].winnerIdx > -1)
 			{
-				if(doc.winnerIdx != -1)
-				{
-					pair[pair.indexOf(m[0])] = doc.pair[doc.winnerIdx];
-
-					//remove old vote from globals.voteDisplaySlots
-					//will be updated when new vote is sent to display
-					globals.voteDisplaySlots[m[1]][Number(m[2])] = 0;
-					return Promise.resolve();
-				}
-				else
-				{
-					return Promise.resolve("winner isn't chosen for " + m[0]);
-				}
-			});
+				slots[col][row] = docs[i].pair[docs[i].winnerIdx];
+			}
+			else
+			{
+				slots[col][row] = 0;
+			}
 
 		}
-	}
 
-	return p;
+		return Promise.resolve(slots);
+	})
 }
 
 
@@ -619,8 +553,6 @@ var triggerVoteComplete = function(data)
 	{
 		//otherwise this happens when
 
-		exports.concludeDisplayAndPlayers();
-
 		globals.procs[generateTempId(10)] = setTimeout(function()
 		{
 			globals.players.emit('cmd',{cmd: 'resume_vote'});
@@ -636,23 +568,27 @@ var triggerVoteComplete = function(data)
 				args: [String(data._id) + "_win_" + data.winnerIdx + "_7"]
 		});
 
-
-
 	}
 	//console.log(data);
 	var t = globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx];
 	globals.players.emit('cmd',{cmd: 'pause_vote', value: t});
 
-	globals.display.emit('cmd',
+	getDisplaySlots()
+
+	.then((doc)=>
 	{
-		type: "vote", cmd: "concludeVote" ,
-		val:{
-			pos: globals.currentConcludedVote.pos,
-			text: globals.currentConcludedVote.pair,
-			winner: globals.currentConcludedVote.winnerIdx,
-			slots: globals.voteDisplaySlots
-		}
-	});
+		globals.display.emit('cmd',
+		{
+			type: "vote", cmd: "concludeVote" ,
+			val:{
+				pos: globals.currentConcludedVote.pos,
+				text: globals.currentConcludedVote.pair,
+				winner: globals.currentConcludedVote.winnerIdx,
+				slots: doc
+			}
+		})
+	})
+
 
 
 }

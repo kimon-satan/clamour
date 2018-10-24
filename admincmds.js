@@ -410,8 +410,9 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "dvote")
 		{
+			globals.DisplayState.mode = "vote";
 			globals.display.emit("cmd", {type: "vote", cmd: "change"});
-			globals.voteDisplayIndexes = {};
+			votehelpers.updateDisplay();
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}
 		else if(msg.cmd == "dstory")
@@ -422,6 +423,8 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "dclear")
 		{
+
+			//TODO
 			globals.display.emit("cmd", {type: "all", cmd: "clear"});
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response
 		}

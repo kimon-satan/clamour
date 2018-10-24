@@ -50,7 +50,7 @@ function VoteDisplay(canvas)
 		}
 		else if (msg.cmd == "updateSlots")
 		{
-			this.updatePositions(msg.val);
+			this.updateSlots(msg.val);
 		}
 		else if(msg.cmd == "reset" || msg.cmd == "clear")
 		{
@@ -78,84 +78,25 @@ function VoteDisplay(canvas)
 		this.slotHeight = incr;
 	}
 
-	this.updatePositions = function(slots)
+	this.updatePositions = function()
 	{
 		//update the positions
-		var k = ["a","b"];
-		var isNeedsUpdate = false;
 
-		for(var j = 0; j < k.length; j++)
-		{
-			for(var i = 0; i < slots[k[j]].length; i++)
-			{
-				if(
-					(slots[k[j]][i] != 0 && this.slots[k[j]][i] == 0)
-				|| (slots[k[j]][i] == 0 && this.slots[k[j]][i] != 0)
-				)
-				{
-					//isNeedsUpdate = true;
-					this.slots = slots;
-					break;
-				}
-			}
-			if(isNeedsUpdate)break;
-		}
-
-		if(!isNeedsUpdate)
-		{
-			return;
-		}
 
 		this.positions = {ax: 0, bx: 0, y: [0,0,0,0]};
 
-		var maxRow = 0;
-		var minRow = 4;
-		var colsUsed = {a: false, b: false};
+		this.positions.ax = innerWidth * 0.28; //NB these are centers
+		this.positions.bx = innerWidth * 0.72;
+		this.colsAlign = ["right", "left"];
+		this.slotWidth = innerWidth * 0.4;
 
-		//check what is being used
-		for(var j = 0; j < k.length; j++)
+		var incr = (innerHeight * 0.75)/6
+		for(var i = 0; i < 4; i++)
 		{
-			for(var i = 0; i < this.slots[k[j]].length; i++)
-			{
-				if(this.slots[k[j]][i] != 0)
-				{
-					minRow = Math.min(minRow, i);
-					maxRow = Math.max(maxRow, i);
-					colsUsed[k[j]] = true;
-				}
-			}
-		}
-
-		if(!colsUsed.b && colsUsed.a)
-		{
-			this.positions.ax = innerWidth/2;
-			this.positions.bx = 0;
-			this.colsAlign = ["center", "center"];
-			this.slotWidth = innerWidth * 0.8;
-		}
-		else if(!colsUsed.a && colsUsed.b)
-		{
-			this.positions.bx = innerWidth/2;
-			this.positions.ax = 0;
-			this.colsAlign = ["center", "center"];
-			this.slotWidth = innerWidth * 0.8;
-		}
-		else
-		{
-			this.positions.ax = innerWidth * 0.28; //NB these are centers
-			this.positions.bx = innerWidth * 0.72;
-			this.colsAlign = ["right", "left"];
-			this.slotWidth = innerWidth * 0.4;
-		}
-
-		var incr = (innerHeight * 0.75)/(maxRow-minRow+2)
-		for(var i = minRow; i < (maxRow + 1); i++)
-		{
-			this.positions.y[i] = innerHeight * 0.125 + incr * (i-minRow+1)
+			this.positions.y[i] = innerHeight * 0.125 + incr * (i + 1)
 		}
 
 		this.slotHeight = incr;
-
 
 
 	}.bind(this);
@@ -170,8 +111,12 @@ function VoteDisplay(canvas)
 		var f = this.activeFades[col][row];
 		//12 colours and 12 fonts styles
 
+		if(this.slots[col][row] == 0)
+		{
+			this.slots[col][row] = "active";
+		}
+
 		f.push({text: vote.text[vote.choice], alpha: 1.0, font: vote.font, col: vote.col});
-		this.updatePositions(vote.slots);
 
 		//bias fade towards the winner
 		this.staticFades[col][row][0].alpha = Math.pow(vote.score[0],2);
@@ -180,12 +125,12 @@ function VoteDisplay(canvas)
 		this.staticFades[col][row][vote.choice].text = vote.text[vote.choice];
 		this.staticFades[col][row][(vote.choice+1)%2].text = vote.text[(vote.choice+1)%2];
 
-
 	}.bind(this);
 
 	this.concludeVote = function(vote)
 	{
 
+		//probably don't need this
 		//console.log("concl", vote);
 
 		var col = vote.pos[0];
@@ -196,11 +141,35 @@ function VoteDisplay(canvas)
 		this.staticFades[col][row][0].text = String(vote.text[0]);
 		this.staticFades[col][row][1].text = String(vote.text[1]);
 
-		this.updatePositions(vote.slots);
-
 	}.bind(this);
 
+	this.updateSlots = function(slots)
+	{
+		this.slots = slots;
+		var k = ["a","b"];
 
+		for(var col = 0; col < 2; col++)
+		{
+			for(var row = 0; row < 4; row++)
+			{
+				let slot = this.slots[k[col]][row];
+
+				if(slot == 0)
+				{
+					//leave alone
+				}
+				else if(slot != "_active_")
+				{
+					this.staticFades[k[col]][row][0].alpha = 1.0;
+					this.staticFades[k[col]][row][1].alpha = 0.0;
+					this.staticFades[k[col]][row][0].text = slot;
+					this.staticFades[k[col]][row][1].text = slot;
+				}
+
+			}
+		}
+
+	}
 
 	this.draw = function()
 	{
@@ -244,14 +213,14 @@ function VoteDisplay(canvas)
 			{
 				//DEBUG DRAWING
 
-				// ctx.strokeStyle="red";
-				// ctx.lineWidth="1";
-				// ctx.strokeRect(
-				// 	this.positions[cols[i]+"x"] - this.slotWidth/2,
-				// 	this.positions.y[j] - this.slotHeight/2,
-				// 	this.slotWidth,
-				// 	this.slotHeight
-				// );
+				ctx.strokeStyle="red";
+				ctx.lineWidth="1";
+				ctx.strokeRect(
+					this.positions[cols[i]+"x"] - this.slotWidth/2,
+					this.positions.y[j] - this.slotHeight/2,
+					this.slotWidth,
+					this.slotHeight
+				);
 
 				if(this.slots[cols[i]][j] != 0)
 				{

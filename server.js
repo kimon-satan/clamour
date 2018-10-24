@@ -15,7 +15,7 @@ for(var i = 2; i < process.argv.length; i++)
 		var arg = s.substring(2);
 		if(arg == "nosc")
 		{
-			globals.NO_SC = false;
+			globals.NO_SC = true;
 		}
 		else if(arg == "local")
 		{
