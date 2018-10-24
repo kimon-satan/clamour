@@ -174,10 +174,10 @@ VoteManager.prototype.wait = function()
 
 VoteManager.prototype.cancelVote = function(val)
 {
-	if(this.parent.data.currentVoteId != val) return; //wrong vote here
+	if(val != undefined && this.parent.data.currentVoteId != val) return; //wrong vote here
 	this.parent.data.state = "waiting";
 	this.isWaiting = true;
-	//if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
+
 }
 
 VoteManager.prototype.createVote = function(vote)
@@ -248,18 +248,13 @@ VoteManager.prototype.resumeVote = function()
 {
 	this.parent.data.state = (this.isWaiting) ? "waiting" : "voting";
 	this.isPaused = false;
-	//if(this.parent.updateTable)this.parent.updateTable(this.parent.tableid, this.parent.data);
+
 }
 
 
 VoteManager.prototype.createTestVote = function(vote)
 {
 
-	if(this.previousVotes[vote.id] != undefined)
-	{
-		console.log("duplicate vote");
-		return;
-	}
 
 	if(this.parent.data.currentVoteId != -1)
 	{

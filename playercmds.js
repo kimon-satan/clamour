@@ -151,6 +151,7 @@ exports.response = function(socket)
 			}
 			else if(!data.open)
 			{
+				globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
 				return Promise.reject("vote concluded");
 			}
 

@@ -214,12 +214,7 @@ exports.response = function(socket)
 				//clear the Databases
 				globals.sockets = {};
 				globals.UserData.remove({});
-				globals.Votes.remove({});
-				globals.voteDisplaySlots =
-				{
-					a: [0,0,0,0],
-					b: [0,0,0,0]
-				};
+				votehelpers.reset();
 				globals.checkins = {};
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: "all databases reset", room: ""});
 				globals.players.emit('whoareyou'); //causes any connected players to reset
@@ -339,6 +334,11 @@ exports.response = function(socket)
 			{
 				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
 			});
+		}
+		else if (msg.cmd == "vclear")
+		{
+			votehelpers.reset();
+			globals.admin.emit('server_report', {id: msg.cli_id, msg: ""});
 		}
 		else if(msg.cmd == "lvotes")
 		{

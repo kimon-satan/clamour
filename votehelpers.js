@@ -479,15 +479,35 @@ exports.manualUpdate = function(msg)
 	.then((doc)=>
 	{
 		globals.display.emit('cmd', {
-			type: "vote", cmd: "updateVote" ,
-			val: {
-				winner: 0,
-				text: [msg.text, ""],
-				pos: msg.pos,
-				slots: doc
-			}
+			type: "vote", cmd: "updateSlots" ,
+			val: doc
 		});
 	})
+
+}
+
+//reset
+
+exports.reset = function()
+{
+	var positions = ['a0','a1','a2','a3','b0','b1','b2','b3'];
+	var promises = [];
+	for(var i = 0; i < 8; i++)
+	{
+		var v = deepcopy(globals.defaultVote);
+		v.pos = positions[i];
+		promises.push(globals.Votes.update({pos: v.pos},v));
+	}
+
+	Promise.all(promises)
+
+	.then(_=>{
+		exports.updateDisplay();
+		globals.players.emit('cmd',{cmd: 'cancel_vote'});
+		globals.players.emit('cmd',{cmd: 'resume_vote'});
+		globals.UserData.update({},{$set: {currentVoteId: -1 , currentVotePair: ["",""]}})
+	})
+
 
 }
 

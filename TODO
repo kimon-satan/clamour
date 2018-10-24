@@ -13,7 +13,6 @@ TODO
 	- progress bar on client (80%)
 		- store in cookie to prevent page refresh
 		- check pause timer whilst paused
-	- clear votes ... check old votes removed
 	- concluded vote routine (how ?)
 	- remove win as separate voice recording (80%)
 
@@ -21,20 +20,13 @@ TODO
 	- survey !
 
 
-	- prevent overwriting slots and other bad things ?
+	- prevent overwriting slots and other bad things ? 50%
 
-	- prevent vote stallers - options:
-		- client side timer (weak if client is actually broken)
-		- server side
-			- starts a new thread if the old one is stalled
-			- time stamps votes and removes and resets if too long
 
 	- type in a slot (80%) - could make cursor ?
 	- more font colour combinations ?
 	- prevent sample duplicates in SC
 
-	- IDEAS:
-	- longer music for final amalgamation of a rule (new end routine need for this)
 
 
 ### Refactoring/ Tidying ####
@@ -44,7 +36,7 @@ TODO
 		- make sure every DB request is caught somehow
 		- no need for try/ catch -  errors can be thrown if caught
 
-	- display data persistence
+	- display data persistence (50%)
 
 
 ### Love ###
