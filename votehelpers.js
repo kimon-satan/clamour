@@ -575,7 +575,7 @@ exports.completeCall = function(call_id)
 	{
 		helpers.sendSCMessage({
 				address: "/speakPhrase",
-				args: [call_id, 0, 7, 0, 1]
+				args: [call_id, 0, 7, 0, 0.9]
 		});
 	}
 
@@ -591,9 +591,19 @@ exports.completeCall = function(call_id)
 				slots: doc
 			}
 		})
+
+		var slots = ["a0", "a1", "a2", "a3", "b0", "b1", "b2", "b3"];
+		for(var i = 0; i < globals.currentCallSeq.length; i++)
+		{
+			slots.splice(slots.indexOf(globals.currentCallSeq[i]),1);
+		}
+
+		//reset the other slots
+
+		globals.Votes.update({pos: {$in: slots}},{$set:{winnerIdx: -1, pair:["",""]}},{multi: true})
 	})
 
-	//TODO reset the other slots
+
 
 
 }

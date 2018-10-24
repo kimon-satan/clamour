@@ -1,5 +1,9 @@
 TODO
 
+### users ###
+
+	- adding new users to existing rooms (perhaps automatically ?)
+
 ### Deployment ###
 
 	- memory leak ???
@@ -10,17 +14,17 @@ TODO
 
 ### Votes ###
 
+	- concluded vote routine (90%) - finish audio routine
 	- progress bar on client (80%)
 		- store in cookie to prevent page refresh
 		- check pause timer whilst paused
-	- concluded vote routine (how ?)
-	- remove win as separate voice recording (80%)
+
 
 	- emoji stuff
 	- survey !
 
 
-	- prevent overwriting slots and other bad things ? 50%
+	- prevent overwriting slots and other bad things ? (50%)
 
 
 	- type in a slot (80%) - could make cursor ?
@@ -36,11 +40,12 @@ TODO
 		- make sure every DB request is caught somehow
 		- no need for try/ catch -  errors can be thrown if caught
 
-	- display data persistence (50%)
+	- display data persistence (80%)
 
 
 ### Love ###
 
+	- test many blobs 
 	- why does updatereactionMaps happen 4 times on iface init ?
 	- splats rendered on mobile screen
 	- linear progression of blobs

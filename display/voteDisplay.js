@@ -3,7 +3,7 @@ function FadeObj()
 	this.text = "";
 	this.alpha = 0;
 	this.highlight = 0;
-	this.fadedout = 0;
+	this.fadeout = 0;
 	this.col = undefined;
 	this.font = "Arial";
 
@@ -12,7 +12,7 @@ function FadeObj()
 		var r = 255;
 		var g = 255 * (1 - this.highlight);
 		var b = 255 * (1 - this.highlight);
-		var a = this.alpha * (1 - this.fadedout);
+		var a = this.alpha * (1 - this.fadeout);
 
 		if(this.col != undefined)
 		{
@@ -28,16 +28,16 @@ function FadeObj()
 
 	}
 
-	this.increment = function()
+	this.increment = function(amt)
 	{
-		if(this.fadedout > 0)
+		if(this.fadeout > 0)
 		{
-			this.fadedout = Math.min(1, this.fadedout + 0.01);
+			this.fadeout = Math.min(1, this.fadeout + amt);
 		}
 
 		if(this.highlight > 0)
 		{
-			this.highlight = Math.min(1, this.highlight + 0.01);
+			this.highlight = Math.min(1, this.highlight + amt);
 		}
 
 	}
@@ -50,6 +50,7 @@ function VoteDisplay(canvas)
 	this.slotWidth = innerWidth * 0.4;
 	this.colsAlign = ["center", "center"];
 	this.isActive = false;
+	this.fontSize = 150;
 
 
 	var reset = function()
@@ -93,10 +94,6 @@ function VoteDisplay(canvas)
 		{
 			this.makeCall(msg.val);
 		}
-		else if (msg.cmd == "updateVote")
-		{
-			this.concludeVote(msg.val);
-		}
 		else if (msg.cmd == "updateSlots")
 		{
 			this.updateSlots(msg.val);
@@ -104,28 +101,11 @@ function VoteDisplay(canvas)
 		else if(msg.cmd == "reset" || msg.cmd == "clear")
 		{
 			reset();
-			this.setAllSlotsOn();
+			this.updatePositions();
 		}
 
 	}
 
-	this.setAllSlotsOn = function()
-	{
-		var k = ["a","b"];
-
-		this.positions.ax = innerWidth * 0.28; //NB these are centers
-		this.positions.bx = innerWidth * 0.72;
-		this.colsAlign = ["right", "left"];
-		this.slotWidth = innerWidth * 0.4;
-
-		var incr = (innerHeight * 0.75)/5;
-		for(var i = 0; i < 4; i++)
-		{
-			this.positions.y[i] = innerHeight * 0.125 + incr * (i+1)
-		}
-
-		this.slotHeight = incr;
-	}
 
 	this.updatePositions = function()
 	{
@@ -139,7 +119,7 @@ function VoteDisplay(canvas)
 		this.colsAlign = ["right", "left"];
 		this.slotWidth = innerWidth * 0.4;
 
-		var incr = (innerHeight * 0.75)/6
+		var incr = (innerHeight * 0.75)/5
 		for(var i = 0; i < 4; i++)
 		{
 			this.positions.y[i] = innerHeight * 0.125 + incr * (i + 1)
@@ -160,10 +140,6 @@ function VoteDisplay(canvas)
 		var f = this.activeFades[col][row];
 		//12 colours and 12 fonts styles
 
-		if(this.slots[col][row] == 0)
-		{
-			this.slots[col][row] = "active";
-		}
 
 		var fo = new FadeObj();
 
@@ -171,13 +147,18 @@ function VoteDisplay(canvas)
 		fo.col = vote.col;
 		fo.alpha = 1.0;
 		fo.font = vote.font;
-		fo.fadedout = 0.01;
+		fo.fadeout = 0.01;
 
 		f.push(fo);
 
 		//bias fade towards the winner
-		this.staticFades[col][row][0].alpha = Math.pow(vote.score[0],2);
-		this.staticFades[col][row][1].alpha = Math.pow(vote.score[1],2);
+
+		for(var i = 0; i < 2; i++)
+		{
+			this.staticFades[col][row][i].alpha = Math.pow(vote.score[i],2);
+			this.staticFades[col][row][i].fadeout = 0;
+			this.staticFades[col][row][i].highlight = 0;
+		}
 
 		this.staticFades[col][row][vote.choice].text = vote.text[vote.choice];
 		this.staticFades[col][row][(vote.choice+1)%2].text = vote.text[(vote.choice+1)%2];
@@ -196,29 +177,111 @@ function VoteDisplay(canvas)
 			{
 				let slot = this.slots[k[col]][row];
 
+				for(var i = 0; i < 2; i++)
+				{
+					if(this.staticFades[k[col]][row][i].fadeout == 1)
+					{
+						this.staticFades[k[col]][row][i] = new FadeObj();
+					}
+				}
+
 				if(slot == 0)
 				{
-					//leave alone
+					for(var i = 0; i < 2; i++)
+					{
+						if(this.staticFades[k[col]][row][i].text.length > 0)
+						{
+							this.staticFades[k[col]][row][i] = new FadeObj();
+						}
+					}
 				}
 				else if(slot != "_active_")
 				{
 					this.staticFades[k[col]][row][0].alpha = 1.0;
 					this.staticFades[k[col]][row][1].alpha = 0.0;
-					this.staticFades[k[col]][row][0].text = slot;
-					this.staticFades[k[col]][row][1].text = slot;
+
+					if(this.staticFades[k[col]][row][0].text != slot)
+					{
+						for(var i = 0; i < 2; i++)
+						{
+							this.staticFades[k[col]][row][i].text = slot;
+							this.staticFades[k[col]][row][i].fadeout = 0;
+							this.staticFades[k[col]][row][i].highlight = 0;
+						}
+					}
+
+				}
+				else if(slot == "_active_")
+				{
+					this.staticFades[k[col]][row][0].fadeout = 0;
+					this.staticFades[k[col]][row][1].highlight = 0;
+					this.staticFades[k[col]][row][0].fadeout = 0;
+					this.staticFades[k[col]][row][1].highlight = 0;
 				}
 
 			}
 		}
 
+		this.fontSize = this.getFontSize();
+
 	}
 
 	this.makeCall = function(val)
 	{
-		for(var i = 0; i < val.seq.length; i++)
-		{
+		this.updateSlots(val.slots);
+		var cols = ["a","b"];
 
+		for(var i = 0; i < cols.length; i ++)
+		{
+			var col = cols[i];
+			for(var j = 0; j < 4; j++)
+			{
+				var row = j;
+				var id = col+row;
+
+				if(val.seq.indexOf(id) > -1)
+				{
+					this.staticFades[col][row][0].highlight = 0.01;
+				}
+				else
+				{
+					this.staticFades[col][row][0].fadeout = 0.01;
+				}
+			}
 		}
+
+
+	}
+
+	this.getFontSize = function()
+	{
+		ctx.font = "100px Arial";
+
+		var cols = ["a", "b"];
+
+		//find the current longest string
+
+		var widest = 0;
+		var text = "";
+
+		for(var i = 0; i < cols.length; i++)
+		{
+			for(var j = 0; j < this.slots[cols[i]].length; j++)
+			{
+				for(var k = 0; k < 2; k ++)
+				{
+					var metrics = ctx.measureText(this.staticFades[cols[i]][j][k].text);
+
+					if(widest < metrics.width)
+					{
+						text = this.staticFades[cols[i]][j][k].text;
+						widest = metrics.width;
+					}
+				}
+			}
+		}
+
+		return getMaxFontSize(text,{w: this.slotWidth, h: this.slotHeight},"Arial",150,ctx);
 	}
 
 	this.draw = function()
@@ -228,31 +291,9 @@ function VoteDisplay(canvas)
 		ctx.fillStyle = "rgba(0,0,0,1.0)";
 		ctx.fillRect(0,0,innerWidth,innerHeight);
 
+
 		//draw the static state of each vote
-		ctx.font = "100px Arial";
-
 		var cols = ["a", "b"];
-
-		//find the current longest string
-
-		var text = "";
-
-		for(var i = 0; i < cols.length; i++)
-		{
-			for(var j = 0; j < this.slots[cols[i]].length; j++)
-			{
-				for(var k = 0; k < 2; k ++)
-				{
-					if(text.length < this.staticFades[cols[i]][j][k].text.length)
-					{
-						text = this.staticFades[cols[i]][j][k].text;
-					}
-				}
-			}
-		}
-
-
-		var fs = getMaxFontSize(text,{w: this.slotWidth, h: this.slotHeight},"Arial",150,ctx);
 
 		for(var i = 0; i < cols.length; i++)
 		{
@@ -286,12 +327,14 @@ function VoteDisplay(canvas)
 								this.staticFades[cols[i]][j][k].text, //text to fit
 								{x: this.positions[cols[i] + "x"] - this.slotWidth/2, y: this.positions.y[j] - this.slotHeight/2, w: this.slotWidth, h: this.slotHeight}, //rect
 								"Arial",
-								fs,//starting font size
+								this.fontSize,//starting font size
 								ctx, //the canvas context
 								this.colsAlign[i]
 							);
 
-							this.staticFades[cols[i]][j][k].increment();
+							this.staticFades[cols[i]][j][k].increment(0.03);
+
+
 						}
 					}
 
@@ -305,7 +348,7 @@ function VoteDisplay(canvas)
 							this.activeFades[cols[i]][j][k].text, //text to fit
 							{x: this.positions[cols[i] + "x"] - this.slotWidth/2, y: this.positions.y[j] - this.slotHeight/2, w: this.slotWidth, h: this.slotHeight}, //rect
 							this.activeFades[cols[i]][j][k].font,
-							fs,//starting font size
+							this.fontSize,//starting font size
 							ctx, //the canvas context
 							this.colsAlign[i]
 						);
@@ -314,12 +357,12 @@ function VoteDisplay(canvas)
 
 				}
 
-				//remove any fadedout activeFades
+				//remove any fadeout activeFades
 				for(var k = this.activeFades[cols[i]][j].length -1; k >= 0; k--)
 				{
 					//decrement the fades
-					this.activeFades[cols[i]][j][k].increment();
-					if(this.activeFades[cols[i]][j][k].fadedout == 1)
+					this.activeFades[cols[i]][j][k].increment(0.01);
+					if(this.activeFades[cols[i]][j][k].fadeout == 1)
 					{
 						this.activeFades[cols[i]][j].splice(k,1);
 					}
@@ -349,6 +392,6 @@ function VoteDisplay(canvas)
 
 	}.bind(this);
 
-	this.setAllSlotsOn();
+	this.updatePositions();
 
 }
