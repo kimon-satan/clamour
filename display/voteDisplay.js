@@ -133,7 +133,7 @@ function VoteDisplay(canvas)
 
 	this.displayVote = function(vote)
 	{
-		//console.log(vote);
+		console.log(vote);
 		var col = vote.pos[0];
 		var row = Number(vote.pos[1]);
 
@@ -150,6 +150,7 @@ function VoteDisplay(canvas)
 		fo.fadeout = 0.01;
 
 		f.push(fo);
+
 
 		//bias fade towards the winner
 
@@ -338,23 +339,24 @@ function VoteDisplay(canvas)
 						}
 					}
 
-					for(var k = 0; k < this.activeFades[cols[i]][j].length; k++)
-					{
-						//draw the text
-						//console.log(this.activeFades[i][j]);
-						ctx.fillStyle = this.activeFades[cols[i]][j][k].getFillStyle();
-
-						drawText(
-							this.activeFades[cols[i]][j][k].text, //text to fit
-							{x: this.positions[cols[i] + "x"] - this.slotWidth/2, y: this.positions.y[j] - this.slotHeight/2, w: this.slotWidth, h: this.slotHeight}, //rect
-							this.activeFades[cols[i]][j][k].font,
-							this.fontSize,//starting font size
-							ctx, //the canvas context
-							this.colsAlign[i]
-						);
-					}
 
 
+
+				}
+
+				for(var k = 0; k < this.activeFades[cols[i]][j].length; k++)
+				{
+					//draw the text
+					ctx.fillStyle = this.activeFades[cols[i]][j][k].getFillStyle();
+
+					drawText(
+						this.activeFades[cols[i]][j][k].text, //text to fit
+						{x: this.positions[cols[i] + "x"] - this.slotWidth/2, y: this.positions.y[j] - this.slotHeight/2, w: this.slotWidth, h: this.slotHeight}, //rect
+						this.activeFades[cols[i]][j][k].font,
+						this.fontSize,//starting font size
+						ctx, //the canvas context
+						this.colsAlign[i]
+					);
 				}
 
 				//remove any fadeout activeFades
