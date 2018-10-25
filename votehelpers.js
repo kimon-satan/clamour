@@ -39,7 +39,7 @@ exports.listVotes = function()
 
 exports.updateDisplay = function()
 {
-	getDisplaySlots()
+	exports.getDisplaySlots()
 
 	.then((doc)=>{
 		globals.display.emit('cmd', {
@@ -116,11 +116,20 @@ exports.startVote = function(msg)
 	var response = "";
 	var options = helpers.parseOptions(msg.args);
 
-	var num = (options.num != undefined) ? options.num : 1;  // we need this for the helper
+	var num = (options.num != undefined) ? options.num : 10;  // we need this for the helper
 
 	//TODO deal with override here - don't let override slot in progress
 	var pos = options.pos;
-	var pair = options.choice;
+
+	if(options.choice != undefined)
+	{
+		var pair = options.choice;
+	}
+	else if(options.c != undefined)
+	{
+		var pair = options.c;
+	}
+
 	var winPair;
 	var vote;
 
@@ -147,7 +156,20 @@ exports.startVote = function(msg)
 
 	winPair = [pair[0], pair[1]];
 
-	var p = helpers.useRoom(msg);
+	var p = globals.Votes.findOne({pos: pos});
+
+	p = p.then((doc)=>{
+
+		if(doc.open || doc.locked)
+		{
+			return Promise.reject("open vote here")
+		}
+		else
+		{
+			return helpers.useRoom(msg);
+		}
+
+	})
 
 
 	p = p.then((rm)=>
@@ -166,6 +188,7 @@ exports.startVote = function(msg)
 		v.pair = pair;
 		v.num = num;
 		v.open = true;
+		v.voteid = helpers.generateTempId(20);
 
 		return globals.Votes.update({pos: pos},v);
 	});
@@ -258,7 +281,7 @@ exports.sendVote = function(data, num)
 
 		if(!data.open)return;
 
-		var omsg = {pair: data.pair, id: data._id};
+		var omsg = {pair: data.pair, id: data.voteid};
 
 		if(data.rig != undefined)
 		{
@@ -328,16 +351,16 @@ exports.sendVote = function(data, num)
 				var player = docs[idx];
 				docs.splice(idx, 1);
 
-				if(helpers.validateId(player._id) && helpers.validateId(omsg.id))
+				if(helpers.validateId(player._id))
 				{
 
 					globals.players.to(player._id).emit('cmd',{cmd: 'new_vote', value: omsg});
 
 					promises.push(
-						globals.Votes.update({_id: omsg.id}, {$push: {voting: player._id}, $pull: {notvoted: player._id}})
+						globals.Votes.update({_id: data._id}, {$push: {voting: player._id}, $pull: {notvoted: player._id}})
 					);
 					promises.push(
-						globals.UserData.update({_id: player._id},{$set: {currentVoteId: data._id, currentVotePair: data.pair }})
+						globals.UserData.update({_id: player._id},{$set: {currentVoteId: omsg.id, currentVotePair: data.pair }})
 					);
 
 				}
@@ -350,11 +373,7 @@ exports.sendVote = function(data, num)
 
 		p = p.then(_=>
 		{
-			if(helpers.validateId(omsg.id))
-			{
-				return globals.Votes.findOne({_id: omsg.id});
-			}
-
+			return globals.Votes.findOne({voteid: omsg.id});
 		});
 
 		p.catch((reason)=>{
@@ -477,7 +496,7 @@ exports.manualUpdate = function(msg)
 
 	.then(_=>
 	{
-		return getDisplaySlots();
+		return exports.getDisplaySlots();
 	})
 
 	.then((doc)=>
@@ -574,7 +593,7 @@ exports.completeCall = function(call_id)
 		});
 	}
 
-	getDisplaySlots()
+	exports.getDisplaySlots()
 
 	.then((doc)=>
 	{
@@ -607,7 +626,7 @@ exports.completeCall = function(call_id)
 /////////////////////////////// private helper functions ////////////////////////////
 
 
-var getDisplaySlots = function()
+exports.getDisplaySlots = function()
 {
 
 	var slots = {a: [0,0,0,0], b: [0,0,0,0]};
@@ -685,7 +704,7 @@ var triggerVoteComplete = function(data)
 	var t = globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx];
 	globals.players.emit('cmd',{cmd: 'pause_vote', value: t});
 
-	getDisplaySlots()
+	exports.getDisplaySlots()
 
 	.then((doc)=>
 	{

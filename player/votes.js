@@ -182,6 +182,7 @@ VoteManager.prototype.cancelVote = function(val)
 
 VoteManager.prototype.createVote = function(vote)
 {
+	//console.log(vote);
 	if(typeof(vote) != "undefined")
 	{
 		this.parent.data.currentVoteId = vote.id;
@@ -255,7 +256,7 @@ VoteManager.prototype.resumeVote = function()
 VoteManager.prototype.createTestVote = function(vote)
 {
 
-
+	//console.log(vote);
 	if(this.parent.data.currentVoteId != -1)
 	{
 		window.setTimeout(function()
@@ -269,7 +270,7 @@ VoteManager.prototype.createTestVote = function(vote)
 	this.parent.data.currentVoteId = vote.id;
 	this.parent.data.currentVotePair = vote.pair;
 	this.parent.data.state = "voting";
-	//this.parent.updateTable(this.parent.tableid, this.parent.data);
+
 
 	var makeChoice = function()
 	{

@@ -92,14 +92,8 @@ exports.response = function(socket)
 			return;
 		}
 
-		msg.id = helpers.validateId(msg.id);
 
-		if(!msg.id)
-		{
-			console.log("incorrect msg id: " + msg.id);
-			return;
-		}
-		else if(!helpers.validateId(id))
+		if(!helpers.validateId(id))
 		{
 			console.log("incorrect user id: " + id);
 			return;
@@ -113,20 +107,16 @@ exports.response = function(socket)
 		p = p.then((data)=>
 		{
 			usrobj = data;
-			return globals.Votes.findOne({_id: msg.id});
+			return globals.Votes.findOne({voteid: msg.id});
 		})
 
 		p = p.then((data)=>
 		{
-			data._id = helpers.validateId(data._id);
 
 			if(data == null)
 			{
+				globals.UserData.update(id,{$set: {currentVoteId: -1, currentVotePair: ["",""]}});
 				return Promise.reject("vote " + msg.id + " could not be found ");
-			}
-			else if(!data._id)
-			{
-				return Promise.reject("vote " + msg.id + " return invalid id");
 			}
 			else if(!data.open)
 			{
@@ -139,26 +129,36 @@ exports.response = function(socket)
 
 				data.scores[msg.choice] += 1.0/data.population;
 
-				if(!globals.NO_SC)
+				votehelpers.getDisplaySlots()
+
+				.then((doc)=>
 				{
-					helpers.sendSCMessage({
-							address: "/speakPhrase",
-							args: [String(data._id), msg.choice, usrobj.voiceNum, usrobj.voicePan, usrobj.voicePitch]
-					});
-				}
 
-
-				globals.display.emit('cmd', {
-					type: "vote", cmd: "displayVote" ,
-					val: {
-						choice: msg.choice,
-						text: data.pair,
-						font: usrobj.font,
-						col: usrobj.fontCol,
-						score: data.scores,
-						pos: data.pos
+					if(!globals.NO_SC)
+					{
+						helpers.sendSCMessage({
+								address: "/speakPhrase",
+								args: [String(data._id), msg.choice, usrobj.voiceNum, usrobj.voicePan, usrobj.voicePitch]
+						});
 					}
-				});
+
+
+					globals.display.emit('cmd',
+					{
+						type: "vote", cmd: "displayVote" ,
+						val: {
+							choice: msg.choice,
+							text: data.pair,
+							font: usrobj.font,
+							col: usrobj.fontCol,
+							score: data.scores,
+							pos: data.pos,
+							slots: doc
+						}
+					});
+				})
+
+
 
 			}
 
@@ -174,7 +174,7 @@ exports.response = function(socket)
 
 		p = p.then((data)=>
 		{
-			return globals.Votes.findOne({_id: msg.id});
+			return globals.Votes.findOne({voteid: msg.id});
 		})
 
 		p = p.then((data)=>

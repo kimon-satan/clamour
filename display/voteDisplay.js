@@ -7,6 +7,8 @@ function FadeObj()
 	this.col = undefined;
 	this.font = "Arial";
 
+
+
 	this.getFillStyle = function()
 	{
 		var r = 255;
@@ -50,7 +52,7 @@ function VoteDisplay(canvas)
 	this.slotWidth = innerWidth * 0.4;
 	this.colsAlign = ["center", "center"];
 	this.isActive = false;
-	this.fontSize = 150;
+
 
 
 	var reset = function()
@@ -81,7 +83,9 @@ function VoteDisplay(canvas)
 
 	var ctx = canvas.getContext("2d");
 	ctx.textAlign = 'center';
-	ctx.textBaseline = 'middle'
+	ctx.textBaseline = 'middle';
+
+	this.fontSize = getMaxFontSize("Be subject to others",{w: this.slotWidth, h: this.slotHeight},"Arial",150,ctx);
 
 	this.cmd = function(msg)
 	{
@@ -133,13 +137,12 @@ function VoteDisplay(canvas)
 
 	this.displayVote = function(vote)
 	{
-		console.log(vote);
+		//console.log(vote);
 		var col = vote.pos[0];
 		var row = Number(vote.pos[1]);
 
 		var f = this.activeFades[col][row];
 		//12 colours and 12 fonts styles
-
 
 		var fo = new FadeObj();
 
@@ -163,6 +166,12 @@ function VoteDisplay(canvas)
 
 		this.staticFades[col][row][vote.choice].text = vote.text[vote.choice];
 		this.staticFades[col][row][(vote.choice+1)%2].text = vote.text[(vote.choice+1)%2];
+
+		if(this.slots[col][row] != "_active_")
+		{
+			this.updateSlots(vote.slots);
+			this.fontSize = this.getFontSize();
+		}
 
 	}.bind(this);
 
