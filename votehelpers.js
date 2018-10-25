@@ -350,7 +350,6 @@ exports.sendVote = function(data, num)
 				var idx = Math.floor(Math.random() * docs.length);
 				var player = docs[idx];
 				docs.splice(idx, 1);
-				console.log(idx);
 				if(helpers.validateId(player._id))
 				{
 
@@ -409,6 +408,11 @@ exports.concludeVote = function(data)
 
 	var p = globals.Votes.findOne(data._id).then((doc)=>
 	{
+		if(data.voteid != doc.voteid)
+		{
+			return Promise.reject("vote already concluded");
+		}
+
 		data = doc; //get the most up to date version
 
 		//1. reset any hanging voters
