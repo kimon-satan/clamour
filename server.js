@@ -91,6 +91,7 @@ globals.setup().then(_=>{
 
 		time = Date.now();
 		var k = Object.keys(globals.checkins);
+
 		for(var i = 0; i < k.length; i++)
 		{
 				var delta = time - globals.checkins[k[i]];
@@ -98,15 +99,18 @@ globals.setup().then(_=>{
 				if(delta > 20000) //20 secs = dormant
 				{
 					if(globals.DEBUG)console.log(k[i] + " is dormant");
+
 					try
 					{
 						if(helpers.validateId(k[i]))
 						{
 							globals.UserData.update({_id: k[i]},{$set: {connected: false}})
-							.catch((err)=>{
+							.catch((err)=>
+							{
 								console.log("Error - checkins : " + err);
 								globals.checkins[k[i]];
 							});
+
 							delete globals.checkins[k[i]];
 						}
 						else
@@ -263,9 +267,5 @@ function parseIncomingMsg(msg)
 		//allows other votes to happen
 		globals.currentConcludedVote = null;
 	}
-
-	// if(msg.address == "/winSampleDone")
-	// {
-	// 	votehelpers.concludeDisplayAndPlayers();
-	// }
+	
 }

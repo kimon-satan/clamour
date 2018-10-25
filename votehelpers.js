@@ -201,11 +201,6 @@ exports.startVote = function(msg)
 			vote  = doc;
 			//Tell SC to record the phrases
 
-			// helpers.sendSCMessage({
-			// 		address: "/recordWinPhrase",
-			// 		args: [String(vote._id) + "_win", winPair[0],winPair[1]],
-			// });
-
 			helpers.sendSCMessage({
 					address: "/recordPhrases",
 					args: [String(vote._id), pair[0],pair[1]],
@@ -686,7 +681,7 @@ var triggerVoteComplete = function(data)
 		});
 
 	}
-	//console.log(data);
+
 	var t = globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx];
 	globals.players.emit('cmd',{cmd: 'pause_vote', value: t});
 

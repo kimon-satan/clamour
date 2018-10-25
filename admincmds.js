@@ -13,33 +13,39 @@ exports.response = function(socket)
 	{
 		if(msg.cmd == "change_mode")
 		{
-			helpers.parseOptions(msg.args, function(options)
-			{
-				options.mode = msg.mode;
+			var options = helpers.parseOptions(msg.args);
 
+			options.mode = msg.mode;
+
+			if(msg.mode == "story")
+			{
+				globals.DisplayState.mode = "story";
+				globals.display.emit('cmd', {type: 'story', cmd: 'change'});
+				storyhelpers.startClip();
+			}
+			else if(msg.mode == "love")
+			{
+				globals.DisplayState.mode = "love";
+				globals.display.emit('cmd', {type: 'love', cmd: 'change'});
+			}
+
+			helpers.useRoom(msg)
+
+			.then((rm)=>
+			{
+				//handle subrooms for story
 				if(msg.mode == "story")
 				{
-					globals.DisplayState.mode = "story";
-					globals.display.emit('cmd', {type: 'story', cmd: 'change'});
-					storyhelpers.startClip();
-				}
-				else if(msg.mode == "love")
-				{
-					globals.DisplayState.mode = "love";
-					globals.display.emit('cmd', {type: 'love', cmd: 'change'});
+					storyhelpers.handleSubrooms(rm, options, msg.cli_id);
 				}
 
-				//handle subrooms for story
-				helpers.useRoom(msg, function(rm)
-				{
-					if(msg.mode == "story")
-					{
-						storyhelpers.handleSubrooms(rm, options, msg.cli_id);
-					}
-					//handle display ... TODO - perhaps an override for no display switching
-					globals.players.to(rm).emit('cmd', {cmd: 'change_mode', value: options});
-				});
+				globals.players.to(rm).emit('cmd', {cmd: 'change_mode', value: options});
+
+				//update the disconnected players too
+				globals.UserData.update({connected: false},{$set: {mode: msg.mode}});
+
 			});
+
 		}
 		else if(msg.cmd == "chat_update")
 		{
@@ -84,10 +90,6 @@ exports.response = function(socket)
 		{
 			storyhelpers.goto(msg);
 		}
-		// else if(msg.cmd == "ldisplay")
-		// {
-		//
-		// }
 		else if(msg.cmd == "lplayers")
 		{
 			listPlayers( msg.args, msg.room, function(r)
@@ -156,8 +158,39 @@ exports.response = function(socket)
 		{
 			helpers.useRoom(msg, null);
 		}
+		else if(msg.cmd == "add")
+		{
+			var options = helpers.parseOptions(msg.args);
+			var room;
+
+			if(options.room)
+			{
+				room = options.room;
+			}
+			else if(msg.room)
+			{
+				room = msg.room;
+			}
+			else
+			{
+				globals.admin.emit('server_report', {id: msg.cli_id});
+				return;
+			}
+
+			var selector = helpers.parseFilters(msg.args);
+
+			selector.roomName = room;
+			helpers.selectAndJoin(selector)
+
+			.then(_=>
+			{
+				globals.admin.emit('server_report', {id: msg.cli_id});
+			})
+		}
 		else if(msg.cmd == "sub")
 		{
+			//create subrooms
+
 			if(msg.room == "" || msg.room == undefined)
 			{
 				globals.admin.emit('server_report', {id: msg.cli_id});
@@ -177,13 +210,16 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "set")
 		{
-			helpers.parseOptions(msg.args, function(options)
+			var options = helpers.parseOptions(msg.args);
+			helpers.useRoom(msg)
+			.then((rm)=>
 			{
-				helpers.useRoom(msg, function(rm)
-				{
-					globals.players.to(rm).emit('cmd', {cmd: 'set_params', value: options});
-				});
+				globals.players.to(rm).emit('cmd', {cmd: 'set_params', value: options});
+
+				//update the disconnected players too
+				globals.UserData.update({connected: false},{$set: options});
 			});
+
 		}
 		else if(msg.cmd == "cleanup")
 		{
@@ -556,14 +592,23 @@ function listPlayers(args, room, cb)
 function listRooms(args, room, cb)
 {
 	var results = "";
-	globals.Rooms.find({}).then((docs)=>
+	globals.Rooms.find({})
+
+	.then((docs)=>
 	{
-		docs.forEach(function(e)
+
+		if(docs)
 		{
-			var str = e.room + " :: " + e.population.length;
-			if(e.room == room)str += " *";
-			results += str + "\n";
-		});
+			for(var i = 0; i < docs.length; i++)
+			{
+
+				var str = docs[i].room;
+				if(docs[i].population) str += " :: " + docs[i].population.length;
+				if(docs[i].room == room)str += " *";
+				results += str + "\n";
+			}
+
+		}
 		cb(results);
 	});
 }

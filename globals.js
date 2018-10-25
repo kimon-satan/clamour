@@ -1,5 +1,3 @@
-console.log("importing globals");
-
 express = require('express');
 exports.app = express();
 http = require('http').Server(exports.app);
@@ -10,15 +8,15 @@ var deepcopy = require('deepcopy');
 exports.MONK = require('monk');
 exports.URL = 'localhost:27017/ConditionalLove';
 
-
 exports.tcpSocks = {};
 
-//FLAGS should come from CL args
+//FLAGS come from CL args
 exports.DEBUG = false;
 exports.NO_SC = false;
 exports.IS_LOCAL = false;
 
-exports.DisplayState = {
+exports.DisplayState =
+{
 	mode: "instruct",
 	storyMedia: "blank",
 	videoProgress: 0,
@@ -100,6 +98,7 @@ exports.storyCurrText = [""];
 exports.storyNumChars = 0;
 exports.storyRooms = [];
 
+exports.welcomeRoom;
 exports.sockets = {};
 exports.checkins = {};
 exports.checkinProcs = {}; //checkin processes only

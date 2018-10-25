@@ -823,8 +823,6 @@ Interface = function(parent, callback){
 
 	this.updateReactionMap = function(){
 
-		console.log("update reaction map")
-
 		if(this.isDying)
 		{
 			this.currentReactionMap = this.reactionMaps["isDying"][0];

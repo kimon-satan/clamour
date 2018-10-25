@@ -13,36 +13,14 @@ exports.response = function(socket)
 	socket.on('hello', function(msg)
 	{
 
-		var usrobj = Object.assign({},globals.usrobj);
-
-		usrobj.colSeed = Math.random();
-		usrobj.colMode = Math.floor(Math.random() * 4);
-		usrobj.blobSeed = Math.random();
-		usrobj.voiceNum = Math.floor(Math.random() * 8);
-		usrobj.voicePan = -1 + Math.random() * 2;
-		usrobj.voicePitch = 0.75 + Math.random() * 0.5;
-		//TODO this would work better with 15 * 15 and indexed permutations (guaranteed difference)
-		usrobj.font = globals.fonts[Math.floor(Math.random() * globals.fonts.length)];
-		usrobj.fontCol = globals.fontColours[Math.floor(Math.random() * globals.fontColours.length)];
-
 		if(msg == "new")
 		{
+			newUser(socket)
 
-			globals.UserData.insert(usrobj,{}, function(err,res)
+			.then((doc)=>
 			{
-				if(err)
-				{
-					console.log(err);
-					//throw err;
-				}
-				if(globals.DEBUG)console.log('hello new user: ' + res._id);
-				id = res._id;
-				socket.join(res._id);
-				socket.emit('welcome', res);
-				globals.checkins[id] = Date.now();
-				globals.sockets[res._id] = socket; //store socket on global list
-			});
-
+				id = doc;
+			})
 		}
 		else
 		{
@@ -57,17 +35,12 @@ exports.response = function(socket)
 
 				if(!res)
 				{
-					//insert a new user instead
-					globals.UserData.insert(usrobj, {}, function(err,res)
+					newUser(socket)
+
+					.then((doc)=>
 					{
-						if(err) throw err;
-						if(globals.DEBUG)console.log('hello new user: ' + res._id);
-						id = res._id;
-						globals.checkins[id] = Date.now();
-						socket.join(res._id);
-						socket.emit('welcome', res);
-						globals.sockets[res._id] = socket; //store socket on global list
-					});
+						id = doc;
+					})
 				}
 				else
 				{
@@ -79,13 +52,19 @@ exports.response = function(socket)
 					//join any exitsting Rooms
 					for(var i = 0; i < res.rooms.length; i++)
 					{
-						//if(globals.DEBUG)console.log("joining " + res.rooms[i]);
+						if(globals.DEBUG)console.log("joining " + res.rooms[i]);
 						socket.join(res.rooms[i]);
 					}
 
-					globals.UserData.update( id,{$set: {connected: true}}, {}, function(){
+					globals.UserData.update(
+						id,
+						{$set: {connected: true}},
+						{},
+						function()
+						{
 							socket.emit('welcome', res);
-					});
+						}
+						);
 
 					//NB  . overwrites if necessary
 					globals.sockets[res._id] = socket; //store socket on global list
@@ -293,4 +272,42 @@ exports.response = function(socket)
 		});
 	},5000);
 
+}
+
+
+function newUser(socket)
+{
+	var usrobj = Object.assign({},globals.usrobj);
+
+	usrobj.colSeed = Math.random();
+	usrobj.colMode = Math.floor(Math.random() * 4);
+	usrobj.blobSeed = Math.random();
+	usrobj.voiceNum = Math.floor(Math.random() * 8);
+	usrobj.voicePan = -1 + Math.random() * 2;
+	usrobj.voicePitch = 0.75 + Math.random() * 0.5;
+
+	//TODO this would work better with 15 * 15 and indexed permutations (guaranteed difference)
+	usrobj.font = globals.fonts[Math.floor(Math.random() * globals.fonts.length)];
+	usrobj.fontCol = globals.fontColours[Math.floor(Math.random() * globals.fontColours.length)];
+
+	return globals.UserData.insert(usrobj)
+
+	.then((doc)=>
+	{
+		if(globals.DEBUG)console.log('hello new user: ' + doc._id);
+		socket.join(doc._id);
+		socket.emit('welcome', doc);
+		globals.checkins[doc._id] = Date.now();
+		globals.sockets[doc._id] = socket; //store socket on global list
+
+		if(globals.welcomeRoom != undefined)
+		{
+			//TODO
+		}
+		else
+		{
+			return Promise.resolve(doc._id);
+		}
+
+	})
 }

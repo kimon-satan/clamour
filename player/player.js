@@ -2,7 +2,7 @@
 var globals;
 
 $.getJSON("/config/settings.json", function(json) {
-    globals = json;
+		globals = json;
 });
 
 
@@ -22,17 +22,17 @@ Player = function(isDummy)
 		this.socket.disconnect();
 	}
 
-	this.checkAlive = setInterval(function(){
+	this.checkAlive = setInterval(function()
+	{
 		if(Date.now() - this.lastCheckin > 8000)
 		{
-			clearInterval(this.checkAlive); //TODO check this ... it's annoying
 			changeMode("refresh");
+			this.lastCheckin = Date.now();
 		}
 	}.bind(this), 1000);
 
 	this.whoami = function()
 	{
-		if(!this.isDummy)console.log("whoami");
 		if(!this.isDummy)
 		{
 			var cookies = document.cookies;
@@ -48,7 +48,6 @@ Player = function(isDummy)
 		{
 			if(id.length > 0)
 			{
-				if(!this.isDummy)console.log("uid: " + id)
 				this.socket.emit('hello', id); //request a database update
 				this.data._id = id;
 			}
@@ -68,11 +67,13 @@ Player = function(isDummy)
 	this.socket.on("whoareyou", function(msg)
 	{
 		this.whoami();
+		this.lastCheckin = Date.now();
 	}.bind(this));
 
 	this.socket.on('welcome', function (msg)
 	{
-		if(!this.isDummy)console.log("welcome: " + msg.currentVotePair);
+		this.lastCheckin = Date.now();
+
 		if(!this.isDummy)
 		{
 			document.cookie = "userid=" + msg._id;
@@ -108,17 +109,14 @@ Player = function(isDummy)
 			if (msg.cmd == "chat_update")
 			{
 				this.data.chatText = msg.value;
-				//this.updateTable(this.tableid, this.data);
 			}
 			else if(msg.cmd == 'chat_newline')
 			{
 				this.data.chatText = "NL";
-				//this.updateTable(this.tableid, this.data);
 			}
 			else if(msg.cmd == 'chat_clear')
 			{
 				this.data.chatText = "";
-				//this.updateTable(this.tableid, this.data);
 			}
 			else if(msg.cmd == 'new_vote' && this.mode == "vote")
 			{
@@ -185,7 +183,6 @@ Player = function(isDummy)
 	//private functions
 
 
-
 	var setupIface = function (callback)
 	{
 		var d = $('#container');
@@ -196,7 +193,6 @@ Player = function(isDummy)
 				this.iface = new Interface(this, callback);
 				this.iface.init();
 			}
-
 		}
 		else
 		{
@@ -207,7 +203,6 @@ Player = function(isDummy)
 
 	var informServer = function(msg)
 	{
-		console.log("inform:" , msg);
 		msg._id = this.data._id;
 		this.socket.emit('update_user', msg); //tell the server that we have changed mode
 
@@ -247,7 +242,7 @@ Player = function(isDummy)
 
 		}.bind(this));
 
-		if(this.iface)
+		if(this.iface && this.mode == "love")
 		{
 			if(resp.state != undefined)
 			{
@@ -288,11 +283,6 @@ Player = function(isDummy)
 		}
 
 		this.socket.emit('update_user', this.data); //tell the server that we have changed
-
-		// if(//this.updateTable != undefined)
-		// {
-		// 	//this.updateTable(this.tableid, this.data);
-		// }
 
 	}.bind(this);
 
@@ -404,12 +394,6 @@ Player = function(isDummy)
 			this.socket.emit('update_user', {_id: this.data._id, mode: this.mode}); //tell the server that we have changed mode
 		}
 
-		//for load testing only
-		// if(//this.updateTable != undefined)
-		// {
-		// 	//this.updateTable(this.tableid, this.data);
-		// }
-
 	}.bind(this);
 
 }
@@ -427,7 +411,8 @@ function getCook(cookiename)
 	return unescape(!!cookiestring ? cookiestring.toString().replace(/^[^=]+./,"") : "");
 }
 
-function webglAvailable() {
+function webglAvailable()
+{
 	try {
 		var canvas = document.createElement( 'canvas' );
 		return !!( window.WebGLRenderingContext && (

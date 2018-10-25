@@ -59,22 +59,57 @@ exports.joinRoom = function(uids, roomName, cb)
 		}
 	}
 
-	globals.UserData.update({_id: { $in: uids} }, {$pull : {rooms: roomName}}, {multi: true})
+	var p = globals.UserData.update({_id: { $in: uids} }, {$pull : {rooms: roomName}}, {multi: true})
 
 	.then(_=>
 	{
-		globals.UserData.update({_id: { $in: uids} },{ $push : {rooms: roomName}}, {multi: true});
-	});
+		return globals.UserData.update({_id: { $in: uids} },{ $push : {rooms: roomName}}, {multi: true});
+	})
 
-	var p = globals.Rooms.update({room: roomName},{room: roomName, population: uids},{upsert: true});
+	.then(_=>
+	{
+		return globals.Rooms.findOne({room: roomName})
+	})
 
-	p = p.then(_=>{
+	.then((doc)=>
+	{
+		if(doc == null)
+		{
+			console.log("insert room")
+			return globals.Rooms.insert({room: roomName, population: uids});
+		}
+		else
+		{
+			var pop = [...uids, ...doc.population];
+
+			//remove duplicates
+			for(var i=0; i< pop.length; i++)
+			{
+				for(var j=i+1; j < pop.length; j++)
+				{
+						if(pop[i] == pop[j])
+						{
+							pop.splice(j--, 1);
+						}
+				}
+			}
+
+			return globals.Rooms.update({room: roomName},{$set: {population: pop}});
+
+		}
+
+	})
+
+	.then(_=>
+	{
 		if(cb != undefined)cb();
 		return Promise.resolve();
-	});
+	})
 
 	return p;
 }
+
+
 
 exports.useRoom = function(msg, cb) //add an optional cmd
 {
@@ -84,7 +119,11 @@ exports.useRoom = function(msg, cb) //add an optional cmd
 	if(selector)
 	{
 		//we are making a new room
-		if(selector.roomName == undefined)selector.roomName = exports.genRoomName();
+		if(selector.roomName == undefined)
+		{
+			selector.roomName = exports.genRoomName();
+		}
+
 		selector.mode = msg.mode;
 
 		var p = exports.selectAndJoin(selector);

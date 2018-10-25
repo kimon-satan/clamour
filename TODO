@@ -35,7 +35,6 @@ TODO
 
 ### Refactoring/ Tidying ####
 
-	- deal with/ check reset client issues - check all flags are cleared
 	- more robust error handling
 		- make sure every DB request is caught somehow
 		- no need for try/ catch -  errors can be thrown if caught
@@ -45,8 +44,7 @@ TODO
 
 ### Love ###
 
-	- test many blobs 
-	- why does updatereactionMaps happen 4 times on iface init ?
+	- test many blobs
 	- splats rendered on mobile screen
 	- linear progression of blobs
 	- adjust states / more variation between blobs
