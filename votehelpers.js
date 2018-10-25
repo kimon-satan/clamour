@@ -93,7 +93,7 @@ exports.handlePhraseComplete = function(msg)
 
 			if(i > -1)
 			{
-				//console.log("start vote")
+				console.log("start vote")
 				globals.pendingVotes.splice(i,1);
 				//WARNING: possibility of race condition ... ? probably not as SC records phrases one by one
 				exports.sendVote(vote, vote.num);
@@ -283,6 +283,8 @@ exports.sendVote = function(data, num)
 
 		var omsg = {pair: data.pair, id: data.voteid};
 
+
+
 		if(data.rig != undefined)
 		{
 			omsg.rig = data.rig;
@@ -312,33 +314,31 @@ exports.sendVote = function(data, num)
 				globals.procs[omsg.id + "_" + generateTempId(5)] = setTimeout(function()
 				{
 
-					if(helpers.validateId(omsg.id))
+					var pp = globals.Votes.findOne({_id: data._id}); //findOne sends an error immediately for bad id input
+
+					pp.then((res)=>
 					{
-						var pp = globals.Votes.findOne({_id: omsg.id}); //findOne sends an error immediately for bad id input
-
-						pp.then((res)=>
+						if(res) //otherwise the vote must have expired ... terminate the process
 						{
-							if(res) //otherwise the vote must have expired ... terminate the process
+							if(res.notvoted.length > 0)
 							{
-								if(res.notvoted.length > 0)
-								{
-									exports.sendVote(res,r);
-								}
-								else if(res.open && globals.procs[omsg.id + "_concludeVote"] == undefined)
-								{
-									globals.procs[omsg.id + "_concludeVote"] = setTimeout(function()
-									{
-										exports.concludeVote(res);
-									},10000);// 10 seconds delay for stragglers
-								}
+								exports.sendVote(res,r);
 							}
+							else if(res.open && globals.procs[omsg.id + "_concludeVote"] == undefined)
+							{
+								globals.procs[omsg.id + "_concludeVote"] = setTimeout(function()
+								{
+									exports.concludeVote(res);
+								},10000);// 10 seconds delay for stragglers
+							}
+						}
 
-						});
+					});
 
-						pp.catch((err)=>{
-							console.log("Error: sendVote timeout - " + err);
-						})
-					}
+					pp.catch((err)=>{
+						console.log("Error: sendVote timeout - " + err);
+					})
+
 
 				},
 				500); // call the function again
@@ -350,7 +350,7 @@ exports.sendVote = function(data, num)
 				var idx = Math.floor(Math.random() * docs.length);
 				var player = docs[idx];
 				docs.splice(idx, 1);
-
+				console.log(idx);
 				if(helpers.validateId(player._id))
 				{
 

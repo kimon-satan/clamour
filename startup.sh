@@ -2,4 +2,4 @@
 echo "starting up mongod ... "
 mongod --dbpath data &>/dev/null&
 echo "starting server ... "
-node server.js --local --nosc #--debug
+node server.js --local #--nosc #--debug
