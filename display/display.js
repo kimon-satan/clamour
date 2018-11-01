@@ -81,7 +81,6 @@ socket.on('cmd', function(msg)
 	}
 	else
 	{
-		//console.log(msg);
 		displays[msg.type].cmd(msg);
 	}
 

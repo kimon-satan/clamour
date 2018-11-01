@@ -136,6 +136,8 @@ exports.response = function(socket)
 				address: "/transTone",
 				args: args,
 		});
+
+		globals.players.to(msg.id).emit('cmd', {cmd: 'set_params', value: {isSplat: false}});
 	})
 
 }

@@ -305,8 +305,6 @@ function incrementState(idx)
 
 			if(this.uniforms[property].type == "color")
 			{
-				console.log("color")
-
 				var c = new THREE.Vector3();
 
 				switch(GraphicStates[idx][property])

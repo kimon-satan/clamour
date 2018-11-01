@@ -47,9 +47,8 @@ TODO
 ### Love ###
 
 	- linear envelope for state changes
-	- test many blobs
+	- test many blobs (80% ... do movement)
+		- general tidy up of sound
 	- splats rendered on mobile screen
-	- linear progression of blobs
 	- adjust states / more variation between blobs
 	- poisson disk for splat distribution
-	- general tidy up of sound

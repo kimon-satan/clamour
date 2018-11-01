@@ -685,7 +685,6 @@ Interface = function(parent, callback, isDummy)
 
 			if(!this.envsActive && this.isGesture)
 			{
-				console.log("fall back")
 				this.gestureEnd();
 			}
 
@@ -757,10 +756,10 @@ Interface = function(parent, callback, isDummy)
 	this.updateState = function()
 	{
 
-		if(this.changingState){
+		if(this.changingState)
+		{
 
 			this.stateEnvelope.step();
-
 
 			if(this.stateEnvelope.z < 0.99)
 			{
@@ -768,14 +767,12 @@ Interface = function(parent, callback, isDummy)
 			}
 			else
 			{
-
 				this.changingState = this.stateIndex <= this.maxState;
 				if(this.stateIndex < this.maxState)
 				{
 					this.incrementState(); // keep moving through states
 				}
 			}
-
 		}
 
 	}
@@ -972,6 +969,34 @@ Interface = function(parent, callback, isDummy)
 		{
 			this.nextGestureSwitch = this.ellapsedTime + (0.5 + Math.random() * 1.5);
 			this.isGesture = !this.isGesture;
+
+			if(this.isMobile && this.isGesture)
+			{
+
+				this.transEnv.targetVal = Math.random() * 0.5;
+
+				if(this.isDying)
+				{
+					this.parent.data.death = Math.min(1.0, this.parent.data.death + 0.02);
+					this.stateEnvelope.targetVal = this.parent.data.death;
+					this.parent.data.state_z = this.stateEnvelope.z;
+					this.transEnv.targetVal *= 1.0 - this.parent.data.death;
+					console.log(this.transEnv.targetVal);
+					this.parent.socket.emit('update_user', {_id: this.parent.data._id, state_z: this.parent.data.state_z, death: this.parent.data.death});
+				}
+
+				this.rotEnv.targetVal += -Math.PI/2 + Math.random() * Math.PI;
+
+				this.parent.socket.emit('moveBlob',
+				{
+					_id: this.parent.data._id,
+					rot: this.rotEnv.targetVal,
+					trans: this.transEnv.targetVal,
+					death: this.parent.data.death,
+					state: this.stateIndex,
+					state_z: this.stateEnvelope.z
+				});
+			}
 		}
 
 		if(this.accumulator > 1.0/60)
@@ -986,31 +1011,32 @@ Interface = function(parent, callback, isDummy)
 				{
 					this.excitementEnv.targetVal = 1.0;
 					this.excitementEnv.step();
+
+					if(this.excitementEnv.z > 0.93)
+					{
+						this.excitementEnv.z = 0.0;
+
+						var msgObj = {
+							_id: this.parent.data._id,
+							splatPos: this.splatPos,
+							splatPan: this.splatPan ,
+							splatRate: this.splatRate,
+							state_z: this.stateEnvelope.z
+						};
+
+						Object.keys(this.parent.data).forEach(function(k, idx, array){
+							msgObj[k] = this.parent.data[k];
+
+							if(idx == array.length-1)
+							{
+								this.parent.socket.emit('splat', msgObj);
+							}
+						}, this);
+
+
+					}
 				}
 
-				if(this.excitementEnv.z > 0.93)
-				{
-					this.excitementEnv.z = 0.0;
-
-					var msgObj = {
-						_id: this.parent.data._id,
-						splatPos: this.splatPos,
-						splatPan: this.splatPan ,
-						splatRate: this.splatRate,
-						state_z: this.stateEnvelope.z
-					};
-
-					Object.keys(this.parent.data).forEach(function(k, idx, array){
-						msgObj[k] = this.parent.data[k];
-
-						if(idx == array.length-1)
-						{
-							this.parent.socket.emit('splat', msgObj);
-						}
-					}, this);
-
-
-				}
 			}
 
 		}

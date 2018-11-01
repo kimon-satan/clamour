@@ -109,20 +109,20 @@ var LoveDisplay = function(socket, canvas)
 	this.splat = function(msg)
 	{
 		this.splatManager.addSplat(msg.val);
-		if(msg.val.state >= 4 && msg.val.state_z > 0.9) // utilmately make these flexible
+		if(msg.val.state >= 4 && msg.val.state_z > 0.9) // TODO utilmately make these flexible
 		{
 			if(this.splatManager.getEnergy(msg.val._id) >= 0.9)
 			{
 
 				var pos = new THREE.Vector2().copy(this.splatManager.playerInfo[msg.val._id].center);
-				var blob = this.blobManager.addBlob(pos, msg.val);
+				let blob = this.blobManager.addBlob(pos, msg.val);
 				blob.updateState(msg.val.state_z);
 				blob.updateUniforms();
 
 				this.splatManager.transform(msg.val._id, function()
 				{
-							this.branchManager.newBranch(blob);
-							this.scene.add(blob.mesh);
+					this.branchManager.newBranch(blob);
+					this.scene.add(blob.mesh);
 				}.bind(this));
 
 			}
@@ -135,18 +135,20 @@ var LoveDisplay = function(socket, canvas)
 		{
 			if(this.splatManager.playerInfo[msg.val[i]._id] != undefined)
 			{
+
 				if(!this.splatManager.playerInfo[msg.val[i]._id].transform)
 				{
+
 					var pos = new THREE.Vector2().copy(this.splatManager.playerInfo[msg.val[i]._id].center);
-					var blob = this.blobManager.addBlob(pos, msg.val[i]);
+					let blob = this.blobManager.addBlob(pos, msg.val[i]);
 					blob.updateState(msg.val[i].state_z);
 					blob.updateUniforms();
 
 					this.splatManager.transform(msg.val[i]._id, function()
 					{
-								this.branchManager.newBranch(blob);
-								love.scene.add(blob.mesh);
-					});
+						this.branchManager.newBranch(blob);
+						this.scene.add(blob.mesh);
+					}.bind(this));
 				}
 			}
 		}
@@ -174,7 +176,6 @@ var LoveDisplay = function(socket, canvas)
 
 		if(this.accumulator > 1.0/60)
 		{
-			//console.log(this.accumulator);
 			framePeriod = this.ellapsedTime - lastFrameTime;
 			this.fps = (this.fps + 1.0/framePeriod)/2.0;
 			this.accumulator = 0;
