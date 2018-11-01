@@ -234,10 +234,10 @@ function Branch(parent, pos, col1, col2){
 }
 
 
-function BranchManager(newBranchCB)
+function BranchManager(scene)
 {
   this.branches = [];
-	this.newBranchCB = newBranchCB;
+	this.scene = scene;
 
   this.update = function(ellapsedTime)
   {
@@ -270,7 +270,7 @@ function BranchManager(newBranchCB)
 						//detach and start a new branch
 						var parent = this.branches[i].parent;
 						this.branches[i].isAttached = false;
-						this.newBranchCB(parent);
+						this.newBranch(parent);
 					}
 				}
 
@@ -287,6 +287,13 @@ function BranchManager(newBranchCB)
 		var b = new Branch(parent, parent.mesh.position, parent.col1, parent.col2);
 		this.branches.push(b);
 		return b;
+	}
+
+	this.newBranch = function(parent)
+	{
+		var branch = this.addBranch(parent);
+		parent.branch = branch;
+		this.scene.add(branch.mesh);
 	}
 
 	this.clearAll = function(scene)

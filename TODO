@@ -16,7 +16,7 @@ TODO
 
 ### Votes ###
 
-	- concluded vote routine (90%) - finish audio routine
+	- concluded vote routine (90%) - finish audio routine (maximum time for vote ?)
 	- progress bar on client (80%)
 		- store in cookie to prevent page refresh
 		- check pause timer whilst paused
@@ -46,6 +46,7 @@ TODO
 
 ### Love ###
 
+	- linear envelope for state changes
 	- test many blobs
 	- splats rendered on mobile screen
 	- linear progression of blobs

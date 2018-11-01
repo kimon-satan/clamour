@@ -226,14 +226,14 @@ exports.response = function(socket)
 		});
 
 
-		globals.display.emit('cmd', {type: "splat", val: msg});
+		globals.display.emit('cmd', {type: "love", cmd: "splat", val: msg});
 
 	});
 
 	socket.on('moveBlob', function(msg){
 
-		//TODO OSC to supercollider here
-		globals.display.emit('cmd', {type: "moveBlob", val: msg});
+		//TODO OSC to supercollider here ?
+		globals.display.emit('cmd', {type: "love", cmd: "moveBlob" , val: msg});
 
 	});
 

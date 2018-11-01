@@ -1,6 +1,8 @@
 
-Interface = function(parent, callback){
+Interface = function(parent, callback, isDummy)
+{
 
+	this.isDummy = isDummy;
 	this.parent = parent;
 	this.graphics
 	this.sound
@@ -10,6 +12,7 @@ Interface = function(parent, callback){
 	this.canvas
 	this.callback = callback;
 	this.panicCount = 0;
+
 
 	this.mousePos
 	this.touchStartPos
@@ -158,25 +161,31 @@ Interface = function(parent, callback){
 	this.init = function()
 	{
 
-		this.graphics = new Graphics(this.parent.data);
-		this.graphics.init();
-		this.sound = new Sound();
-		this.sound.init();
-
-		this.mousePos = new THREE.Vector2();
-		this.touchStartPos = new THREE.Vector2();
-
 		this.startTime = new Date().getTime();
 		this.ellapsedTime = 0;
 		this.accumulator = 0;
 
-		this.isGesture = false;
-		this.isNewTouch = false;
-		this.isMouseDown = false;
-		this.currentGesture = 0;
-		this.numHolds = 0;
-		this.envTime = 8;
+		if(!this.isDummy)
+		{
 
+
+			this.graphics = new Graphics(this.parent.data);
+			this.graphics.init();
+			this.sound = new Sound();
+			this.sound.init();
+
+			this.mousePos = new THREE.Vector2();
+			this.touchStartPos = new THREE.Vector2();
+
+			this.isGesture = false;
+			this.isNewTouch = false;
+			this.isMouseDown = false;
+			this.currentGesture = 0;
+			this.numHolds = 0;
+
+		}
+
+		this.envTime = 8;
 
 		this.stateEnvelope = new Envelope(this.envTime, 60);
 		this.stateEnvelope.targetVal = 1.0;
@@ -204,133 +213,138 @@ Interface = function(parent, callback){
 
 		///////////////////////SETUP EVENTS////////////////////////////////////////
 
-		this.canvas = this.graphics.canvas; //we need the canvas for the eventListeners
-
-		this.canvas.addEventListener('touchstart', function(e)
+		if(!this.isDummy)
 		{
 
-			this.mousePos.set(
-				e.touches[0].clientX /this.canvas.width,
-				e.touches[0].clientY / this.canvas.height
-			);
+			this.canvas = this.graphics.canvas; //we need the canvas for the eventListeners
 
-
-			this.sound.unlock()
-
-			.then(()=>
+			this.canvas.addEventListener('touchstart', function(e)
 			{
-				if(!this.isMouseDown){
-					this.gestureStart();
-				}
-				this.isMouseDown = true;
-			})
+
+				this.mousePos.set(
+					e.touches[0].clientX /this.canvas.width,
+					e.touches[0].clientY / this.canvas.height
+				);
 
 
-			e.preventDefault();
+				this.sound.unlock()
 
-
-		}.bind(this)
-		, false);
-
-		this.canvas.addEventListener('touchmove', function(e)
-		{
-			var p = new THREE.Vector2(
-				e.touches[0].clientX /this.canvas.width,
-				e.touches[0].clientY / this.canvas.height
-			);
-
-			if(this.isMobile)
-			{
-				this.buildMove(p);
-			}
-			else
-			{
-				this.gestureMove(p);
-			}
-
-			e.preventDefault();
-
-		}.bind(this)
-		, false);
-
-		this.canvas.addEventListener('touchend', function(e)
-		{
-			this.isMouseDown = false;
-			this.gestureEnd();
-
-			if(this.isMobile)
-			{
-				this.triggerMove();
-			}
-
-			e.preventDefault();
-
-		}.bind(this)
-		, false);
-
-
-		this.canvas.addEventListener('mousedown', function(e)
-		{
-			this.mousePos.set(
-				e.clientX/this.canvas.width,
-				e.clientY/this.canvas.height
-			);
-
-			this.sound.unlock()
-
-			.then(()=>
-			{
-				if(!this.isMouseDown )
+				.then(()=>
 				{
-					this.gestureStart();
+					if(!this.isMouseDown){
+						this.gestureStart();
+					}
 					this.isMouseDown = true;
-				}
-			})
+				})
 
-		}.bind(this)
-		, false);
 
-		this.canvas.addEventListener("mousemove", function (e)
-		{
-			var pos = new THREE.Vector2(
-				e.clientX/this.canvas.width,
-				e.clientY/this.canvas.height
-			);
+				e.preventDefault();
 
-			if(this.isMouseDown)
+
+			}.bind(this)
+			, false);
+
+			this.canvas.addEventListener('touchmove', function(e)
 			{
+				var p = new THREE.Vector2(
+					e.touches[0].clientX /this.canvas.width,
+					e.touches[0].clientY / this.canvas.height
+				);
+
 				if(this.isMobile)
 				{
-					this.buildMove(pos);
+					this.buildMove(p);
 				}
 				else
 				{
-					this.gestureMove(pos);
+					this.gestureMove(p);
 				}
-			}
 
+				e.preventDefault();
 
+			}.bind(this)
+			, false);
 
-		}.bind(this)
-		, false);
-
-		this.canvas.addEventListener('mouseup', function(e)
-		{
-			this.isMouseDown = false;
-			this.gestureEnd();
-
-
-			if(this.isMobile)
+			this.canvas.addEventListener('touchend', function(e)
 			{
-				this.triggerMove();
-			}
+				this.isMouseDown = false;
+				this.gestureEnd();
+
+				if(this.isMobile)
+				{
+					this.triggerMove();
+				}
+
+				e.preventDefault();
+
+			}.bind(this)
+			, false);
 
 
-		}.bind(this)
-		, false);
+			this.canvas.addEventListener('mousedown', function(e)
+			{
+				this.mousePos.set(
+					e.clientX/this.canvas.width,
+					e.clientY/this.canvas.height
+				);
+
+				this.sound.unlock()
+
+				.then(()=>
+				{
+					if(!this.isMouseDown )
+					{
+						this.gestureStart();
+						this.isMouseDown = true;
+					}
+				})
+
+			}.bind(this)
+			, false);
+
+			this.canvas.addEventListener("mousemove", function (e)
+			{
+				var pos = new THREE.Vector2(
+					e.clientX/this.canvas.width,
+					e.clientY/this.canvas.height
+				);
+
+				if(this.isMouseDown)
+				{
+					if(this.isMobile)
+					{
+						this.buildMove(pos);
+					}
+					else
+					{
+						this.gestureMove(pos);
+					}
+				}
+
+
+
+			}.bind(this)
+			, false);
+
+			this.canvas.addEventListener('mouseup', function(e)
+			{
+				this.isMouseDown = false;
+				this.gestureEnd();
+
+
+				if(this.isMobile)
+				{
+					this.triggerMove();
+				}
+
+
+			}.bind(this)
+			, false);
+
+		}
 
 		//start rendering
-		//this.render(); // no longer using this as we do loading at the start to spread server load
+
 		var state_z = this.parent.data.state_z;
 		this.changeState(this.parent.data.state); //changes state z
 		this.setEnvTime(this.parent.data.envTime);
@@ -507,7 +521,6 @@ Interface = function(parent, callback){
 
 		var rot = v.angle() - Math.PI * 1.5;
 
-		console.log(rot)
 		if(rot < Math.PI/2 && rot > -Math.PI/2)
 		{
 			this.transEnv.targetVal = vl;
@@ -748,9 +761,10 @@ Interface = function(parent, callback){
 
 			this.stateEnvelope.step();
 
+
 			if(this.stateEnvelope.z < 0.99)
 			{
-				this.graphics.updateState(this.stateEnvelope.z);
+				if(!this.isDummy)this.graphics.updateState(this.stateEnvelope.z);
 			}
 			else
 			{
@@ -777,7 +791,7 @@ Interface = function(parent, callback){
 		this.stateEnvelope.targetVal = 1.0;
 
 		//call the graphics update
-		this.graphics.incrementState(this.stateIndex);
+		if(!this.isDummy)this.graphics.incrementState(this.stateIndex);
 
 		//tell the server because the change came from here
 		this.callback({state: this.stateIndex});
@@ -786,28 +800,30 @@ Interface = function(parent, callback){
 
 	this.changeState = function(idx)
 	{
-		//if(this.stateIndex == idx)return;
 
 		this.stateIndex = idx;
 		this.stateEnvelope.z = 0.0;
 		this.parent.data.state_z = 0.0;
 		this.parent.data.state = idx;
 		this.currentReactionMap = this.reactionMaps[0][0];
-		this.graphics.instruct_material.visible = false;
+		if(!this.isDummy)this.graphics.instruct_material.visible = false;
 		//stop all other envelopes
 
 		if(idx <= 0)
 		{
-			this.graphics.changeState(0);
+			if(!this.isDummy)this.graphics.changeState(0);
 			this.updateReactionMap();
 		}
 		else
 		{
 
+			if(!this.isDummy)
+			{
+				this.graphics.changeState(idx -1);
+				this.graphics.incrementState(this.stateIndex);
+				this.updateReactionMap();
+			}
 
-			this.graphics.changeState(idx -1);
-			this.graphics.incrementState(this.stateIndex);
-			this.updateReactionMap();
 		}
 
 		if(this.stateIndex <= this.maxState)
@@ -830,7 +846,7 @@ Interface = function(parent, callback){
 		else if(this.isMobile)
 		{
 			this.currentReactionMap = this.reactionMaps["mobile"][0];
-			this.graphics.displayInstruction(this.currentReactionMap.instruction);
+			if(!this.isDummy)this.graphics.displayInstruction(this.currentReactionMap.instruction);
 		}
 		else
 		{
@@ -847,7 +863,7 @@ Interface = function(parent, callback){
 						&& this.stateEnvelope.z >= z)
 					{
 						cz = z;
-						if(rm.instruction != undefined)this.graphics.displayInstruction(rm.instruction);
+						if(rm.instruction != undefined && !this.isDummy)this.graphics.displayInstruction(rm.instruction);
 						this.currentReactionMap = rm;
 							//console.log("udate rm");
 					}
@@ -870,8 +886,11 @@ Interface = function(parent, callback){
 		this.transEnv.targetVal = 0;
 
 		this.isMobile = b;
-		this.graphics.setIsMobile(b);
-		this.gestureEnd();
+		if(!this.isDummy)
+		{
+			this.graphics.setIsMobile(b);
+			this.gestureEnd();
+		}
 
 		for(var i =0 ; i < this.reactEnvelopes.length; i++)
 		{
@@ -928,6 +947,74 @@ Interface = function(parent, callback){
 
 	}
 
+	this.dummyLove = function()
+	{
 
+		var n_et = (new Date().getTime() - this.startTime) * 0.001;
+		this.accumulator += (n_et - this.ellapsedTime);
+		this.ellapsedTime = n_et;
+
+		if(this.nextUpdate == undefined)
+		{
+			this.nextUpdate = this.ellapsedTime + 1;
+			this.nextGestureSwitch = this.ellapsedTime + (0.5 + Math.random() * 1.5);
+			this.isGesture = false;
+		}
+
+		if(this.ellapsedTime > this.nextUpdate )
+		{
+			this.nextUpdate = this.ellapsedTime + 1;
+			this.parent.data.state_z = this.stateEnvelope.z;
+			this.parent.socket.emit('update_user', {_id: this.parent.data._id, state_z: this.parent.data.state_z}); //tell the server that we have changed mode
+		}
+
+		if(this.ellapsedTime > this.nextGestureSwitch)
+		{
+			this.nextGestureSwitch = this.ellapsedTime + (0.5 + Math.random() * 1.5);
+			this.isGesture = !this.isGesture;
+		}
+
+		if(this.accumulator > 1.0/60)
+		{
+			this.accumulator = 0;
+
+			if(this.isGesture)
+			{
+				this.updateState();
+
+				if(this.isExcitable)
+				{
+					this.excitementEnv.targetVal = 1.0;
+					this.excitementEnv.step();
+				}
+
+				if(this.excitementEnv.z > 0.93)
+				{
+					this.excitementEnv.z = 0.0;
+
+					var msgObj = {
+						_id: this.parent.data._id,
+						splatPos: this.splatPos,
+						splatPan: this.splatPan ,
+						splatRate: this.splatRate,
+						state_z: this.stateEnvelope.z
+					};
+
+					Object.keys(this.parent.data).forEach(function(k, idx, array){
+						msgObj[k] = this.parent.data[k];
+
+						if(idx == array.length-1)
+						{
+							this.parent.socket.emit('splat', msgObj);
+						}
+					}, this);
+
+
+				}
+			}
+
+		}
+
+	}
 
 }

@@ -86,6 +86,11 @@ Player = function(isDummy)
 		{
 			setupIface(informServer); //canvas and sound
 		}
+		else
+		{
+			this.iface = new Interface(this, informServer, true);
+			this.iface.init();
+		}
 
 		changeMode(msg.mode);
 
@@ -133,6 +138,10 @@ Player = function(isDummy)
 			else if(msg.cmd == 'cancel_vote' && this.mode == "vote")
 			{
 				this.voteManager.cancelVote(msg.value);
+			}
+			else if(msg.cmd == 'set_params')
+			{
+				parseMsgParams(msg.value);
 			}
 		}
 		else
@@ -374,6 +383,11 @@ Player = function(isDummy)
 		}
 		else
 		{
+			if(this.loveLoop)
+			{
+				window.clearInterval(this.loveLoop);
+			}
+
 			if(mode == "vote")
 			{
 				if(this.data.currentVoteId == -1)
@@ -384,6 +398,14 @@ Player = function(isDummy)
 				{
 					this.voteManager.createVote();
 				}
+			}
+
+			if(mode == "love")
+			{
+				this.loveLoop = window.setInterval(function()
+				{
+					this.iface.dummyLove();
+				}.bind(this),17);
 			}
 		}
 

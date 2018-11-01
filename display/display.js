@@ -81,6 +81,7 @@ socket.on('cmd', function(msg)
 	}
 	else
 	{
+		//console.log(msg);
 		displays[msg.type].cmd(msg);
 	}
 
@@ -112,17 +113,4 @@ function changeDisplay(display)
 		$('#simple_display').show();
 		$('#threejs_display').hide();
 	}
-}
-
-
-
-
-
-
-newBranch = function(parent)
-{
-	//FIXME ... this should be part of love class
-	var branch = love.branchManager.addBranch(parent);
-	parent.branch = branch;
-	love.scene.add(branch.mesh);
 }

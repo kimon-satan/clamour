@@ -17,7 +17,7 @@ var LoveDisplay = function(socket, canvas)
 	this.scene = new THREE.Scene();
 	this.splatManager = new SplatManager(p, socket);
 	this.blobManager = new BlobManager(p, socket);
-	this.branchManager = new BranchManager(newBranch);
+	this.branchManager = new BranchManager(this.scene);
 	this.scene.add(this.splatManager.mesh);
 
 
@@ -104,6 +104,8 @@ var LoveDisplay = function(socket, canvas)
 
 	//////////////////////////////////////////////////////////////////
 
+
+
 	this.splat = function(msg)
 	{
 		this.splatManager.addSplat(msg.val);
@@ -119,9 +121,9 @@ var LoveDisplay = function(socket, canvas)
 
 				this.splatManager.transform(msg.val._id, function()
 				{
-							newBranch(blob);
-							love.scene.add(blob.mesh);
-				});
+							this.branchManager.newBranch(blob);
+							this.scene.add(blob.mesh);
+				}.bind(this));
 
 			}
 		}
@@ -142,7 +144,7 @@ var LoveDisplay = function(socket, canvas)
 
 					this.splatManager.transform(msg.val[i]._id, function()
 					{
-								newBranch(blob);
+								this.branchManager.newBranch(blob);
 								love.scene.add(blob.mesh);
 					});
 				}

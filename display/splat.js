@@ -214,11 +214,15 @@ SplatManager = function(_prop, _socket)
 
 	}
 
-	this.findHighestIndex = function(index){
-		if(this.fades[index] < 0.1e-5 || this.spreads[index] < 0.1e-5 )
+	this.findHighestIndex = function(index)
+	{
+		var c = 0;
+		while(this.fades[index] < 0.1e-5 || this.spreads[index] < 0.1e-5 )
 		{
 			index -= 1;
-			index = this.findHighestIndex(index);
+			c ++;
+			if(index == 0)break;
+			if(c > 1000)break;
 		}
 		return index;
 	}
@@ -291,7 +295,7 @@ SplatManager = function(_prop, _socket)
 				col3: hslToRgb(colArray[2].x, colArray[2].y, colArray[2].z),
 				center: new THREE.Vector2( pan * this.prop,  (2* Math.random() - 1.) * .85 )
 			 }
-			 
+
 			 this.glowWaveEnvs.push(new Envelope(0.05, 60));
 
 		}else{
