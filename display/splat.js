@@ -56,13 +56,15 @@ Spot = function (owner)
 
 const MAX_PARTICLES = 20000; //could be higher wait and see
 
-SplatManager = function(_prop, _socket)
+SplatManager = function(_prop, _socket, _settings)
 {
 	this.spots = {};
 	this.playerInfo = {};
 	this.glowWaveEnvs = [];
-
+	this.settings = _settings
 	this.socket = _socket;
+
+
 
 	this.geo = new THREE.BufferGeometry();
 	this.geo.dynamic = true;
@@ -229,7 +231,7 @@ SplatManager = function(_prop, _socket)
 
 	this.updateGlow = function(id ,val)
 	{
-		this.glowWaveEnvs[id - 1].targetVal = val;
+		this.glowWaveEnvs[id - 1].targetVal = val; // ramp faster
 	}
 
 	this.updateAttributes = function(spot){
@@ -269,12 +271,10 @@ SplatManager = function(_prop, _socket)
 
 	this.addSplat = function(ud)
 	{
-
 		var id = ud._id;
 
 		if(this.spots[id] == undefined)
 		{
-
 			var colArray = getColors(ud.colSeed, ud.colMode);
 			this.spots[id]= new Array();
 
@@ -302,9 +302,8 @@ SplatManager = function(_prop, _socket)
 
 			this.playerInfo[id].energy = Math.min(1.0,0.1 + this.playerInfo[id].energy);
 
-			if(this.playerInfo[id].energy == 0.4)
+			if(this.playerInfo[id].energy >= this.settings.energyThresh && !this.playerInfo[id].isGlowing)
 			{
-
 				this.socket.emit('addTone', {
 					scidx: this.playerInfo[id].scidx ,
 					freq: this.playerInfo[id].freq,
@@ -313,21 +312,16 @@ SplatManager = function(_prop, _socket)
 				});
 				this.beginGlow(id);
 			}
-			else if(this.playerInfo[id].energy > 0.4)
+			else if(this.playerInfo[id].energy > this.settings.energyThresh)
 			{
-				var glowTarget = (this.playerInfo[id].energy - 0.3)/0.6;
-
+				var glowTarget = (this.playerInfo[id].energy - (this.settings.energyThresh-0.1))/0.6; //TODO
 				this.socket.emit('updateTone', {scidx: this.playerInfo[id].scidx, amp: glowTarget});
-
-
 			}
 
 
 		}
 
-
-
-		var numParticles = 25 + this.playerInfo[id].energy * 50;
+		var numParticles = this.settings.splats_min + this.playerInfo[id].energy * this.settings.splats_mul;
 		var seed  = Math.random();
 		var spread = 0.15 + this.playerInfo[id].energy * 0.15;
 		var splatter = 0.5 + (1.0 - this.playerInfo[id].energy) * 0.5;
@@ -358,7 +352,7 @@ SplatManager = function(_prop, _socket)
 
 			if(spot.attributes.size < Math.min(75, maxSize * this.playerInfo[id].energy))
 			{
-				//spot.isDecaying = Math.random() > 0.5;
+				//spot.isDecaying = Math.random() > 0.5; //TODO  -perhaps reinstate
 			}
 
 			if(!spot.isDecaying)spot.isGlowing = this.playerInfo[id].isGlowing;

@@ -1,14 +1,15 @@
 var globals = require('./globals.js');
 var helpers = require('./helpers.js');
+//var votehelpers = require('./votehelpers.js');
 
 exports.response = function(socket)
 {
 
+
 	console.log("a display connected");
 
-	socket.on('addTone', function(msg){
 
-		//console.log("addTone", msg);
+	socket.on('addTone', function(msg){
 
 		var args = [];
 
@@ -139,5 +140,14 @@ exports.response = function(socket)
 
 		globals.players.to(msg.id).emit('cmd', {cmd: 'set_params', value: {isSplat: false}});
 	})
+
+
+	//TODO - more here depending on version
+	socket.emit("hello", {state: globals.DisplayState, settings: globals.settings});
+
+	if(globals.DisplayState.mode == "vote")
+	{
+		votehelpers.updateDisplay();
+	}
 
 }

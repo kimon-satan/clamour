@@ -2,5 +2,10 @@
 	"samplePath": "/samples/",
 	"storyPath": "config/mov1v4.json",
 	"imagePath": "/images/mov1v4/",
-	"dictionaryPath": "config/dictionary.json"
+	"loveDisplaySettings":
+	{
+		"splats_min": 15,
+		"splats_mul": 25,
+		"energyThresh": 0.3
+	}
 }

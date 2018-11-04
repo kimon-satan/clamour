@@ -47,7 +47,7 @@ void main()	{
   v_noise_scale = 0.1 + l * 0.6;
   v_fade = fade;
   v_darken = 1.0 - noise_seed * 0.25;
-  float flicker = 0.9 + sin(time * 60. * v_darken) * 0.1;
+  float flicker = 0.95 + sin(time * 60. * v_darken) * 0.05;
   v_glow = max(0.0, glowWave * 5.0 - noise_seed) * flicker;
 }
 
@@ -106,13 +106,11 @@ void main()
 
   float n = noise(vec3(cos(theta) * v_noise_freq, sin(theta) * v_noise_freq, v_noise_seed)) * v_noise_scale;
   float lum = length(pos * 4.0) - n;
-  float ilum = max(0.0, 1.0 - length(pos * 2.0));
-  ilum = pow(ilum, 3.0);
-  lum = smoothstep(1.0, 0.95, lum);
+	lum = smoothstep(1.0, 0.95, lum);
+  float ilum = max(0.0, 1.0 - length(pos));
+  ilum = pow(ilum, 3.0) * 0.5;
 
-  //ilum = smoothstep(1.0, 0.0, ilum);
-
-  gl_FragColor = max(vec4(lum * v_col1,lum * v_fade), vec4(v_col1 * ilum * v_glow, ilum * v_fade * v_glow));
+  gl_FragColor = vec4(v_col1 * lum,lum * v_fade) + vec4(vec3(v_glow * ilum * v_fade), lum * ilum * v_glow * v_fade);
 
 }
 

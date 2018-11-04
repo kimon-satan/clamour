@@ -9,7 +9,7 @@ exports.MONK = require('monk');
 exports.URL = 'localhost:27017/ConditionalLove';
 
 exports.tcpSocks = {};
-
+exports.settings;
 //FLAGS come from CL args
 exports.DEBUG = false;
 exports.NO_SC = false;
@@ -18,9 +18,7 @@ exports.IS_LOCAL = false;
 exports.DisplayState =
 {
 	mode: "instruct",
-	storyMedia: "blank",
-	videoProgress: 0,
-	videoLoadProgress: 0
+	storyMedia: "blank"
 }
 
 

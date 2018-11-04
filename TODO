@@ -18,7 +18,7 @@ TODO
 
 	- concluded vote routine (90%) - finish audio routine (maximum time for vote ?)
 	- progress bar on client (80%)
-		- store in cookie to prevent page refresh
+		- store in cookie to prevent page refresh - or just send startTime
 		- check pause timer whilst paused
 
 
@@ -46,7 +46,8 @@ TODO
 
 ### Love ###
 
-	- linear envelope for state changes
+	- adjustable transform point
+	- linear envelope for state changes **
 	- test many blobs (80% ... do movement)
 		- general tidy up of sound
 	- splats rendered on mobile screen

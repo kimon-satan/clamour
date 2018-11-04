@@ -1,9 +1,10 @@
-var LoveDisplay = function(socket, canvas)
+var LoveDisplay = function(socket, canvas, _settings)
 {
 	this.renderer = new THREE.WebGLRenderer({canvas: canvas});
 	this.renderer.setSize( window.innerWidth, window.innerHeight );
 	this.canvas = this.renderer.domElement;
 	this.isActive = false;
+	this.settings = _settings;
 
 	var p = this.renderer.domElement.width/this.renderer.domElement.height;
 	this.camera = new THREE.OrthographicCamera(-p, p, -1, 1, -100, 100);
@@ -15,9 +16,9 @@ var LoveDisplay = function(socket, canvas)
 	this.fps = 0;
 
 	this.scene = new THREE.Scene();
-	this.splatManager = new SplatManager(p, socket);
-	this.blobManager = new BlobManager(p, socket);
-	this.branchManager = new BranchManager(this.scene);
+	this.splatManager = new SplatManager(p, socket, this.settings);
+	this.blobManager = new BlobManager(p, socket, this.settings);
+	this.branchManager = new BranchManager(this.scene, this.settings);
 	this.scene.add(this.splatManager.mesh);
 
 

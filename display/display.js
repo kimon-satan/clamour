@@ -26,31 +26,34 @@ $('document').ready(function()
 
 	displays = {};
 
+
+
+
+
+
+})
+
+socket.on('hello', function(msg)
+{
+	console.log(msg);
+
+	settings = msg.settings;
 	displays.text = new TextDisplay(simple_canvas);
 	displays.vote = new VoteDisplay(simple_canvas);
-	displays.love = new LoveDisplay(socket, threejs_canvas);
-
+	displays.love = new LoveDisplay(socket, threejs_canvas, settings.loveDisplaySettings);
 	displays.text.setActive(true);
+
+	if(msg.state.mode != "instruct")
+	{
+		changeDisplay(msg.state.mode);
+	}
 
 	var p = new Promise(function(resolve, reject)
 	{
-		$.getJSON("/config/settings.json", function(json)
+		$.getJSON("/" + settings.storyPath, function(json)
 		{
-			resolve(json);
-		});
-	})
-
-	.then((doc)=>
-	{
-		settings = doc;
-
-		return new Promise(function(resolve, reject)
-		{
-			$.getJSON("/" + settings.storyPath, function(json)
-			{
 				resolve(json);
-			});
-		})
+		});
 	})
 
 	.then((doc)=>
@@ -58,11 +61,7 @@ $('document').ready(function()
 		displays.story = new StoryDisplay(settings.imagePath, doc, simple_canvas);
 	})
 
-
-
-
 })
-
 
 socket.on('cmd', function(msg)
 {
