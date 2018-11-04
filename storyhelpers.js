@@ -103,8 +103,9 @@ exports.startClip = function(room)
 	var audio_options = [];
 	audio_options.push(globals.story[globals.storyChapter].clips[globals.storyClip].audio);
 	audio_options.push(globals.story[globals.storyChapter].clips[globals.storyClip].audio1);
+	audio_options.push(globals.story[globals.storyChapter].clips[globals.storyClip].audio2);
 
-	for(var i = 0; i < 2; i++)
+	for(var i = 0; i < 3; i++)
 	{
 		if(audio_options[i])
 		{

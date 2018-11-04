@@ -108,6 +108,8 @@ var StoryDisplay = function(imagepath, story, canvas)
 	this.draw = function()
 	{
 
+		var incr = 0.0075;
+
 		ctx.fillStyle = "rgba(0,0,0,1.0)";
 		ctx.fillRect(0,0,innerWidth,innerHeight);
 
@@ -120,7 +122,7 @@ var StoryDisplay = function(imagepath, story, canvas)
 
 			if(this.oldImageAlpha > 0)
 			{
-				this.oldImageAlpha -= 0.01;
+				this.oldImageAlpha -= incr;
 				this.oldImageAlpha = Math.max(0,this.oldImageAlpha);
 			}
 		}
@@ -134,7 +136,7 @@ var StoryDisplay = function(imagepath, story, canvas)
 
 			if(this.currentImageAlpha < 1.0)
 			{
-				this.currentImageAlpha += 0.01;
+				this.currentImageAlpha += incr;
 				this.currentImageAlpha = Math.min(1,this.currentImageAlpha);
 			}
 		}
