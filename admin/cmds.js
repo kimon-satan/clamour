@@ -22,11 +22,12 @@ var cmdList = [
 	"sub",
 	"end",
 	"add",
+	"reload",
 
 	"sreload", //story stuff
 	"sreset",
 	"sgoto",
-	"ldisplay", //display stats
+
 
 	"vnew",
 	"vman",

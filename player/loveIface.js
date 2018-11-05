@@ -42,7 +42,7 @@ Interface = function(parent, callback, isDummy)
 	this.splatPan = (-1.0 + Math.random() * 2.0) * 0.85;
 	this.splatRate = Math.random();
 	this.splatPos = Math.random();
-
+	this.splatFreq = Math.random();
 
 	this.transEnv = new Envelope2(0.1,2.0,60);
 	this.rotEnv = new Envelope(1.0, 60);

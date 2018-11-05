@@ -136,9 +136,17 @@ exports.response = function(socket)
 
 					if(!globals.NO_SC)
 					{
+
 						helpers.sendSCMessage({
 								address: "/speakPhrase",
-								args: [String(data._id), msg.choice, usrobj.voiceNum, usrobj.voicePan, usrobj.voicePitch]
+								args: [
+									"id", String(data._id),
+									"choice", msg.choice,
+									"voice", usrobj.voiceNum,
+									"pan", usrobj.voicePan,
+									"rate", usrobj.voicePitch,
+									"amp", globals.settings.votesAudioSettings.voteAmp
+								]
 						});
 					}
 
@@ -218,7 +226,13 @@ exports.response = function(socket)
 
 		//if(globals.DEBUG)console.log("splat", msg);
 
-		var args = ["pan", msg.splatPan, "rate", msg.splatRate, "pos", msg.splatPos];
+		var args = [
+			"pan", msg.splatPan,
+			"rate", msg.splatRate,
+			"pos", msg.splatPos,
+			"amp", globals.settings.loveAudioSettings.splatAmp,
+			"freq", msg.splatFreq
+		];
 
 		helpers.sendSCMessage({
 				address: "/splat",

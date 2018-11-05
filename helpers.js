@@ -39,6 +39,21 @@ exports.choose = function(list)
 	return list[Math.floor(Math.random() * list.length)];
 }
 
+exports.loadSettings = function()
+{
+	//load global settings from JSON file
+
+	return new Promise(function(resolve, reject)
+	{
+		fs.readFile('config/settings.json', 'utf8', function (err, data)
+		{
+				if(err)reject(err);
+				globals.settings = JSON.parse(data);
+				resolve();
+		});
+	})
+
+}
 
 //////////////////////////ROOMS////////////////////////
 

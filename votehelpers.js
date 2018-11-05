@@ -593,7 +593,14 @@ exports.completeCall = function(call_id)
 	{
 		helpers.sendSCMessage({
 				address: "/speakPhrase",
-				args: [call_id, 0, 7, 0, 0.9]
+				args: [
+					"id", call_id,
+					"choice", 0,
+					"voice", 7,
+					"pan", 0,
+					"rate", 0.9,
+					"amp", globals.settings.votesAudioSettings.concludeAmp
+				]
 		});
 	}
 
@@ -700,7 +707,7 @@ var triggerVoteComplete = function(data)
 
 		helpers.sendSCMessage({
 				address: "/voteComplete", //pause audio in SC
-				args: [String(data._id) + "_win_" + data.winnerIdx + "_7"]
+				args: ["id", String(data._id) + "_win_" + data.winnerIdx + "_7", "amp", globals.settings.votesAudioSettings.bingAmp]
 		});
 
 	}

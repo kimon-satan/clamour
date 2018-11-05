@@ -275,6 +275,15 @@ exports.response = function(socket)
 					args: []
 			});
 		}
+		else if(msg.cmd == "reload")
+		{
+			helpers.loadSettings()
+
+			.then(_=>{
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: ""});
+			})
+
+		}
 		else if(msg.cmd == "stats")
 		{
 			//TODO make istats

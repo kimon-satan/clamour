@@ -231,7 +231,7 @@ SplatManager = function(_prop, _socket, _settings)
 
 	this.updateGlow = function(id ,val)
 	{
-		this.glowWaveEnvs[id - 1].targetVal = val; // ramp faster
+		this.glowWaveEnvs[id - 1].targetVal = Math.min(Math.pow(val,0.75),0.6);
 	}
 
 	this.updateAttributes = function(spot){
@@ -314,7 +314,7 @@ SplatManager = function(_prop, _socket, _settings)
 			}
 			else if(this.playerInfo[id].energy > this.settings.energyThresh)
 			{
-				var glowTarget = (this.playerInfo[id].energy - (this.settings.energyThresh-0.1))/0.6; //TODO
+				var glowTarget = Math.min(this.playerInfo[id].energy - (this.settings.energyThresh-0.1), 1.0); //TODO
 				this.socket.emit('updateTone', {scidx: this.playerInfo[id].scidx, amp: glowTarget});
 			}
 
@@ -350,10 +350,10 @@ SplatManager = function(_prop, _socket, _settings)
 			spot.attributes.col1 = (Math.random() > 0.5) ? this.playerInfo[id].col1 : this.playerInfo[id].col2;
 			spot.attributes.col2 = this.playerInfo[id].col2;
 
-			if(spot.attributes.size < Math.min(75, maxSize * this.playerInfo[id].energy))
-			{
-				//spot.isDecaying = Math.random() > 0.5; //TODO  -perhaps reinstate
-			}
+			// if(spot.attributes.size < Math.min(75, maxSize * this.playerInfo[id].energy))
+			// {
+			// 	//spot.isDecaying = Math.random() > 0.5; //TODO  -perhaps reinstate
+			// }
 
 			if(!spot.isDecaying)spot.isGlowing = this.playerInfo[id].isGlowing;
 

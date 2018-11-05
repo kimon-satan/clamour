@@ -56,13 +56,12 @@ globals.setup().then(_=>{
 
 	});
 
-	//load global settings from JSON file
-	fs.readFile('config/settings.json', 'utf8', function (err, data)
+	helpers.loadSettings()
+
+	.then(_=>
 	{
-			if (err) throw err;
-			globals.settings = JSON.parse(data);
-			storyhelpers.load();
-	});
+		storyhelpers.load();
+	})
 
 
 	//check whether any existing users rejoin
@@ -267,5 +266,5 @@ function parseIncomingMsg(msg)
 		//allows other votes to happen
 		globals.currentConcludedVote = null;
 	}
-	
+
 }

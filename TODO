@@ -3,8 +3,9 @@ TODO
 ### users ###
 
 	- adding new users to existing rooms (80%)
-		- rooms keep track of modes so that adding can change mode too
-	- a welcome room to which players are automatically enrolled
+
+	- rooms keep track of modes so that adding can change mode too **
+	- a welcome room to which players are automatically enrolled **
 
 ### Deployment ###
 
@@ -15,6 +16,8 @@ TODO
 	- always make the longest line the primary
 
 ### Votes ###
+
+	- player which loops and cues the next file ***
 
 	- concluded vote routine (90%) - finish audio routine (maximum time for vote ?)
 	- progress bar on client (80%)

@@ -6,6 +6,19 @@
 	{
 		"splats_min": 15,
 		"splats_mul": 25,
-		"energyThresh": 0.3
+		"energyThresh": 0.4
+	},
+	"loveAudioSettings":
+	{
+		"splatAmp": 0.5,
+		"toneMul": 0.7,
+		"transAmp": 0.75,
+		"crawlerMul": 0.5
+	},
+	"votesAudioSettings":
+	{
+		"voteAmp": 0.2,
+		"concludeAmp": 0.5,
+		"bingAmp": 1.0
 	}
 }

@@ -12,12 +12,13 @@ exports.response = function(socket)
 	socket.on('addTone', function(msg){
 
 		var args = [];
+		var k = Object.keys(msg);
 
-		Object.keys(msg).forEach(function(p)
+		for(var i = 0; i < k.length; i++)
 		{
-			args.push(p);
-			args.push(msg[p]);
-		})
+			args.push(k[i]);
+			args.push(msg[k[i]]);
+		}
 
 		helpers.sendSCMessage({
 				address: "/addTone",
@@ -26,17 +27,19 @@ exports.response = function(socket)
 
 	})
 
-	socket.on('updateTone', function(msg){
-
-		//console.log("updateTone", msg);
+	socket.on('updateTone', function(msg)
+	{
 
 		var args = [];
 
-		Object.keys(msg).forEach(function(p)
+		msg.amp *= globals.settings.loveAudioSettings.toneMul;
+		var k = Object.keys(msg);
+
+		for(var i = 0; i < k.length; i++)
 		{
-			args.push(p);
-			args.push(msg[p]);
-		})
+			args.push(k[i]);
+			args.push(msg[k[i]]);
+		}
 
 		helpers.sendSCMessage({
 				address: "/updateTone",
@@ -72,11 +75,13 @@ exports.response = function(socket)
 
 		var args = [];
 
-		Object.keys(msg).forEach(function(p)
+		var k = Object.keys(msg);
+
+		for(var i = 0; i < k.length; i++)
 		{
-			args.push(p);
-			args.push(msg[p]);
-		})
+			args.push(k[i]);
+			args.push(msg[k[i]]);
+		}
 
 		helpers.sendSCMessage({
 				address: "/startCrawler",
@@ -87,14 +92,17 @@ exports.response = function(socket)
 
 	socket.on('updateCrawler', function(msg){
 
-		//console.log("updateCrawler", msg);
 		var args = [];
 
-		Object.keys(msg).forEach(function(p)
+		msg.mul = globals.settings.loveAudioSettings.crawlerMul;
+
+		var k = Object.keys(msg);
+
+		for(var i = 0; i < k.length; i++)
 		{
-			args.push(p);
-			args.push(msg[p]);
-		})
+			args.push(k[i]);
+			args.push(msg[k[i]]);
+		}
 
 		helpers.sendSCMessage({
 				address: "/updateCrawler",
@@ -105,14 +113,15 @@ exports.response = function(socket)
 
 	socket.on('endCrawler', function(msg){
 
-		//console.log("endCrawler", msg);
 		var args = [];
 
-		Object.keys(msg).forEach(function(p)
+		var k = Object.keys(msg);
+
+		for(var i = 0; i < k.length; i++)
 		{
-			args.push(p);
-			args.push(msg[p]);
-		})
+			args.push(k[i]);
+			args.push(msg[k[i]]);
+		}
 
 		helpers.sendSCMessage({
 				address: "/endCrawler",
@@ -123,15 +132,17 @@ exports.response = function(socket)
 
 	socket.on('transTone', function(msg){
 
-		//console.log("transTone", msg);
 
 		var args = [];
 
-		Object.keys(msg).forEach(function(p)
+		msg.amp = globals.settings.loveAudioSettings.transAmp;
+		var k = Object.keys(msg);
+
+		for(var i = 0; i < k.length; i++)
 		{
-			args.push(p);
-			args.push(msg[p]);
-		})
+			args.push(k[i]);
+			args.push(msg[k[i]]);
+		}
 
 		helpers.sendSCMessage({
 				address: "/transTone",
