@@ -6,6 +6,7 @@ var StoryDisplay = function(imagepath, story, canvas)
 	this.oldImage;
 	this.currentImageAlpha = 0.0;
 	this.oldImageFadeAlpha = 0.0;
+	this.isBlack = false;
 
 	var ctx = canvas.getContext("2d");
 	var images = {};
@@ -86,6 +87,12 @@ var StoryDisplay = function(imagepath, story, canvas)
 				this.oldImageAlpha = 0.0;
 			}
 
+		}
+		else if(msg.cmd == 'black')
+		{
+			this.oldImage = this.currentImage;
+			this.currentImage = undefined;
+			this.oldImageAlpha = 1.0;
 		}
 		else if(msg.cmd == 'image')
 		{

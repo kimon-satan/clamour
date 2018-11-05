@@ -306,15 +306,44 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "end")
 		{
+
 			helpers.sendSCMessage(
 			{
 					address: "/allOff",
 					args: []
 			});
 			globals.admin.emit('server_report', {id: msg.cli_id});
-			globals.display.emit("cmd", {type: "all", cmd: "end"});
-			globals.DisplayState.mode = "end";
+			globals.display.emit("cmd", {type: "all", cmd: "black"});
+			globals.DisplayState.mode = "black";
 			globals.players.emit('cmd', {cmd: 'change_mode', value: {mode: "blank"}});
+
+		}
+		else if(msg.cmd == "black")
+		{
+
+			var options = helpers.parseOptions(msg.args);
+
+			if(options.a)
+			{
+				helpers.sendSCMessage(
+				{
+						address: "/allOff",
+						args: []
+				});
+			}
+
+			if(options.d)
+			{
+				globals.display.emit("cmd", {type: "all", cmd: "black"});
+				globals.DisplayState.mode = "black";
+			}
+
+			if(options.p)
+			{
+				globals.players.emit('cmd', {cmd: 'change_mode', value: {mode: "blank"}});
+			}
+
+			globals.admin.emit('server_report', {id: msg.cli_id});
 
 		}
 		else if(msg.cmd == "vnew")
@@ -490,7 +519,6 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "dclear")
 		{
-
 			//TODO
 			globals.display.emit("cmd", {type: "all", cmd: "clear"});
 			globals.admin.emit('server_report', {id: msg.cli_id}); //empty response

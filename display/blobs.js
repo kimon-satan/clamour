@@ -218,13 +218,13 @@ BlobManager = function(_width, _socket)
 
   this.clearAll = function(scene)
   {
+		var k = Object.keys(this.blobs);
 
-    Object.keys(this.blobs).forEach(function(uid)
+    for(var i = 0; i < k.length; i++)
     {
-      scene.remove(this.blobs[uid].mesh);
-      delete this.blobs[uid];
-    }.bind(this))
-
+      scene.remove(this.blobs[k[i]].mesh);
+      delete this.blobs[k[i]];
+    }
   }
 
   this.changeState = function(id, stateIdx)
@@ -232,6 +232,5 @@ BlobManager = function(_width, _socket)
     this.blobs[id].changeState(Math.max(0,stateIdx - 1)); //change to the state before
     this.blobs[id].incrementState(stateIdx); // increment so that there is a previous state
   }
-
 
 }

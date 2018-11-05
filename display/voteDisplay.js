@@ -6,6 +6,7 @@ function FadeObj()
 	this.fadeout = 0;
 	this.col = undefined;
 	this.font = "Arial";
+	this.isBlack = false;
 
 
 
@@ -106,6 +107,11 @@ function VoteDisplay(canvas)
 		{
 			reset();
 			this.updatePositions();
+			this.isBlack = false;
+		}
+		else if(msg.cmd == "black")
+		{
+			this.isBlack = true;
 		}
 
 	}
@@ -301,6 +307,7 @@ function VoteDisplay(canvas)
 		ctx.fillStyle = "rgba(0,0,0,1.0)";
 		ctx.fillRect(0,0,innerWidth,innerHeight);
 
+		if(this.isBlack)return;
 
 		//draw the static state of each vote
 		var cols = ["a", "b"];
@@ -395,6 +402,7 @@ function VoteDisplay(canvas)
 		{
 			this.isActive = isActive;
 			this.draw();
+			this.isBlack = false;
 		}
 		else
 		{

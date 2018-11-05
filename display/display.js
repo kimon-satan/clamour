@@ -41,12 +41,8 @@ socket.on('hello', function(msg)
 	displays.text = new TextDisplay(simple_canvas);
 	displays.vote = new VoteDisplay(simple_canvas);
 	displays.love = new LoveDisplay(socket, threejs_canvas, settings.loveDisplaySettings);
-	displays.text.setActive(true);
 
-	if(msg.state.mode != "instruct")
-	{
-		changeDisplay(msg.state.mode);
-	}
+	changeDisplay(msg.state.mode);
 
 	var p = new Promise(function(resolve, reject)
 	{

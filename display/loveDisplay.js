@@ -87,7 +87,7 @@ var LoveDisplay = function(socket, canvas, _settings)
 		{
 			this.splatManager.updateGlow(msg.id, msg.val);
 		}
-		else if (msg.cmd == "end")
+		else if (msg.cmd == "black")
 		{
 			this.splatManager.clearAll();
 			this.blobManager.clearAll(this.scene);
@@ -197,6 +197,10 @@ var LoveDisplay = function(socket, canvas, _settings)
 		if(!this.isActive && isActive)
 		{
 			this.isActive = isActive;
+			this.splatManager.clearAll();
+			this.blobManager.clearAll(this.scene);
+			this.branchManager.clearAll(this.scene);
+			this.grid.visible = true;
 			this.draw();
 		}
 		else

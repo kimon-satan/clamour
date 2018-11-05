@@ -304,7 +304,7 @@ function BranchManager(scene)
       delete this.branches[i];
     }
 
-	this.branches = [];
+		this.branches = [];
 	}
 
 }

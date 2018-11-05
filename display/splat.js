@@ -263,7 +263,7 @@ SplatManager = function(_prop, _socket, _settings)
 
 		this.spots = {};
 		this.playerInfo = {};
-		this.geo.setDrawRange(0, 0);
+		this.geo.setDrawRange(0, -1);
 
 		this.highestIndex = 0;
 
