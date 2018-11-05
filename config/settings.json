@@ -13,7 +13,7 @@
 		"splatAmp": 0.5,
 		"toneMul": 0.7,
 		"transAmp": 0.75,
-		"crawlerMul": 0.5
+		"crawlerMul": 0.3
 	},
 	"votesAudioSettings":
 	{

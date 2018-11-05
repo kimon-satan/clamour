@@ -554,7 +554,6 @@ exports.loadPresets = function(args, options, cb)
 
 exports.playSound = function(options)
 {
-		//TODO add loop ?
 		var args = [];
 
 		if(options.path)
@@ -595,6 +594,53 @@ exports.playSound = function(options)
 		});
 }
 
+exports.playQueue = function(options)
+{
+		//TODO add loop ?
+		var args = [];
+
+		if(options.path)
+		{
+			var p = options.path.split("/");
+			options.dir = p[0];
+			options.file = p[1];
+			delete options.path;
+		}
+
+		if(options.dir && options.file)
+		{
+			args.push("dir");
+			args.push(options.dir);
+			args.push("file");
+			args.push(options.file);
+			delete options.file;
+			delete options.dir;
+		}
+		else
+		{
+			console.log("Error: no valid file path provided")
+			return;
+		}
+
+		if(options.amp == undefined)
+		{
+			options.amp = 1.0; //default
+		}
+
+		var k = Object.keys(options);
+		for(var i = 0; i < k.length; i++)
+		{
+			args.push(k[i]);
+			args.push(options[k[i]]);
+		}
+
+
+		exports.sendSCMessage(
+		{
+			address: "/playqueue",
+			args: args
+		});
+}
 
 
 

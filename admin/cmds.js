@@ -97,8 +97,10 @@ function soundCmd(cmd, args, cli)
 var cmdList = [
 	"killsound",
 	"play",
-	"reloadsamples",
-	"setscaddr"
+	"playq",
+	"cutq",
+	"endq",
+	"reloadsamples"
 ];
 
 for(var i = 0; i < cmdList.length; i++)
@@ -187,26 +189,6 @@ CLMR_CMDS["_iplayers"] =  function(args, cli){
 
 }
 
-//open a display monitor
-CLMR_CMDS["_idisplay"] = function(args, cli)
-{
-	if(cli.proc != undefined){
-		cli.println("busy");
-		return;
-	}
-
-	var proc = {};
-	proc.id = generateTempId(8);
-	proc.loop = setInterval(function(){
-
-		var msgobj = {cmd: "ldisplay", args: args, cli_id: cli.idx, mode: cli.cli_mode, isproc: true}
-		socket.emit('cmd', msgobj);
-
-	}, 2000);
-
-	gProcs[proc.id] = proc;
-	cli.proc = proc;
-}
 
 CLMR_CMDS["_irooms"] = function(args, cli){
 

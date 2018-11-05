@@ -17,11 +17,9 @@ TODO
 
 ### Votes ###
 
-	- player which loops and cues the next file ***
-
 	- concluded vote routine (90%) - finish audio routine (maximum time for vote ?)
 	- progress bar on client (80%)
-		- store in cookie to prevent page refresh - or just send startTime
+		- store in cookie to prevent page refresh - or just send startTime !
 		- check pause timer whilst paused
 
 
@@ -49,10 +47,10 @@ TODO
 
 ### Love ###
 
-	- adjustable transform point
-	- linear envelope for state changes **
+	- adjustable transform point ??
+	- linear envelope for state changes ??
 	- test many blobs (80% ... do movement)
-		- general tidy up of sound
+		- general tidy up of sound (80%)
 	- splats rendered on mobile screen
 	- adjust states / more variation between blobs
 	- poisson disk for splat distribution

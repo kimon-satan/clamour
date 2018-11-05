@@ -432,12 +432,29 @@ exports.response = function(socket)
 			});
 			globals.admin.emit('server_report', {id: msg.cli_id});
 		}
-		else if(msg.cmd == "setscaddr")
+		else if(msg.cmd == "playq")
 		{
-				var options = helpers.parseOptions(msg.args);
-				globals.scAddr = options.addr;
-				globals.admin.emit('server_report', {id: msg.cli_id, msg: "new address is " + options.addr});
+			var options = helpers.parseOptions(msg.args);
+			helpers.playQueue(options);
+			globals.admin.emit('server_report', {id: msg.cli_id});
 		}
+		else if(msg.cmd == "endq")
+		{
+			helpers.sendSCMessage({
+					address: "/endqueue",
+					args: []
+			});
+			globals.admin.emit('server_report', {id: msg.cli_id});
+		}
+		else if(msg.cmd == "cutq")
+		{
+			helpers.sendSCMessage({
+					address: "/cutqueue",
+					args: []
+			});
+			globals.admin.emit('server_report', {id: msg.cli_id});
+		}
+
 	});
 
 	/////////////////////////////////////////////////////////////////////
