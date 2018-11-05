@@ -33,6 +33,10 @@ exports.response = function(socket)
 
 			.then((rm)=>
 			{
+				if(globals.welcomeRoom == undefined)
+				{
+					globals.welcomeRoom = rm;
+				}
 				//handle subrooms for story
 				if(msg.mode == "story")
 				{
@@ -42,7 +46,7 @@ exports.response = function(socket)
 				globals.players.to(rm).emit('cmd', {cmd: 'change_mode', value: options});
 
 				//update the disconnected players too
-				globals.UserData.update({connected: false},{$set: {mode: msg.mode}});
+				globals.UserData.update({connected: false},{$set: {mode: msg.mode}},{multi: true});
 
 			});
 
@@ -97,6 +101,23 @@ exports.response = function(socket)
 					globals.admin.emit('server_report', {id: msg.cli_id, room: msg.room, isproc: msg.isproc , msg: r}); //same room response
 			})
 		}
+		else if(msg.cmd == "welcome")
+		{
+
+			var options = helpers.parseOptions(msg.args);
+
+			if(options.room != undefined)
+			{
+				globals.welcomeRoom = options.room;
+			}
+			else if(msg.room != undefined)
+			{
+				globals.welcomeRoom = msg.room;
+			}
+
+			globals.admin.emit('server_report', {id: msg.cli_id}); //same room response
+
+		}
 		else if(msg.cmd == "lrooms")
 		{
 			listRooms( msg.args, msg.room, function(r)
@@ -106,6 +127,11 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "close")
 		{
+			if(globals.welcomeRoom == msg.room)
+			{
+				globals.welcomeRoom = undefined;
+			}
+
 			globals.Rooms.find({room: msg.room}).then((docs)=>
 			{
 					if(docs.length > 0)
@@ -133,6 +159,7 @@ exports.response = function(socket)
 		{
 			closeAll(function(){
 				globals.admin.emit('server_report', {id: msg.cli_id , msg: "all rooms removed" });
+				globals.welcomeRoom = undefined;
 			})
 		}
 		else if(msg.cmd == "get_rooms")
@@ -156,7 +183,19 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "create_room")
 		{
-			helpers.useRoom(msg, null);
+			helpers.useRoom(msg)
+
+			.then((rm)=>
+			{
+				if(globals.welcomeRoom == undefined)
+				{
+					globals.welcomeRoom = rm;
+				}
+
+				globals.admin.emit('server_report', {id: msg.cli_id, room: rm});
+			})
+
+
 		}
 		else if(msg.cmd == "add")
 		{
@@ -180,11 +219,11 @@ exports.response = function(socket)
 			var selector = helpers.parseFilters(msg.args);
 
 			selector.roomName = room;
-			helpers.selectAndJoin(selector)
+			helpers.selectAndJoin(selector, true)
 
-			.then(_=>
+			.then((doc)=>
 			{
-				globals.admin.emit('server_report', {id: msg.cli_id});
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: doc});
 			})
 		}
 		else if(msg.cmd == "sub")
@@ -197,16 +236,22 @@ exports.response = function(socket)
 				return;
 			}
 
-			helpers.parseOptions(msg.args, function(options)
+			var options = helpers.parseOptions(msg.args);
+
+			if(options.rooms != undefined)
 			{
-				if(options['rooms'] != undefined)
+				helpers.subRoom(msg.room, options.rooms)
+
+				.then((doc)=>
 				{
-					helpers.subRoom(msg.room, options['rooms'], function(r)
-					{
-						globals.admin.emit('server_report', {id: msg.cli_id, msg: r});
-					})
-				}
-			});
+					globals.admin.emit('server_report', {id: msg.cli_id, msg: doc});
+				})
+			}
+			else
+			{
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: "set the arg rooms"});
+			}
+
 		}
 		else if(msg.cmd == "set")
 		{
@@ -248,6 +293,7 @@ exports.response = function(socket)
 			closeAll(function()
 			{
 				//clear the Databases
+				globals.welcomeRoom = undefined;
 				globals.sockets = {};
 				globals.UserData.remove({});
 				votehelpers.reset();

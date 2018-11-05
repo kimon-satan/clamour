@@ -317,6 +317,27 @@ function newUser(socket)
 		if(globals.welcomeRoom != undefined)
 		{
 			//TODO
+			return helpers.joinRoom([doc._id], globals.welcomeRoom)
+
+			.then((rm)=>
+			{
+				globals.players.to(doc._id).emit('cmd', {cmd: 'change_mode', value: {mode: rm.mode}});
+
+			})
+
+			.then(_=>
+			{
+				var r = /([a-z]*\.[a-z]*)_\d/;
+				var m = r.exec(globals.welcomeRoom); //its a subroom
+
+				if(m)
+				{
+					//also join the parent room
+					helpers.joinRoom([doc._id], m[1]);
+				}
+
+				return Promise.resolve(doc._id);
+			})
 		}
 		else
 		{

@@ -6,22 +6,24 @@ exports.handleSubrooms = function(room, options, cli_id)
 {
 	if(options.sub != undefined)
 	{
-		helpers.subRoom(room, options.sub, function(r)
+		helpers.subRoom(room, options.sub)
+
+		.then((doc)=>
 		{
 			globals.storyRooms = [];
 
-			globals.admin.emit('server_report', {id: cli_id, msg: r});
+			globals.admin.emit('server_report', {id: cli_id, msg: doc});
 
 			for(var i = 0; i < options.sub; i++)
 			{
 				globals.storyRooms.push(room + "_" + i);
 			}
 
-		})
+		});
 	}
 	else
 	{
-		//NB. this doesn't guarantee that the right players are memebers
+		//NB. this doesn't guarantee that the right players are members
 		globals.storyRooms = [];
 		var re = new RegExp(room + ".+", "g");
 		globals.Rooms.find({room: { $regex: re }}, 'room').then((docs)=>
@@ -30,6 +32,7 @@ exports.handleSubrooms = function(room, options, cli_id)
 			{
 				globals.storyRooms.push(docs[i].room);
 			}
+			globals.Rooms.update({room: {$in :globals.storyRooms}},{$set: {mode: "story"}},{multi: true});
 			globals.admin.emit('server_report', {id: cli_id, msg: docs.length + " subrooms found"});
 		});
 
@@ -238,31 +241,37 @@ exports.update = function(msg)
 exports.newline = function(msg)
 {
 	var txts = globals.story[globals.storyChapter].clips[globals.storyClip].texts;
-	//catch error here
+
+	if(txts == undefined)
+	{
+		globals.storyCurrText.push("");
+		globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
+		return;
+	}
+
 	if(txts.length > 1 && globals.storyRooms.length > 1)
 	{
-		if(txts.length > 1 && globals.storyRooms.length > 1)
-		{
-			//send the new line to room 0
-			globals.storyCurrText.push("");
-			globals.players.to(globals.storyRooms[0]).emit('cmd', {cmd: 'chat_newline'});
 
-			for(var i = 1; i < globals.storyRooms.length; i++)
+		//send the new line to room 0
+		globals.storyCurrText.push("");
+		globals.players.to(globals.storyRooms[0]).emit('cmd', {cmd: 'chat_newline'});
+
+		for(var i = 1; i < globals.storyRooms.length; i++)
+		{
+			var tidx = i%txts.length;
+			if(tidx == 0)
 			{
-				var tidx = i%txts.length;
-				if(tidx == 0)
-				{
-					//send the return
-					globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_newline'});
-				}
+				//send the return
+				globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_newline'});
 			}
 		}
-		else
-		{
-			globals.storyCurrText.push("");
-			globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
-		}
 	}
+	else
+	{
+		globals.storyCurrText.push("");
+		globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
+	}
+
 }
 
 exports.next = function(msg)

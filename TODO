@@ -2,10 +2,7 @@ TODO
 
 ### users ###
 
-	- adding new users to existing rooms (80%)
-
-	- rooms keep track of modes so that adding can change mode too **
-	- a welcome room to which players are automatically enrolled **
+	- make sure rooms send back modes to CLI
 
 ### Deployment ###
 
@@ -13,7 +10,7 @@ TODO
 
 ### Story ###
 
-	- always make the longest line the primary
+	- always make the longest line the primary **
 
 ### Votes ###
 

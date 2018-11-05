@@ -18,6 +18,7 @@ var cmdList = [
 	"lrooms",
 	"cleanup",
 	"resetall",
+	"welcome",
 	"set",
 	"sub",
 	"end",

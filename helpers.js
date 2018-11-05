@@ -62,8 +62,13 @@ exports.genRoomName = function()
 	return randomWords({ exactly: 2, join: '.' });
 }
 
-exports.joinRoom = function(uids, roomName, cb)
+exports.joinRoom = function(uids, roomName, mode)
 {
+	if(!mode)
+	{
+		mode = "wait";
+	}
+
 	//get each player to join the room
 	for(var i = 0; i < uids.length; i++)
 	{
@@ -74,7 +79,7 @@ exports.joinRoom = function(uids, roomName, cb)
 		}
 	}
 
-	var p = globals.UserData.update({_id: { $in: uids} }, {$pull : {rooms: roomName}}, {multi: true})
+	return globals.UserData.update({_id: { $in: uids} }, {$pull : {rooms: roomName}}, {multi: true})
 
 	.then(_=>
 	{
@@ -90,8 +95,7 @@ exports.joinRoom = function(uids, roomName, cb)
 	{
 		if(doc == null)
 		{
-			console.log("insert room")
-			return globals.Rooms.insert({room: roomName, population: uids});
+			return globals.Rooms.insert({room: roomName, population: uids, mode: mode}); //TODO
 		}
 		else
 		{
@@ -117,16 +121,15 @@ exports.joinRoom = function(uids, roomName, cb)
 
 	.then(_=>
 	{
-		if(cb != undefined)cb();
-		return Promise.resolve();
+		return globals.Rooms.findOne({room: roomName})
 	})
 
-	return p;
+
 }
 
 
 
-exports.useRoom = function(msg, cb) //add an optional cmd
+exports.useRoom = function(msg) //add an optional cmd
 {
 	//attempt to get a selection object
 	var selector = exports.parseFilters(msg.args, msg.room);
@@ -137,38 +140,31 @@ exports.useRoom = function(msg, cb) //add an optional cmd
 		if(selector.roomName == undefined)
 		{
 			selector.roomName = exports.genRoomName();
+
 		}
 
 		selector.mode = msg.mode;
 
-		var p = exports.selectAndJoin(selector);
+		return exports.selectAndJoin(selector)
 
-		p = p.then((resp)=>
+		.then((resp)=>
 		{
 			globals.admin.emit('server_report', {msg: resp, id: msg.cli_id, room: selector.roomName });
-
-			if(cb != undefined)
-			{
-				cb(selector.roomName);
-			}
 
 			return Promise.resolve(selector.roomName);
 
 		});
 
-		return p;
 	}
 	else
 	{
 		//use the existing room
-		if(typeof(cb) == "function")
-		{
-			cb(msg.room);
-		}
+		return globals.Rooms.update({room: msg.room},{$set: {mode: msg.mode}})
 
-		globals.admin.emit('server_report', {id: msg.cli_id});
-
-		return Promise.resolve(msg.room);
+		.then(_=>{
+			globals.admin.emit('server_report', {id: msg.cli_id});
+			return Promise.resolve(msg.room);
+		})
 	}
 }
 
@@ -215,57 +211,63 @@ exports.selectPlayers = function(args, cb)
 	return p;
 }
 
-exports.selectAndJoin = function(args, cb)
+exports.selectAndJoin = function(args, changeMode)
 {
 	if(typeof(args) == "undefined")return false;
 
-	var p = exports.selectPlayers(args);
 	var msg = "";
+	var newusers = 0;
 
-	p = p.then((uids)=>
+	return exports.selectPlayers(args)
+
+	.then((uids)=>
 	{
-		msg =  args.mode + " with " + uids.length + " players with room: " + args.roomName;
-		return exports.joinRoom(uids, args.roomName);
+		newusers = uids;
+		return exports.joinRoom(uids, args.roomName, args.mode);
 	})
 
-	p = p.then(_=>
-	{
-		if(cb != undefined)
+	.then((doc)=>{
+
+		if(changeMode)
 		{
-			cb(msg)
+			globals.players.to(doc.room).emit('cmd', {cmd: 'change_mode', value: {mode: doc.mode}});
+			//update the disconnected players too
+			globals.UserData.update({connected: false},{$set: {mode: doc.mode}},{multi: true});
 		}
 
+		msg = doc.mode + " with " + newusers.length + " players with room: " + doc.room;
 		return Promise.resolve(msg);
 	})
 
-	return p;
 }
 
-exports.subRoom =  function(room, numRooms, cb)
+exports.subRoom =  function(room, numRooms)
 {
-	globals.Rooms.find({room: room}).then((docs)=>
+	return globals.Rooms.findOne({room: room})
+
+	.then((doc)=>
 	{
-		if(docs.length > 0)
+		if(doc)
 		{
 			var n = Math.max(2, parseInt(numRooms));
-			var numPerSub = Math.ceil(docs[0].population.length / n);
+			var numPerSub = Math.ceil(doc.population.length / n);
 			var subPops = [];
-			while(docs[0].population.length > 0)
+			while(doc.population.length > 0)
 			{
 				//TODO check when non divisible
-				subPops.push(docs[0].population.splice(0,numPerSub));
+				subPops.push(doc.population.splice(0,numPerSub));
 			}
 
 			for(var i =0; i < subPops.length; i++)
 			{
-				exports.joinRoom(subPops[i], room + "_" + i);
+				exports.joinRoom(subPops[i], room + "_" + i, doc.mode);
 			}
 
-			cb(n + " subrooms of " + room + " created");
+			return Promise.resolve(n + " subrooms of " + room + " created");
 		}
 		else
 		{
-			cb();
+			return Promise.resolve("");
 		}
 
 	})
