@@ -155,7 +155,7 @@ Player = function(isDummy)
 			}
 			else if(msg.cmd == 'chat_newline')
 			{
-				$('#chatContainer').append( '<div class="largeText"></div>' );
+				$('#chatContainer').append( '<div class="largeText"> </div>' );
 			}
 			else if(msg.cmd == 'chat_clear')
 			{

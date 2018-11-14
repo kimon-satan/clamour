@@ -463,6 +463,13 @@
 					"And so for the sake of the nation, let us begin the monumental task before us",
 					"And now with authentic design, let us recreate that crucial moment in history"
 				]
+			},
+			{
+				"isFade": "true",
+				"img": "chapter6/45-constitution.jpg",
+				"texts":
+				[
+				]
 			}
 		]
 	}
