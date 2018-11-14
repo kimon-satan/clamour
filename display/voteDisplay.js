@@ -307,7 +307,11 @@ function VoteDisplay(canvas)
 		ctx.fillStyle = "rgba(0,0,0,1.0)";
 		ctx.fillRect(0,0,innerWidth,innerHeight);
 
-		if(this.isBlack)return;
+		if(this.isBlack)
+		{
+			requestAnimationFrame(this.draw); //still call the next frame
+			return;
+		}
 
 		//draw the static state of each vote
 		var cols = ["a", "b"];

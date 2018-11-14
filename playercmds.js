@@ -170,13 +170,26 @@ exports.response = function(socket)
 
 			}
 
-			return globals.Votes.update(
-				{
-					_id: data._id},
-					{$push: {voted: id},
-				$pull: {voting: id},
-			$set:{scores: data.scores}
-			});
+			if(!data.infinite)
+			{
+				return globals.Votes.update(
+					{
+						_id: data._id},
+						{$push: {voted: id},
+					$pull: {voting: id},
+				$set:{scores: data.scores}
+				});
+			}
+			else
+			{
+				return globals.Votes.update(
+					{
+						_id: data._id},
+						{$push: {notvoted: id},
+					$pull: {voting: id},
+				$set:{scores: data.scores}
+				});
+			}
 
 		})
 

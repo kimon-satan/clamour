@@ -267,7 +267,7 @@
 				]
 			},
 			{
-				"audio": {"path" : "chapter5/20_Ch6", "loop": "false", "in" : 0.0, "out" : 0.0, "amp" : 0.5, "solo": "false"},
+				"audio": {"path" : "chapter5/20_Ch6", "loop": "false", "in" : 0.0, "out" : 15.0, "amp" : 0.5, "solo": "false"},
 				"img": "chapter5/27-Shadowy-figures-1.jpg",
 				"texts":
 				[

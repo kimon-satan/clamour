@@ -81,6 +81,8 @@ exports.defaultVote = {
 	pos: "a0",
 	open: false,
 	winnerIdx: -1,
+	die: false,
+	infinite: false,
 	rig: undefined,
 	lock: false
 }

@@ -188,6 +188,8 @@ exports.startVote = function(msg)
 		v.pair = pair;
 		v.num = num;
 		v.open = true;
+		v.die = options.die;
+		v.infinite = options.infinite;
 		v.voteid = helpers.generateTempId(20);
 
 		return globals.Votes.update({pos: pos},v);
@@ -724,6 +726,8 @@ var triggerVoteComplete = function(data)
 			type: "vote", cmd: "updateSlots",
 			val:doc
 		})
+
+
 	})
 
 

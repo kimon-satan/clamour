@@ -261,10 +261,40 @@ function parseIncomingMsg(msg)
 
 	if(msg.address == "/resumeVote")
 	{
-		// NB. we don't need this as we're not pausing concurrent votes
+
 		globals.players.emit('cmd',{cmd: 'resume_vote'});
 		//allows other votes to happen
-		globals.currentConcludedVote = null;
+
+		if(globals.currentConcludedVote)
+		{
+			if(globals.currentConcludedVote.die)
+			{
+				globals.Votes.update(
+					{pos: globals.currentConcludedVote.pos},
+					{$set:{winnerIdx: -1, pair:["",""]}},
+					{multi: true})
+
+				.then(_=>{
+					return votehelpers.getDisplaySlots();
+				})
+
+				.then((doc)=>
+				{
+					globals.display.emit('cmd',
+					{
+						type: "vote", cmd: "updateSlots",
+						val:doc
+					})
+
+					globals.currentConcludedVote = null;
+				})
+
+			}
+			else
+			{
+				globals.currentConcludedVote = null;
+			}
+		}
 	}
 
 }

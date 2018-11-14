@@ -98,6 +98,7 @@ function soundCmd(cmd, args, cli)
 
 var cmdList = [
 	"killsound",
+	"killpoly",
 	"play",
 	"playq",
 	"cutq",

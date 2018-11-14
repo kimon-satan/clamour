@@ -1,6 +1,6 @@
 var globals = require('./globals.js');
 var helpers = require('./helpers.js');
-//var votehelpers = require('./votehelpers.js');
+var votehelpers = require('./votehelpers.js');
 
 exports.response = function(socket)
 {

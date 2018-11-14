@@ -256,12 +256,11 @@ VoteManager.prototype.resumeVote = function()
 VoteManager.prototype.createTestVote = function(vote)
 {
 
-	//console.log(vote);
 	if(this.parent.data.currentVoteId != -1)
 	{
 		window.setTimeout(function()
 		{
-			this.createTestVote(msg);
+			this.createTestVote(vote);
 		},1000); //try again in 1 sec
 		return;
 	}
@@ -271,6 +270,14 @@ VoteManager.prototype.createTestVote = function(vote)
 	this.parent.data.currentVotePair = vote.pair;
 	this.parent.data.state = "voting";
 
+	if(vote.rig != undefined)
+	{
+		this.rig = vote.rig;
+	}
+	else
+	{
+		this.rig = undefined;
+	}
 
 	var makeChoice = function()
 	{
@@ -279,6 +286,15 @@ VoteManager.prototype.createTestVote = function(vote)
 		if(!this.isPaused)
 		{
 			var o = Math.round(Math.random());
+			if(this.rig != undefined)
+			{
+				if(o != this.rig && Math.random() < 0.75)
+				{
+					o = this.rig;
+				}
+				console.log("rig", o, this.rig);
+			}
+
 			this.parent.socket.emit('voted', {choice: o, id: this.parent.data.currentVoteId });
 			this.parent.data.currentVoteId = -1;
 			this.parent.data.currentVotePair = ["0","0"];

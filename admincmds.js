@@ -28,6 +28,11 @@ exports.response = function(socket)
 				globals.DisplayState.mode = "love";
 				globals.display.emit('cmd', {type: 'love', cmd: 'change'});
 			}
+			else if(msg.mode == "vote")
+			{
+				globals.DisplayState.mode = "vote";
+				globals.display.emit('cmd', {type: 'vote', cmd: 'change'});
+			}
 
 			helpers.useRoom(msg)
 
@@ -386,7 +391,17 @@ exports.response = function(socket)
 
 			if(options.p)
 			{
+				votehelpers.reset(); //cover votes
 				globals.players.emit('cmd', {cmd: 'change_mode', value: {mode: "blank"}});
+			}
+
+			if(options.s)
+			{
+				helpers.sendSCMessage(
+				{
+						address: "/allOff",
+						args: []
+				});
 			}
 
 			globals.admin.emit('server_report', {id: msg.cli_id});
@@ -504,6 +519,14 @@ exports.response = function(socket)
 			helpers.sendSCMessage({
 					address: "/allOff",
 					args: []
+			});
+			globals.admin.emit('server_report', {id: msg.cli_id});
+		}
+		else if(msg.cmd == "killpoly")
+		{
+			helpers.sendSCMessage({
+					address: "/polyOff",
+					args: ["channel", "all"]
 			});
 			globals.admin.emit('server_report', {id: msg.cli_id});
 		}
