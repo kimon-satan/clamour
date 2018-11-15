@@ -21,7 +21,17 @@ exports.response = function(socket)
 			{
 				globals.DisplayState.mode = "story";
 				globals.display.emit('cmd', {type: 'story', cmd: 'change'});
-				storyhelpers.startClip();
+
+				if(options.chapter)
+				{
+					storyhelpers.goto(msg);
+				}
+				else
+				{
+					storyhelpers.startClip();
+				}
+
+
 			}
 			else if(msg.mode == "love")
 			{

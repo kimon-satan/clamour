@@ -472,5 +472,56 @@
 				]
 			}
 		]
+	},
+	{"name": "monologue2", "clips":
+		[
+			{
+				"audio": {"path" : "monol/misty", "loop": "false", "in" : 0.0, "out" : 0.5, "amp" : 0.35, "solo": "true"},
+				"texts":
+				[
+					"Well ..."
+				]
+			},
+			{
+				"audio": {},
+				"texts":
+				[
+					"look at you%that wasn't so easy%we thought you'd fix things%we can't understand what happened!",
+					"look at us%that wasn't so easy%but did it make things clear?%and so what of the Sealanders?"
+				]
+			},
+			{
+				"audio": {},
+				"texts":
+				[
+					"but anyhow%wasn't if fun to take part?%with such bright things%they make me so misty",
+					"their fate%can be heard in the lines%of this song they resemble%does it sounds familiar?"
+				]
+			},
+			{
+				"audio": {},
+				"texts":
+				[
+					"you can say that I'm leading you on%but let me explain%don't you want to know%that's why you're here after all",
+					"you can say that I'm leading them on%but let me explain%don't you want to know%that's why you're here after all"
+				]
+			},
+			{
+				"audio": {},
+				"texts":
+				[
+					"on our own%we will create sweet music%without right or wrong%only our true love",
+					"on their own%they withdrew from this world%discarding right from wrong%regarding only their own love"
+				]
+			},
+			{
+				"audio": {},
+				"texts":
+				[
+					"yes we are misty%but at least we feel love",
+					"yes they were too misty%and too much in love"
+				]
+			}
+		]
 	}
 ]

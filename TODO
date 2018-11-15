@@ -3,6 +3,12 @@ TODO
 ### users ###
 
 	- make sure rooms send back modes to CLI
+	- check welcome works for dummies
+	- show welcome room
+
+### sound ###
+
+no floating synths
 
 ### Deployment ###
 
@@ -10,10 +16,12 @@ TODO
 
 ### Story ###
 
+	- second story file for second monologue - work out a CLI mode for this
 	- always make the longest line the primary **
 
 ### Votes ###
 
+	- show score in list votes
 	- concluded vote routine (90%) - finish audio routine (maximum time for vote ?)
 	- progress bar on client (80%)
 		- store in cookie to prevent page refresh - or just send startTime !

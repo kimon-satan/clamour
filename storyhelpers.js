@@ -156,8 +156,11 @@ exports.clear = function(msg)
 	}
 	else
 	{
-		globals.storyCurrText.push("");
-		globals.players.to(msg.room).emit('cmd', {cmd: 'chat_clear'});
+		if(msg.room)
+		{
+			globals.storyCurrText.push("");
+			globals.players.to(msg.room).emit('cmd', {cmd: 'chat_clear'});
+		}
 	}
 }
 
@@ -175,20 +178,26 @@ exports.update = function(msg)
 
 			globals.storyCurrText[globals.storyCurrText.length - 1] = msg.value;
 
-			//count the characters
-			var num_chars = 0;
-			for(var i = 0; i < globals.storyCurrText.length; i++)
+
+
+			//count the characters of that line
+			var num_chars = globals.storyCurrText[globals.storyCurrText.length - 1].length;
+
+			var r = /([^%^$]*)[%$]?/g;
+
+			var res;
+
+			for(var j = 0; j < globals.storyCurrText.length; j++)
 			{
-				num_chars += globals.storyCurrText[i].length;
+				res = r.exec(txts[0]);
 			}
 
-			//TODO implement new lines for dummy text
-			var prog = Math.min(1.0,num_chars/(txts[0].length * 0.9)); // slightly optimisitic to account for typos etc
+			var prog = Math.min(1.0,num_chars/(res[1].length * 0.9)); // slightly optimisitic to account for typos etc
+
 
 			for(var i = 1; i < globals.storyRooms.length; i++)
 			{
 
-				//new line and clear will also need to work this out
 				var tidx = i%txts.length;
 				if(tidx == 0)
 				{
@@ -198,32 +207,19 @@ exports.update = function(msg)
 				else if(num_chars > globals.storyNumChars)//alternative texts only go forwards ... delete is ignored
 				{
 
-					var l = prog * txts[tidx].length;
-					var n = txts[tidx].substring(0,l);
-					r = /[%$]{1}([^%^$]*?)$/;
-					res = r.exec(n);
+					r.lastIndex = 0;
 
-					//determine room to send
+					for(var j = 0; j < globals.storyCurrText.length; j++)
+					{
+						res = r.exec(txts[tidx]);
+					}
 
-					if(res == null)
-					{
-						//before any special char
-						globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_update', value: n});
-					}
-					else if(res[0] == "%")
-					{
-						globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_newline'});
-					}
-					else if(res[0] == "$")
-					{
-						globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_clear'});
-					}
-					else
-					{
-						globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_update', value: res[1]});
-					}
+					var l = prog * res[1].length;
+					var n = res[1].substring(0,l);
+
+					globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_update', value: n});
+
 				}
-
 
 			}
 
@@ -241,6 +237,7 @@ exports.update = function(msg)
 exports.newline = function(msg)
 {
 	var txts = globals.story[globals.storyChapter].clips[globals.storyClip].texts;
+	globals.storyNumChars = 0;
 
 	if(txts == undefined)
 	{
@@ -254,22 +251,22 @@ exports.newline = function(msg)
 
 		//send the new line to room 0
 		globals.storyCurrText.push("");
-		globals.players.to(globals.storyRooms[0]).emit('cmd', {cmd: 'chat_newline'});
 
-		for(var i = 1; i < globals.storyRooms.length; i++)
+		for(var i = 0; i < globals.storyRooms.length; i++)
 		{
-			var tidx = i%txts.length;
-			if(tidx == 0)
-			{
-				//send the return
-				globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_newline'});
-			}
+			//send the return
+			globals.players.to(globals.storyRooms[i]).emit('cmd', {cmd: 'chat_newline'});
 		}
+
+
 	}
 	else
 	{
-		globals.storyCurrText.push("");
-		globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
+		if(msg.room)
+		{
+			globals.storyCurrText.push("");
+			globals.players.to(msg.room).emit('cmd', {cmd: 'chat_newline'});
+		}
 	}
 
 }
