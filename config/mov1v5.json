@@ -523,5 +523,51 @@
 				]
 			}
 		]
+	},
+	{"name": "mov3Intro", "clips":
+		[
+			{
+				"texts":
+				[
+					"Coastguard report dated --"
+				]
+			},
+			{
+				"texts":
+				[
+					"Our reconnaissance of the nation believed to be Sealand"
+				]
+			},
+			{
+				"texts":
+				[
+					"Has revealed an advanced technology on the Ocean floor"
+				]
+			},
+			{
+				"texts":
+				[
+					"...An intelligence we assume to be life"
+				]
+			},
+			{
+				"texts":
+				[
+					"We believe the intended purpose was to facilitate governance"
+				]
+			},
+			{
+				"texts":
+				[
+					"We cannot be sure what transpired"
+				]
+			},
+			{
+				"texts":
+				[
+					"No further life has been detected"
+				]
+			}
+		]
 	}
 ]
