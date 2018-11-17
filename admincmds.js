@@ -277,11 +277,13 @@ exports.response = function(socket)
 			helpers.useRoom(msg)
 			.then((rm)=>
 			{
-				globals.players.to(rm).emit('cmd', {cmd: 'set_params', value: options});
+				globals.players.to(rm.room).emit('cmd', {cmd: 'set_params', value: options});
 
 				//update the disconnected players too
 				globals.UserData.update({connected: false},{$set: options});
-			});
+
+				globals.admin.emit('server_report', {id: msg.cli_id, msg: ""});
+			})
 
 		}
 		else if(msg.cmd == "cleanup")
