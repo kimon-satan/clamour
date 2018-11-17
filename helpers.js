@@ -139,47 +139,71 @@ exports.joinRoom = function(uids, roomName, mode)
 
 exports.useRoom = function(msg) //add an optional cmd
 {
-	//attempt to get a selection object
-	var selector = exports.parseFilters(msg.args, msg.room);
 
-	if(selector)
+	return new Promise(function(resolve, reject)
 	{
-		//we are making a new room
-		if(selector.roomName == undefined)
-		{
-			selector.roomName = exports.genRoomName();
+		//attempt to get a selection object
+		var selector = exports.parseFilters(msg.args, msg.room);
 
+		if(selector)
+		{
+			//we are making a new room
+			if(selector.roomName == undefined)
+			{
+				selector.roomName = exports.genRoomName();
+				resolve(selector);
+			}
+			else
+			{
+				//check the room doesn't already exist
+				globals.Rooms.findOne({room: selector.roomName})
+
+				.then((doc)=>{
+					if(doc != null)
+					{
+						//just switch to the room
+						reject(doc);
+					}
+				})
+			}
+		}
+		else
+		{
+			reject(null);
 		}
 
-		selector.mode = msg.mode;
+	})
 
-		return exports.selectAndJoin(selector)
-
-		.then((resp)=>
-		{
-			globals.admin.emit('server_report', {msg: resp, id: msg.cli_id, room: selector.roomName, mode: msg.mode});
-			return Promise.resolve(selector.roomName);
-		});
-
-	}
-	else
+	.then((selector)=>
 	{
-		//use the existing room
-		return globals.Rooms.update({room: msg.room},{$set: {mode: msg.mode}})
+		selector.mode = msg.mode;
+		return exports.selectAndJoin(selector)
+	})
 
-		.then(_=>
+	.catch((doc)=>
+	{
+		if(doc)
 		{
-			globals.admin.emit('server_report', {id: msg.cli_id, mode: msg.mode, room: msg.room});
-			return Promise.resolve(msg.room);
-		})
-	}
+			return Promise.resolve(doc);
+		}
+		else
+		{
+			return globals.Rooms.update({room: msg.room},{$set: {mode: msg.mode}})
+
+			.then(_=>{
+				return globals.Rooms.findOne({room: msg.room});
+			})
+		}
+
+	})
+
+
 }
 
 exports.selectPlayers = function(args, cb)
 {
 
 	var searchObj = exports.generateSearchObj(args);
-
 	var p = globals.UserData.find(searchObj, '_id');
 
 	p = p.then((docs) =>{
@@ -242,8 +266,8 @@ exports.selectAndJoin = function(args, changeMode)
 			globals.UserData.update({connected: false},{$set: {mode: doc.mode}},{multi: true});
 		}
 
-		msg = doc.mode + " with " + newusers.length + " players with room: " + doc.room;
-		return Promise.resolve(msg);
+		return Promise.resolve(doc);
+
 	})
 
 }

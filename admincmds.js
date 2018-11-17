@@ -48,17 +48,19 @@ exports.response = function(socket)
 
 			.then((rm)=>
 			{
+
 				if(globals.welcomeRoom == undefined)
 				{
-					globals.welcomeRoom = rm;
+					globals.welcomeRoom = rm.room;
 				}
 				//handle subrooms for story
 				if(msg.mode == "story")
 				{
-					storyhelpers.handleSubrooms(rm, options, msg.cli_id);
+					storyhelpers.handleSubrooms(rm.room, options, msg.cli_id);
 				}
 
-				globals.players.to(rm).emit('cmd', {cmd: 'change_mode', value: options});
+				globals.admin.emit('server_report', {msg: "", id: msg.cli_id, room: rm.room, mode: rm.mode});
+				globals.players.to(rm.room).emit('cmd', {cmd: 'change_mode', value: options});
 
 				//update the disconnected players too
 				globals.UserData.update({connected: false},{$set: {mode: msg.mode}},{multi: true});
@@ -196,27 +198,22 @@ exports.response = function(socket)
 				}
 			});
 		}
-		else if(msg.cmd == "create_room")
+		else if(msg.cmd == "open_room")
 		{
 
 			helpers.useRoom(msg)
 
 			.then((rm)=>
 			{
+
 				if(globals.welcomeRoom == undefined)
 				{
-					globals.welcomeRoom = rm;
+					globals.welcomeRoom = rm.room;
 				}
-				return globals.Rooms.findOne({room: rm},{mode: 1, room: 1})
+
+				globals.admin.emit('server_report', {id: msg.cli_id, room: rm.room, mode: rm.mode});
 
 			})
-
-			.then((doc)=>{
-				globals.admin.emit('server_report', {id: msg.cli_id, room: doc.room, mode: doc.mode});
-			})
-
-
-
 		}
 		else if(msg.cmd == "add")
 		{

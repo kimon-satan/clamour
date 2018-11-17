@@ -171,7 +171,7 @@ function CLI(idx, mode, room)
 		}
 		else if(e.keyCode == 13)
 		{
-			var msgobj = {cmd: "create_room", args: [["room", this.sus_list[this.sus_idx], '']], cli_id: this.idx, room: this.room}
+			var msgobj = {cmd: "open_room", args: [["room", this.sus_list[this.sus_idx], '']], cli_id: this.idx}
 			socket.emit('cmd', msgobj);
 			this.sus_mode = undefined;
 		}

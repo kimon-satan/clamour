@@ -263,7 +263,7 @@ CLMR_CMDS["_room"] = function(args,  cli){
   }
 	else
 	{
-    var msgobj = {cmd: "create_room", args: args, cli_id: cli.idx, room: cli.room}
+    var msgobj = {cmd: "open_room", args: args, cli_id: cli.idx, room: cli.room}
     socket.emit('cmd', msgobj);
   }
 
