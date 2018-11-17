@@ -174,7 +174,7 @@ exports.startVote = function(msg)
 
 	p = p.then((rm)=>
 	{
-		return globals.Rooms.findOne({room: rm});
+		return globals.Rooms.findOne({room: rm.room});
 	})
 
 	p = p.then((doc)=>
