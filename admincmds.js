@@ -351,26 +351,6 @@ exports.response = function(socket)
 			})
 
 		}
-		else if(msg.cmd == "stats")
-		{
-			//TODO make istats
-
-			globals.UserData.find({},'connected').then((docs)=>{
-				var resp = "";
-				resp += "players: " + docs.length + "\n";
-				var numconnected = 0;
-
-				docs.forEach(function(e)
-				{
-					if(e.connected)numconnected += 1;
-				})
-
-				resp += "connected: " + numconnected;
-				globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
-
-			});
-
-		}
 		else if(msg.cmd == "end")
 		{
 
@@ -730,8 +710,24 @@ function listPlayers(args, room, cb)
 
 function listRooms(args, room, cb)
 {
+
 	var results = "";
-	globals.Rooms.find({})
+
+	globals.UserData.find({},'connected').then((docs)=>
+	{
+		results += "players: " + docs.length + "\n";
+		var numconnected = 0;
+
+		for(var i = 0; i < docs.length; i++)
+		{
+			if(docs[i].connected)numconnected += 1;
+		}
+
+		results += "connected: " + numconnected + "\n\n";
+
+		return globals.Rooms.find({});
+	})
+
 
 	.then((docs)=>
 	{
@@ -742,8 +738,8 @@ function listRooms(args, room, cb)
 			{
 
 				var str = docs[i].room;
-				if(docs[i].population) str += " :: " + docs[i].population.length;
-				if(docs[i].room == room)str += " *";
+				if(docs[i].population) str += " :: " + docs[i].population.length + " :: " + docs[i].mode;
+				if(docs[i].room == globals.welcomeRoom)str += " *";
 				results += str + "\n";
 			}
 
