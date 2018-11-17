@@ -74,7 +74,7 @@ exports.joinRoom = function(uids, roomName, mode)
 	{
 		if(typeof(globals.sockets[uids[i]]) != "undefined")
 		{
-			if(globals.DEBUG)console.log("player " + uids[i] + " joining " + roomName)
+			//console.log("player " + uids[i] + " joining " + roomName)
 			globals.sockets[uids[i]].join(roomName);
 		}
 	}
@@ -88,7 +88,7 @@ exports.joinRoom = function(uids, roomName, mode)
 
 	.then(_=>
 	{
-		return globals.Rooms.findOne({room: roomName})
+		return globals.Rooms.findOne({room: roomName},{population: 1, room: 1})
 	})
 
 	.then((doc)=>
@@ -99,21 +99,29 @@ exports.joinRoom = function(uids, roomName, mode)
 		}
 		else
 		{
-			var pop = [...uids, ...doc.population];
 
-			//remove duplicates
-			for(var i=0; i< pop.length; i++)
+			var promises = [];
+			
+			//check for duplicates
+			for(var i=0; i < uids.length; i++)
 			{
-				for(var j=i+1; j < pop.length; j++)
+				var isFound = false;
+				for(var j=0; j < doc.population.length; j++)
 				{
-						if(pop[i] == pop[j])
-						{
-							pop.splice(j--, 1);
-						}
+					if(String(uids[i]) == String(doc.population[j]))
+					{
+						isFound = true;
+						break;
+					}
+				}
+
+				if(!isFound)
+				{
+					promises.push(globals.Rooms.update({room: roomName},{$push: {population: uids[i]}}));
 				}
 			}
 
-			return globals.Rooms.update({room: roomName},{$set: {population: pop}});
+			return Promise.all(promises);
 
 		}
 

@@ -3,21 +3,19 @@ TODO
 ### users ###
 
 	- make sure rooms send back modes to CLI
-	- check welcome works for dummies
-	- show welcome room
+	- show welcome room in stats make istats
 
 ### sound ###
 
-no floating synths
+- no floating synths
+- audio channels
 
 ### Deployment ###
 
 	- memory leak ???
 
 ### Story ###
-
-	- second story file for second monologue - work out a CLI mode for this
-	- always make the longest line the primary **
+ - check for any crashable points
 
 ### Votes ###
 
