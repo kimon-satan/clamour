@@ -12,13 +12,34 @@ var socket = io('/admin');
 
 var dummyPlayers = [];
 
+function updateCLIModes(room, mode)
+{
+	var k = Object.keys(gClis);
+
+	for(var i = 0; i < k.length; i++)
+	{
+		if(gClis[k[i]].room == room && gClis[k[i]].cli_mode != mode)
+		{
+			gClis[k[i]].cli_mode = mode;
+			gClis[k[i]].newCursor();
+		}
+	}
+}
+
 socket.on('server_report', function(msg)
 {
 
 	if(msg.room != undefined)
 	{
 		gClis[msg.id].room = msg.room;
+
+		if(msg.mode != undefined)
+		{
+			updateCLIModes(msg.room, msg.mode)
+		}
 	}
+
+
 
 	if(msg.suslist)
 	{
@@ -140,22 +161,21 @@ function CLI(idx, mode, room)
 
 	this.handleSus = function(e){
 
-		if(e.keyCode == 38){
+		if(e.keyCode == 38)
+		{
 			this.sus_idx = Math.min(this.sus_idx + 1, this.sus_list.length -1);
 			this.replaceln(this.sus_list[this.sus_idx]);
-
 		}else if(e.keyCode == 40){
-
 			this.sus_idx = Math.max(this.sus_idx - 1, 0);
 			this.replaceln(this.sus_list[this.sus_idx]);
-
-		}else if(e.keyCode == 13){
-			this.room = this.sus_list[this.sus_idx];
-			this.newCursor();
+		}
+		else if(e.keyCode == 13)
+		{
+			var msgobj = {cmd: "create_room", args: [["room", this.sus_list[this.sus_idx], '']], cli_id: this.idx, room: this.room}
+			socket.emit('cmd', msgobj);
 			this.sus_mode = undefined;
 		}
 		return false;
-
 	}
 
 	this.handleChatKeys = function(e, cmd)

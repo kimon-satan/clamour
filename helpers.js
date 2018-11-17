@@ -101,7 +101,7 @@ exports.joinRoom = function(uids, roomName, mode)
 		{
 
 			var promises = [];
-			
+
 			//check for duplicates
 			for(var i=0; i < uids.length; i++)
 			{
@@ -157,10 +157,8 @@ exports.useRoom = function(msg) //add an optional cmd
 
 		.then((resp)=>
 		{
-			globals.admin.emit('server_report', {msg: resp, id: msg.cli_id, room: selector.roomName });
-
+			globals.admin.emit('server_report', {msg: resp, id: msg.cli_id, room: selector.roomName, mode: msg.mode});
 			return Promise.resolve(selector.roomName);
-
 		});
 
 	}
@@ -169,8 +167,9 @@ exports.useRoom = function(msg) //add an optional cmd
 		//use the existing room
 		return globals.Rooms.update({room: msg.room},{$set: {mode: msg.mode}})
 
-		.then(_=>{
-			globals.admin.emit('server_report', {id: msg.cli_id});
+		.then(_=>
+		{
+			globals.admin.emit('server_report', {id: msg.cli_id, mode: msg.mode, room: msg.room});
 			return Promise.resolve(msg.room);
 		})
 	}
@@ -360,7 +359,7 @@ exports.parseFilters = function(args, currentRoom)
 			if(filter != null)selector.filters.push(filter);
 
 		}
-		else if(args[i][0] == "name")
+		else if(args[i][0] == "room")
 		{
 			if(args[i][1] != "")selector.roomName = args[i][1];
 		}

@@ -198,6 +198,7 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "create_room")
 		{
+
 			helpers.useRoom(msg)
 
 			.then((rm)=>
@@ -206,9 +207,14 @@ exports.response = function(socket)
 				{
 					globals.welcomeRoom = rm;
 				}
+				return globals.Rooms.findOne({room: rm},{mode: 1, room: 1})
 
-				globals.admin.emit('server_report', {id: msg.cli_id, room: rm});
 			})
+
+			.then((doc)=>{
+				globals.admin.emit('server_report', {id: msg.cli_id, room: doc.room, mode: doc.mode});
+			})
+
 
 
 		}
