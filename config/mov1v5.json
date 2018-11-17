@@ -235,7 +235,7 @@
 			{
 				"audio": {"path" : "chapter4/17_Drainage_Synths", "loop": "false", "in" : 0.0, "out" : 0.5, "amp" : 0.5, "solo": "true"},
 				"audio1": {"path" : "chapter4/18_Drainage_Bass_1", "loop": "false", "in" : 0.0, "out" : 0.5, "amp" : 0.5, "solo": "false"},
-				"img": "chapter4/24-drainage-upper.png",
+				"img": "chapter4/24-drainage-upper.jpg",
 				"texts":
 				[
 					"to unify Sealand with Mainland",
@@ -245,7 +245,7 @@
 			{
 				"audio": {},
 				"audio1": {},
-				"img": "chapter4/25-drainage-lower.png",
+				"img": "chapter4/25-drainage-lower.jpg",
 				"texts":
 				[
 					"by draining the waters between us",
