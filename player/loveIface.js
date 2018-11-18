@@ -1022,6 +1022,7 @@ Interface = function(parent, callback, isDummy)
 							splatPos: this.splatPos,
 							splatPan: this.splatPan ,
 							splatRate: this.splatRate,
+							splatFreq: this.splatFreq,
 							state_z: this.stateEnvelope.z
 						};
 

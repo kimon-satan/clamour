@@ -11,6 +11,10 @@ var TextDisplay = function(canvas)
 		{
 			this.isBlack = true;
 		}
+		else if(msg.cmd == 'clear')
+		{
+			this.isBlack = false;
+		}
 	}
 
 	this.draw = function()

@@ -13,7 +13,6 @@ function basicCmd(cmd, args, cli)
 var cmdList = [
 
 	"lplayers", //player management
-	"stats",
 	"close",
 	"lrooms",
 	"cleanup",
@@ -97,7 +96,8 @@ function soundCmd(cmd, args, cli)
 }
 
 var cmdList = [
-	"killsound",
+	"killsynths",
+	"setmaster",
 	"killpoly",
 	"play",
 	"playq",

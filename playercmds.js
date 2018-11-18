@@ -244,7 +244,7 @@ exports.response = function(socket)
 			"rate", msg.splatRate,
 			"pos", msg.splatPos,
 			"amp", globals.settings.loveAudioSettings.splatAmp,
-			"freq", 0.5
+			"freq", msg.splatFreq
 		];
 
 		helpers.sendSCMessage({

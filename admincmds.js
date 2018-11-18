@@ -340,6 +340,17 @@ exports.response = function(socket)
 					address: "/resetPhrases",
 					args: []
 			});
+
+			helpers.sendSCMessage({
+					address: "/setMasterLevel",
+					args: ['amp',1]
+			});
+
+			helpers.sendSCMessage(
+			{
+					address: "/allOff",
+					args: []
+			});
 		}
 		else if(msg.cmd == "reload")
 		{
@@ -358,6 +369,12 @@ exports.response = function(socket)
 					address: "/allOff",
 					args: []
 			});
+
+			helpers.sendSCMessage({
+					address: "/setMasterLevel",
+					args: ['amp',0]
+			});
+
 			globals.admin.emit('server_report', {id: msg.cli_id});
 			globals.display.emit("cmd", {type: "all", cmd: "black"});
 			globals.DisplayState.mode = "black";
@@ -509,7 +526,19 @@ exports.response = function(socket)
 			helpers.playSound(options);
 			globals.admin.emit('server_report', {id: msg.cli_id});
 		}
-		else if(msg.cmd == "killsound")
+		else if(msg.cmd == "setmaster")
+		{
+			var options = helpers.parseOptions(msg.args);
+			if(options.amp !== false)
+			{
+				helpers.sendSCMessage({
+						address: "/setMasterLevel",
+						args: ['amp',options.amp]
+				});
+			}
+			globals.admin.emit('server_report', {id: msg.cli_id});
+		}
+		else if(msg.cmd == "killsynths")
 		{
 			helpers.sendSCMessage({
 					address: "/allOff",
