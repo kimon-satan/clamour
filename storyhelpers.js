@@ -114,6 +114,7 @@ exports.startClip = function(room)
 		{
 			var cloned = Object.assign({}, audio_options[i]);
 			cloned.channel = i;
+			cloned.amp *= globals.settings.storyAudioSettings.mul;
 			helpers.playSound(cloned);
 		}
 		else
