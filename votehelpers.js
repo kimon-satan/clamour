@@ -189,7 +189,8 @@ exports.startVote = function(msg)
 		v.num = num;
 		v.open = true;
 		v.die = options.die;
-		v.infinite = options.infinite;
+		v.infinite = options.inf;
+		if(options.bing != undefined)v.bing = options.bing;
 		v.voteid = helpers.generateTempId(20);
 
 		return globals.Votes.update({pos: pos},v);
@@ -706,16 +707,27 @@ var triggerVoteComplete = function(data)
 	}
 	else
 	{
-
-		helpers.sendSCMessage({
-				address: "/voteComplete", //pause audio in SC
-				args: ["id", String(data._id) + "_win_" + data.winnerIdx + "_7", "amp", globals.settings.votesAudioSettings.bingAmp]
-		});
+		if(globals.currentConcludedVote.bing)
+		{
+			helpers.sendSCMessage({
+					address: "/voteComplete", //pause audio in SC
+					args: ["id", String(data._id) + "_win_" + data.winnerIdx + "_7", "amp", globals.settings.votesAudioSettings.bingAmp]
+			});
+		}
 
 	}
 
 	var t = globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx];
-	globals.players.emit('cmd',{cmd: 'pause_vote', value: t});
+
+	if(globals.currentConcludedVote.bing)
+	{
+		//TODO make optional
+		globals.players.emit('cmd',{cmd: 'pause_vote', value: t});
+	}
+	else
+	{
+		globals.currentConcludedVote = null;
+	}
 
 	exports.getDisplaySlots()
 

@@ -83,6 +83,8 @@ exports.defaultVote = {
 	winnerIdx: -1,
 	die: false,
 	infinite: false,
+	force: false,
+	bing: true,
 	rig: undefined,
 	lock: false
 }

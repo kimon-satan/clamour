@@ -962,8 +962,12 @@ Interface = function(parent, callback, isDummy)
 		if(this.ellapsedTime > this.nextUpdate )
 		{
 			this.nextUpdate = this.ellapsedTime + 1;
-			this.parent.data.state_z = this.stateEnvelope.z;
-			this.parent.socket.emit('update_user', {_id: this.parent.data._id, state_z: this.parent.data.state_z}); //tell the server that we have changed mode
+
+			if(this.stateIndex > 0)
+			{
+				this.parent.data.state_z = this.stateEnvelope.z;
+				this.parent.socket.emit('update_user', {_id: this.parent.data._id, state_z: this.parent.data.state_z}); //tell the server that we have changed mode
+			}
 		}
 
 		if(this.ellapsedTime > this.nextGestureSwitch)
@@ -982,7 +986,6 @@ Interface = function(parent, callback, isDummy)
 					this.stateEnvelope.targetVal = this.parent.data.death;
 					this.parent.data.state_z = this.stateEnvelope.z;
 					this.transEnv.targetVal *= 1.0 - this.parent.data.death;
-					console.log(this.transEnv.targetVal);
 					this.parent.socket.emit('update_user', {_id: this.parent.data._id, state_z: this.parent.data.state_z, death: this.parent.data.death});
 				}
 
