@@ -22,15 +22,16 @@ VoteManager = function(parent)
 		this.context.textAlign = 'center';
 		this.context.textBaseline = 'middle'
 
-		var dims = {
-			x: innerWidth * 0.05,
-			y: innerHeight * 0.05,
-			w: innerWidth * 0.9,
-			h: innerHeight * 0.85
-		};
+
 
 		if(this.isPaused)
 		{
+			var dims = {
+				x: innerWidth * 0.05,
+				y: innerHeight * 0.05,
+				w: innerWidth * 0.9,
+				h: innerHeight * 0.85
+			};
 
 			this.context.fillStyle = '#FFFFFF';
 			this.context.font = "75pt Arial";
@@ -44,6 +45,12 @@ VoteManager = function(parent)
 		}
 		else if(this.isWaiting)
 		{
+			var dims = {
+				x: innerWidth * 0.05,
+				y: innerHeight * 0.05,
+				w: innerWidth * 0.9,
+				h: innerHeight * 0.6
+			};
 
 			this.context.fillStyle = '#FFFFFF';
 			this.context.font = "75pt Arial";
@@ -68,6 +75,43 @@ VoteManager = function(parent)
 
 			this.context.lineWidth=1;
 
+		}
+		else if(this.isFirstVote)
+		{
+			var dims = {
+				x: innerWidth * 0.05,
+				y: innerHeight * 0.05,
+				w: innerWidth * 0.9,
+				h: innerHeight * 0.85
+			};
+
+			this.context.fillStyle = '#FF0000';
+			this.context.font = "75pt Arial";
+
+			fitText(
+				'tap the screen to make your choice', //text to fit
+				dims, //rect
+				"Arial",
+				75,//starting font size
+				this.context //the canvas context
+			);
+
+			var d = Date.now();
+			if(!this.delta)
+			{
+				this.delta = d;
+			}
+			this.ellapsed = d - this.delta;
+			this.delta = d;
+			this.progress = Math.min(1.0, this.progress + this.ellapsed / 4000);
+
+			if(this.progress >= 1.0)
+			{
+				this.progress = 0;
+				this.ellapsed = 0;
+				this.delta = Date.now();
+				this.isFirstVote = false;
+			}
 		}
 		else
 		{
