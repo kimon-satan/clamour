@@ -34,6 +34,7 @@ var cmdList = [
 	"vman",
 	"vend",
 	"vadd",
+	"vdef",
 	"vclear",
 	"vcall",
 	"lvotes"

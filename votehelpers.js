@@ -2,15 +2,37 @@ var globals = require('./globals.js');
 var helpers = require('./helpers.js');
 var deepcopy = require('deepcopy');
 
+
+exports.getDefaults = function()
+{
+	//TODO
+	return {
+		pair: ["",""],
+		available: [[],[]],
+		scores: [0,0],
+		voting: [],
+		voted: [],
+		notvoted: 0,
+		population: 0,
+		num: 10,
+		room: "",
+		pos: "a0",
+		open: false,
+		winnerIdx: -1,
+		die: false,
+		infinite: false,
+		force: false,
+		pause: true,
+		rig: undefined,
+		lock: false
+	}
+}
+
 exports.listVotes = function()
 {
-	var p = globals.Votes.find({},{sort: {pos: 1}})
-	.catch((e)=>
-	{
-		console.log("caught u !");
-	});
+	return globals.Votes.find({},{sort: {pos: 1}})
 
-	p = p.then((docs)=>
+	.then((docs)=>
 	{
 		var r = "";
 		for(var i = 0; i < docs.length; i++)
@@ -31,9 +53,12 @@ exports.listVotes = function()
 
 		return Promise.resolve(r);
 
-	});
+	})
 
-	return p;
+	.catch((err)=>
+	{
+		console.log(err);
+	})
 
 }
 
@@ -116,11 +141,6 @@ exports.startVote = function(msg)
 	var response = "";
 	var options = helpers.parseOptions(msg.args);
 
-	var num = (options.num != undefined) ? options.num : 10;  // we need this for the helper
-
-	//TODO deal with override here - don't let override slot in progress
-	var pos = options.pos;
-
 	if(options.choice != undefined)
 	{
 		var pair = options.choice;
@@ -130,10 +150,9 @@ exports.startVote = function(msg)
 		var pair = options.c;
 	}
 
-	var winPair;
 	var vote;
 
-	if(pos == undefined)
+	if(options.pos == undefined)
 	{
 		return Promise.reject("pos not defined");
 	}
@@ -146,6 +165,7 @@ exports.startVote = function(msg)
 		return Promise.reject("choice incorrectly defined");
 	}
 
+	//TODO check pos is proper format
 
 	response = "choice: ";
 
@@ -154,15 +174,28 @@ exports.startVote = function(msg)
 		response += pair[i] + ", ";
 	}
 
-	winPair = [pair[0], pair[1]];
-
-	var p = globals.Votes.findOne({pos: pos});
+	//deal with override here - don't let override slot in progress
+	var p = globals.Votes.findOne({pos: options.pos},{open: 1, locked: 1, infinite: 1, force: 1, voteid: 1});
 
 	p = p.then((doc)=>{
 
 		if(doc.open || doc.locked)
 		{
-			return Promise.reject("open vote here")
+			if(doc.infinite || options.force)
+			{
+
+				return exports.concludeVote(doc, true) //supress bing flag
+
+				.then(_=>
+				{
+					return helpers.useRoom(msg)
+				})
+			}
+			else
+			{
+				return Promise.reject("open vote here")
+			}
+
 		}
 		else
 		{
@@ -180,25 +213,25 @@ exports.startVote = function(msg)
 	p = p.then((doc)=>
 	{
 		var v = deepcopy(globals.defaultVote);
-		v.pos = pos;
-		v.rig = options.rig;
+		v.pos = options.pos;
+		if(options.rig != undefined)v.rig = options.rig;
 		v.room = doc.room;
 		v.notvoted = doc.population;
 		v.population = doc.population.length;
 		v.pair = pair;
-		v.num = num;
+		if(options.num != undefined)v.num = options.num;
 		v.open = true;
-		v.die = options.die;
-		v.infinite = options.inf;
-		if(options.bing != undefined)v.bing = options.bing;
+		if(options.die != undefined)v.die = options.die;
+		if(options.inf != undefined)v.infinite = options.inf;
+		if(options.pause != undefined)v.pause = options.pause;
 		v.voteid = helpers.generateTempId(20);
 
-		return globals.Votes.update({pos: pos},v);
+		return globals.Votes.update({pos: options.pos},v);
 	});
 
 	p = p.then(_=>
 	{
-		return globals.Votes.findOne({pos: pos});
+		return globals.Votes.findOne({pos: options.pos});
 	})
 
 	if(globals.NO_SC)
@@ -244,7 +277,9 @@ exports.startVote = function(msg)
 
 	p.catch((reason)=>
 	{
-		console.log("Error - vnew " + reason) ;
+		var resp = "Error - vnew " + reason;
+		console.log(resp);
+		return Promise.reject(resp);
 	})
 
 	return p;
@@ -305,57 +340,57 @@ exports.sendVote = function(data, num)
 		p = p.then((docs)=>
 		{
 
-			let r = Math.max(num - docs.length, 0); // remainder
+			let deficit = Math.max(num - docs.length, 0); // remainder
 			let promises = [];
 
-			if(r > 0)
+			if(deficit > 0)
 			{
-				//console.log( r + " too few voters for the pool " , num, docs.length );
 
 				//we ran out of voters before the pool could be complete
 				//store and kill these on reset just to be safe
 				globals.procs[omsg.id + "_" + generateTempId(5)] = setTimeout(function()
 				{
 
-					var pp = globals.Votes.findOne({_id: data._id}); //findOne sends an error immediately for bad id input
+					globals.Votes.findOne({_id: data._id}) //findOne sends an error immediately for bad id input
 
-					pp.then((res)=>
+					.then((doc)=>
 					{
-						if(res) //otherwise the vote must have expired ... terminate the process
+						if(doc) //otherwise the vote must have expired ... terminate the process
 						{
-							if(res.notvoted.length > 0)
+							if(doc.notvoted.length > 0)
 							{
-								exports.sendVote(res,r);
+								exports.sendVote(doc, deficit); //try to start threads for the deficit
 							}
-							else if(res.open && globals.procs[omsg.id + "_concludeVote"] == undefined)
+							else if(doc.open && globals.procs[omsg.id + "_concludeVote"] == undefined)
 							{
 								globals.procs[omsg.id + "_concludeVote"] = setTimeout(function()
 								{
-									exports.concludeVote(res);
-								},10000);// 10 seconds delay for stragglers
+									exports.concludeVote(doc);
+								},8000);// 8 seconds delay for stragglers
 							}
 						}
 
-					});
-
-					pp.catch((err)=>{
-						console.log("Error: sendVote timeout - " + err);
 					})
 
+					.catch((err)=>{
+						console.log("Error: sendVote timeout - " + err);
+					})
 
 				},
 				500); // call the function again
 			}
 
-			for(var i = 0; i < num - r; i++)
+			num -= deficit;
+
+			while(num > 0 && docs.length > 0)
 			{
 
 				var idx = Math.floor(Math.random() * docs.length);
 				var player = docs[idx];
 				docs.splice(idx, 1);
-				if(helpers.validateId(player._id))
-				{
 
+				if(player.connected) //only send to connected players
+				{
 					globals.players.to(player._id).emit('cmd',{cmd: 'new_vote', value: omsg});
 
 					promises.push(
@@ -364,6 +399,42 @@ exports.sendVote = function(data, num)
 					promises.push(
 						globals.UserData.update({_id: player._id},{$set: {currentVoteId: omsg.id, currentVotePair: data.pair }})
 					);
+
+					num -= 1;
+				}
+				else
+				{
+					//otherwise transfer the player straight to the voted pool and try again
+					promises.push(
+						globals.Votes.update({_id: data._id}, {$push: {voted: player._id}, $pull: {notvoted: player._id}})
+					);
+
+					if(docs.length == 0)
+					{
+						globals.Votes.findOne({_id: data._id})
+
+						.then((doc)=>
+						{
+							if(doc.notvoted.length == 0)
+							{
+								if(doc.open && globals.procs[omsg.id + "_concludeVote"] == undefined)
+								{
+									globals.procs[omsg.id + "_concludeVote"] = setTimeout(function()
+									{
+										exports.concludeVote(doc);
+									},8000);// 8 seconds delay for stragglers
+								}
+							}
+							else
+							{
+								//setTimeout(function()
+								//{
+									exports.sendVote(doc, num); //try to start threads for the deficit
+								//},500);
+							}
+						})
+
+					}
 
 				}
 
@@ -406,7 +477,7 @@ exports.endVote = function(msg)
 	return p;
 }
 
-exports.concludeVote = function(data)
+exports.concludeVote = function(data, suppressBing)
 {
 
 	var p = globals.Votes.findOne(data._id).then((doc)=>
@@ -440,7 +511,7 @@ exports.concludeVote = function(data)
 	//3. update the vote as concluded with the winner
 	p = p.then(_=>
 	{
-		globals.procs[data._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete.bind(this,data),1500);
+		globals.procs[data._id + "_" + generateTempId(5)] = setTimeout(triggerVoteComplete.bind(this,data,suppressBing),1500);
 	});
 
 	p.catch((err)=>{
@@ -674,7 +745,7 @@ exports.getDisplaySlots = function()
 }
 
 
-var triggerVoteComplete = function(data)
+var triggerVoteComplete = function(data, suppressBing)
 {
 	//sends a message to SC and display with the winner
 
@@ -707,11 +778,18 @@ var triggerVoteComplete = function(data)
 	}
 	else
 	{
-		if(globals.currentConcludedVote.bing)
+		if(globals.currentConcludedVote.pause && !suppressBing)
 		{
 			helpers.sendSCMessage({
 					address: "/voteComplete", //pause audio in SC
 					args: ["id", String(data._id) + "_win_" + data.winnerIdx + "_7", "amp", globals.settings.votesAudioSettings.bingAmp]
+			});
+		}
+		else if (!globals.currentConcludedVote.pause && !suppressBing)
+		{
+			helpers.sendSCMessage({
+					address: "/playBing", //pause audio in SC
+					args: ["amp", globals.settings.votesAudioSettings.bingAmp]
 			});
 		}
 
@@ -719,9 +797,8 @@ var triggerVoteComplete = function(data)
 
 	var t = globals.currentConcludedVote.pair[globals.currentConcludedVote.winnerIdx];
 
-	if(globals.currentConcludedVote.bing)
+	if(globals.currentConcludedVote.pause && !suppressBing)
 	{
-		//TODO make optional
 		globals.players.emit('cmd',{cmd: 'pause_vote', value: t});
 	}
 	else

@@ -292,7 +292,7 @@ VoteManager.prototype.createTestVote = function(vote)
 				{
 					o = this.rig;
 				}
-				console.log("rig", o, this.rig);
+				//console.log("rig", o, this.rig);
 			}
 
 			this.parent.socket.emit('voted', {choice: o, id: this.parent.data.currentVoteId });

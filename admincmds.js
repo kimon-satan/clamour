@@ -327,6 +327,7 @@ exports.response = function(socket)
 			globals.display.emit("cmd", {type: "text", cmd: "change"});
 			globals.storyChapter = 0;
 			globals.storyClip = 0;
+			globals.defaultVote = votehelpers.getDefaults();
 
 			var keys = Object.keys(globals.procs);
 			for(var i = 0; i < keys.length; i++)
@@ -435,7 +436,7 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "vman")
 		{
-			votehelpers.startManual(msg)
+			votehelpers.startManual(msg) //TODO auto-conclude
 
 			.then((resp)=>
 			{
@@ -491,6 +492,22 @@ exports.response = function(socket)
 		{
 			votehelpers.reset();
 			globals.admin.emit('server_report', {id: msg.cli_id, msg: ""});
+		}
+		else if(msg.cmd == "vdef")
+		{
+			console.log(msg);
+			var options = helpers.parseOptions(msg.args);
+			console.log(options);
+			var k = Object.keys(options);
+			var resp = "";
+
+			for(var i = 0; i < k.length; i++)
+			{
+				resp += k[i] + ": " + options[k[i]] + ",";
+				globals.defaultVote[k[i]] = options[k[i]];
+			}
+
+			globals.admin.emit('server_report', {id: msg.cli_id, msg: resp});
 		}
 		else if(msg.cmd == "lvotes")
 		{

@@ -126,7 +126,6 @@ exports.response = function(socket)
 
 			if(msg.choice >= 0)
 			{
-
 				data.scores[msg.choice] += 1.0/data.population;
 
 				votehelpers.getDisplaySlots()

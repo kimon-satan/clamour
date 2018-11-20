@@ -4,6 +4,7 @@ http = require('http').Server(exports.app);
 io = require('socket.io')(http);
 var osc = require("osc");
 var deepcopy = require('deepcopy');
+var votehelpers = require('./votehelpers');
 
 exports.MONK = require('monk');
 exports.URL = 'localhost:27017/ConditionalLove';
@@ -68,26 +69,7 @@ exports.fontColours = [
 	"100,100,255"
 ];
 
-exports.defaultVote = {
-	pair: ["",""],
-	available: [[],[]],
-	scores: [0,0],
-	voting: [],
-	voted: [],
-	notvoted: 0,
-	population: 0,
-	num: 0,
-	room: "",
-	pos: "a0",
-	open: false,
-	winnerIdx: -1,
-	die: false,
-	infinite: false,
-	force: false,
-	bing: true,
-	rig: undefined,
-	lock: false
-}
+exports.defaultVote = votehelpers.getDefaults();
 
 var k = Object.keys(exports.LoveParameters);
 
