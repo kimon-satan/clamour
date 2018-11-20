@@ -10,25 +10,27 @@ VoteManager = function(parent)
 	this.pauseMessage = "";
 	this.parent.data.state = "waiting";
 	this.progress = 0.0;
+	this.counter = 0;
+	this.isFirstVote = true;
 
 
 	this.draw = function()
 	{
+		this.counter += 1;
 		this.context.fillStyle = "rgba(0,0,0,1.0)";
 		this.context.fillRect(0,0,innerWidth, innerHeight);
 		this.context.textAlign = 'center';
 		this.context.textBaseline = 'middle'
 
+		var dims = {
+			x: innerWidth * 0.05,
+			y: innerHeight * 0.05,
+			w: innerWidth * 0.9,
+			h: innerHeight * 0.85
+		};
 
 		if(this.isPaused)
 		{
-
-			var dims = {
-				x: innerWidth * 0.05,
-				y: innerHeight * 0.05,
-				w: innerWidth * 0.9,
-				h: innerHeight * 0.85
-			};
 
 			this.context.fillStyle = '#FFFFFF';
 			this.context.font = "75pt Arial";
@@ -46,7 +48,26 @@ VoteManager = function(parent)
 			this.context.fillStyle = '#FFFFFF';
 			this.context.font = "75pt Arial";
 
-			this.context.fillText('Waiting', this.canvas.width/2, this.canvas.height/2);
+			fitText(
+				'get ready to vote', //text to fit
+				dims, //rect
+				"Arial",
+				75,//starting font size
+				this.context //the canvas context
+			);
+
+
+			this.context.strokeStyle = '#AAAAAA';
+			this.context.lineWidth=8;
+			this.context.beginPath();
+
+			var a = 2 * Math.PI * (this.counter%60)/60;
+			this.context.arc(innerWidth/2,innerHeight * 0.8,innerWidth * 0.1,
+				a , a + Math.PI);
+			this.context.stroke();
+
+			this.context.lineWidth=1;
+
 		}
 		else
 		{
