@@ -56,7 +56,8 @@ Interface = function(parent, callback, isDummy)
 				undefined,
 				undefined,
 				undefined,
-				undefined]
+				undefined],
+				instruction: "stroke_down",
 			}
 		],
 		1:[
@@ -355,6 +356,15 @@ Interface = function(parent, callback, isDummy)
 		this.stateEnvelope.z = state_z;
 		this.parent.data.state_z = state_z;
 		this.updateState(this.stateEnvelope.z);
+
+		if(this.parent.data.state == 0)
+		{
+			this.graphics.displayInstruction("volume");
+			window.setTimeout(function()
+			{
+				this.graphics.hideInstruction()
+			}.bind(this),2000);
+		}
 
 	}
 
@@ -848,10 +858,12 @@ Interface = function(parent, callback, isDummy)
 		}
 		else
 		{
+
 			var cz = 0;
 
 			if(this.reactionMaps[this.stateIndex] != undefined)
 			{
+
 				for(i in this.reactionMaps[this.stateIndex])
 				{
 					var rm = this.reactionMaps[this.stateIndex][i];
