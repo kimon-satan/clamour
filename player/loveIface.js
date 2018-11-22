@@ -359,11 +359,14 @@ Interface = function(parent, callback, isDummy)
 
 		if(this.parent.data.state == 0)
 		{
-			this.graphics.displayInstruction("volume");
-			window.setTimeout(function()
+			if(!this.isDummy)
 			{
-				this.graphics.hideInstruction()
-			}.bind(this),2000);
+				this.graphics.displayInstruction("volume");
+				window.setTimeout(function()
+				{
+					this.graphics.hideInstruction()
+				}.bind(this),2000);
+			}
 		}
 
 	}
