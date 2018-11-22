@@ -366,11 +366,12 @@ Player = function(isDummy)
 				$('#container').empty();
 				$('#container').append( "<div id='chatContainer'> \
 				<h1>Clamour</h1> \
-				<h2>The performance will begin shortly ...</h2>\
-				<h2>but whilst you're waiting ...</h2>\
-					<h3>Put your volume on full</h3> \
-					<h3>Turn silent OFF!</h3> \
-					<h3>Turn autolock OFF!</h3> \
+				<h2>The performance will begin shortly\
+				but whilst you're waiting ...</h2>\
+					<h3>Turn OFF silent mode</h3> \
+					<h3>Put your volume up</h3> \
+					<h3>Disable notifications</h3> \
+					<h3>Disable automatic screen locking</h3> \
 					<h3>Keep your phone in portrait position</h3> \
 				</div>" );
 			}

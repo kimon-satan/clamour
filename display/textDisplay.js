@@ -36,8 +36,9 @@ var TextDisplay = function(canvas)
 		//ctx.fillRect(0,0,innerWidth,innerHeight);
 		fitText("Clamour - Instructions", {x: innerWidth/4, y: 0, w: innerWidth/2, h: innerHeight/4}, "Arial", 50, ctx, "center");
 		fitText("1. Take out your phone", {x: innerWidth/4, y: innerHeight/4, w: innerWidth/2, h: innerHeight/8}, "Arial", 30, ctx, "center");
-		fitText("2. Open a browser", {x: innerWidth/4, y: innerHeight * 3/8, w: innerWidth/2, h: innerHeight/8}, "Arial", 30, ctx, "center");
-		fitText("3. Go to http://clamour.info", {x: innerWidth/4, y: innerHeight/2, w: innerWidth/2, h: innerHeight/8}, "Arial", 30, ctx, "center");
+		fitText("2. Join the network - RHWifi", {x: innerWidth/4, y: innerHeight * 5/16, w: innerWidth/2, h: innerHeight/8}, "Arial", 30, ctx, "center");
+		fitText("3. Open a browser (chrome, safari)", {x: innerWidth/4, y: innerHeight * 3/8, w: innerWidth/2, h: innerHeight/8}, "Arial", 30, ctx, "center");
+		fitText("4. Go to http://clamour.info", {x: innerWidth/4, y: innerHeight * 7/16, w: innerWidth/2, h: innerHeight/8}, "Arial", 30, ctx, "center");
 
 		fitText("Ask the assistants for help", {x: innerWidth/4, y: innerHeight * 6/8, w: innerWidth/2, h: innerHeight/8}, "Arial", 25, ctx, "center");
 
