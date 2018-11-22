@@ -3,7 +3,7 @@
 		[
 			{},
 			{
-				"audio": {"path" : "chapter1/1_Opening_Synths_1", "loop": "false", "in" : 0.0, "out" : 10.0, "amp" : 0.5, "solo": "false", "dur": 214},
+				"audio": {"path" : "chapter1/1_Opening_Synths_1", "loop": "false", "in" : 0.0, "out" : 10.0, "amp" : 0.4, "solo": "false", "dur": 214},
 				"texts" : []
 			}
 		]
@@ -12,7 +12,7 @@
 		[
 			{
 			"audio": {},
-			"audio1": {"path" : "chapter1/2_Waves", "loop": "true", "in" : 5.0, "out" : 15.0, "amp" : 0.5, "solo": "true", "dur": 92},
+			"audio1": {"path" : "chapter1/2_Waves", "loop": "true", "in" : 5.0, "out" : 15.0, "amp" : 0.4, "solo": "true", "dur": 92},
 			"img": "chapter1/1-waves-1-gloomier.jpg",
 			"isFade": "true",
 			"texts": [
@@ -22,7 +22,7 @@
 			},
 
 			{
-				"audio": {"path": "chapter1/3_Opening_Synths_2" , "loop": "false", "in" : 0.0, "out" : 15.0, "amp" : 0.5, "solo": "false", "dur": 180},
+				"audio": {"path": "chapter1/3_Opening_Synths_2" , "loop": "false", "in" : 0.0, "out" : 15.0, "amp" : 0.4, "solo": "false", "dur": 180},
 				"audio1":{},
 				"img": "chapter1/2-Roughs-Arial-1.jpg",
 				"isFade": "true",
