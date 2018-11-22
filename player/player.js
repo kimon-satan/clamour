@@ -315,6 +315,10 @@ Player = function(isDummy)
 				//resume graphics
 				this.iface.graphics.resume();
 				this.iface.render();
+				if(this.data.state == 0)
+				{
+					this.iface.volumeReminder();
+				}
 			}
 
 			if(mode == "broken")

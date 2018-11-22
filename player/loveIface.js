@@ -1,4 +1,6 @@
 
+
+
 Interface = function(parent, callback, isDummy)
 {
 
@@ -357,18 +359,17 @@ Interface = function(parent, callback, isDummy)
 		this.parent.data.state_z = state_z;
 		this.updateState(this.stateEnvelope.z);
 
-		if(this.parent.data.state == 0)
-		{
-			if(!this.isDummy)
-			{
-				this.graphics.displayInstruction("volume");
-				window.setTimeout(function()
-				{
-					this.graphics.hideInstruction()
-				}.bind(this),2000);
-			}
-		}
 
+
+	}
+
+	this.volumeReminder = function()
+	{
+		this.graphics.displayInstruction("volume");
+		window.setTimeout(function()
+		{
+			this.graphics.hideInstruction()
+		}.bind(this),2000);
 	}
 
 	this.gestureStart = function ()
