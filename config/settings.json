@@ -21,8 +21,8 @@
 	},
 	"votesAudioSettings":
 	{
-		"voteAmp": 0.2,
-		"concludeAmp": 0.5,
-		"bingAmp": 0.5
+		"voteAmp": 0.4,
+		"concludeAmp": 0.7,
+		"bingAmp": 0.7
 	}
 }
