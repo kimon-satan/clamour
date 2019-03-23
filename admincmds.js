@@ -280,7 +280,28 @@ exports.response = function(socket)
 			helpers.useRoom(msg)
 			.then((rm)=>
 			{
-				globals.players.to(rm.room).emit('cmd', {cmd: 'set_params', value: options});
+				if(options.interval != undefined)
+				{
+					var k = helpers.generateTempId(20);
+					
+					globals.procs[k] =
+					setInterval(function(pop, key)
+					{
+						var p = pop.pop();
+						globals.players.to(p).emit('cmd', {cmd: 'set_params', value: options});
+
+						if(pop.length == 0)
+						{
+							clearInterval(globals.procs[k]);
+						}
+					}, options.interval * 1000, rm.population, k);
+
+				}
+				else
+				{
+					globals.players.to(rm.room).emit('cmd', {cmd: 'set_params', value: options});
+				}
+
 
 				//update the disconnected players too
 				globals.UserData.update({connected: false},{$set: options});
