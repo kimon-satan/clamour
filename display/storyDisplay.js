@@ -1,4 +1,4 @@
-var StoryDisplay = function(imagepath, story, canvas)
+var StoryDisplay = function(imagepath, story, canvas, xoff,yoff,scale)
 {
 
 	this.isActive = false;
@@ -7,6 +7,9 @@ var StoryDisplay = function(imagepath, story, canvas)
 	this.currentImageAlpha = 0.0;
 	this.oldImageFadeAlpha = 0.0;
 	this.isBlack = false;
+	this.xoff = xoff * window.innerWidth;
+	this.yoff = yoff * window.innerHeight;
+	this.scale = scale;
 
 	var ctx = canvas.getContext("2d");
 	var images = {};
@@ -117,8 +120,12 @@ var StoryDisplay = function(imagepath, story, canvas)
 
 		var incr = 0.0075;
 
+		ctx.setTransform();
 		ctx.fillStyle = "rgba(0,0,0,1.0)";
 		ctx.fillRect(0,0,innerWidth,innerHeight);
+
+		ctx.translate(this.xoff, this.yoff);
+		ctx.scale(this.scale, this.scale);
 
 		if(this.oldImage)
 		{

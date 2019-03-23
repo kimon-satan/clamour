@@ -273,6 +273,16 @@ Player = function(isDummy)
 				this.iface.setEnvTime(resp.envTime);
 			}
 
+			if(resp.splatAtt != undefined)
+			{
+				this.iface.setSplatAttack(resp.splatAtt);
+			}
+
+			if(resp.transformProb != undefined)
+			{
+				this.data.transformProb = resp.transformProb;
+			}
+
 			if(resp.isMobile != undefined)
 			{
 				this.iface.setIsMobile(resp.isMobile);

@@ -273,7 +273,10 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "set")
 		{
+
+			//TODO handle random values ?
 			var options = helpers.parseOptions(msg.args);
+
 			helpers.useRoom(msg)
 			.then((rm)=>
 			{
@@ -733,7 +736,9 @@ function listPlayers(args, room, cb)
 				str += ", isMobile: " + e.isMobile;
 				str += ", isDying: " + e.isDying;
 				str += ", death: " + Math.round(e.death * 100)/100;
-				str += ", envTime: " + e.envTime;
+				str += ", envTime: " + Math.round(e.envTime);
+				str += ", splatAtt: " + Math.round(e.splatAtt*100)/100;
+				str += ", transformProb: " + Math.round(e.transformProb*100)/100;
 			}
 			else if(e.mode == "vote")
 			{

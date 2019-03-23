@@ -46,7 +46,7 @@ function FadeObj()
 	}
 }
 
-function VoteDisplay(canvas)
+function VoteDisplay(canvas,xoff,yoff,scale)
 {
 
 	this.slotHeight = innerHeight * 0.75/4;
@@ -54,7 +54,9 @@ function VoteDisplay(canvas)
 	this.colsAlign = ["center", "center"];
 	this.isActive = false;
 
-
+	this.xoff = xoff * innerWidth;
+	this.yoff = yoff * innerHeight;
+	this.scale = scale;
 
 	var reset = function()
 	{
@@ -303,9 +305,12 @@ function VoteDisplay(canvas)
 	this.draw = function()
 	{
 
-		//clear the background
+		ctx.setTransform();
 		ctx.fillStyle = "rgba(0,0,0,1.0)";
 		ctx.fillRect(0,0,innerWidth,innerHeight);
+
+		ctx.translate(this.xoff, this.yoff);
+		ctx.scale(this.scale, this.scale);
 
 		if(this.isBlack)
 		{

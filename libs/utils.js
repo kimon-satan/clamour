@@ -136,6 +136,31 @@ LineEnv = function(dur, min, max){
 
 }
 
+/* ---------------------------------------LINEAR STEPPER ? ----------------------------------*/
+
+LinStep = function(incr)
+{
+	//moves from to targetVal in numSteps
+	this.z = 0;
+	this.targetVal = 1;
+	this.incr = 0.001; //1000 steps
+
+	this.step = function()
+	{
+		this.z += this.incr;
+
+		if(this.incr > 0)
+		{
+			this.z = Math.min(this.targetVal,this.z);
+		}
+		else
+		{
+			this.z = Math.max(this.targetVal,this.z);
+		}
+	}
+
+}
+
 /*------------------------------------------------ONE POLE -----------------------------------*/
 
 //for enveloping

@@ -26,11 +26,6 @@ $('document').ready(function()
 
 	displays = {};
 
-
-
-
-
-
 })
 
 socket.on('hello', function(msg)
@@ -38,9 +33,10 @@ socket.on('hello', function(msg)
 	console.log(msg);
 
 	settings = msg.settings;
-	displays.text = new TextDisplay(simple_canvas);
-	displays.vote = new VoteDisplay(simple_canvas);
-	displays.love = new LoveDisplay(socket, threejs_canvas, settings.loveDisplaySettings);
+
+	displays.text = new TextDisplay(simple_canvas, settings.displaySettings.xoff, settings.displaySettings.yoff, settings.displaySettings.scale);
+	displays.vote = new VoteDisplay(simple_canvas, settings.displaySettings.xoff, settings.displaySettings.yoff, settings.displaySettings.scale);
+	displays.love = new LoveDisplay(socket, threejs_canvas, settings.loveDisplaySettings, settings.displaySettings.xoff, settings.displaySettings.yoff, settings.displaySettings.scale);
 
 	changeDisplay(msg.state.mode);
 
@@ -54,7 +50,7 @@ socket.on('hello', function(msg)
 
 	.then((doc)=>
 	{
-		displays.story = new StoryDisplay(settings.imagePath, doc, simple_canvas);
+		displays.story = new StoryDisplay(settings.imagePath, doc, simple_canvas, settings.displaySettings.xoff, settings.displaySettings.yoff, settings.displaySettings.scale);
 	})
 
 })

@@ -1,7 +1,12 @@
-var LoveDisplay = function(socket, canvas, _settings)
+var LoveDisplay = function(socket, canvas, _settings, xoff,yoff,scale)
 {
+	this.xoff = xoff * window.innerWidth;
+	this.yoff = yoff * window.innerHeight;
+	this.scale = scale;
 	this.renderer = new THREE.WebGLRenderer({canvas: canvas});
-	this.renderer.setSize( window.innerWidth, window.innerHeight );
+	this.renderer.setSize( window.innerWidth * this.scale, window.innerHeight * this.scale);
+	$('#threejs_display').css('top', this.yoff);
+	$('#threejs_display').css('left', this.xoff);
 	this.canvas = this.renderer.domElement;
 	this.isActive = false;
 	this.settings = _settings;
@@ -110,24 +115,23 @@ var LoveDisplay = function(socket, canvas, _settings)
 	this.splat = function(msg)
 	{
 		this.splatManager.addSplat(msg.val);
-		if(msg.val.state >= 4 && msg.val.state_z > 0.9) // TODO utilmately make these flexible
+
+		var transform = (msg.val.state >= 4 && msg.val.state_z > 0.95) || this.splatManager.getEnergy(msg.val._id) >= 0.9;
+		//TODO manual threshold
+		if(transform || Math.random() < msg.val.transformProb)
 		{
-			if(this.splatManager.getEnergy(msg.val._id) >= 0.9)
+			var pos = new THREE.Vector2().copy(this.splatManager.playerInfo[msg.val._id].center);
+			let blob = this.blobManager.addBlob(pos, msg.val);
+			blob.updateState(msg.val.state_z);
+			blob.updateUniforms();
+
+			this.splatManager.transform(msg.val._id, function()
 			{
-
-				var pos = new THREE.Vector2().copy(this.splatManager.playerInfo[msg.val._id].center);
-				let blob = this.blobManager.addBlob(pos, msg.val);
-				blob.updateState(msg.val.state_z);
-				blob.updateUniforms();
-
-				this.splatManager.transform(msg.val._id, function()
-				{
-					this.branchManager.newBranch(blob);
-					this.scene.add(blob.mesh);
-				}.bind(this));
-
-			}
+				this.branchManager.newBranch(blob);
+				this.scene.add(blob.mesh);
+			}.bind(this));
 		}
+
 	}
 
 	this.transform = function(msg)
@@ -171,6 +175,9 @@ var LoveDisplay = function(socket, canvas, _settings)
 
 	this.draw = function()
 	{
+
+		//TODO transform
+
 		var n_et = (new Date().getTime() - this.startTime) * 0.001;
 		this.accumulator += (n_et - this.ellapsedTime);
 		this.ellapsedTime = n_et;

@@ -1,9 +1,12 @@
-var TextDisplay = function(canvas)
+var TextDisplay = function(canvas,xoff,yoff,scale)
 {
 	this.isActive = false;
 	this.isBlack = false;
 	var ctx = canvas.getContext("2d");
 	this.alpha = 0;
+	this.xoff = xoff * innerWidth;
+	this.yoff = yoff * innerHeight;
+	this.scale = scale;
 
 	this.cmd = function(msg)
 	{
@@ -19,8 +22,12 @@ var TextDisplay = function(canvas)
 
 	this.draw = function()
 	{
+		ctx.setTransform();
 		ctx.fillStyle = "rgba(0,0,0,1.0)";
 		ctx.fillRect(0,0,innerWidth,innerHeight);
+
+		ctx.translate(this.xoff, this.yoff);
+		ctx.scale(this.scale, this.scale);
 
 		if(this.isBlack)
 		{

@@ -311,6 +311,11 @@ function newUser(socket)
 	usrobj.voiceNum = Math.floor(Math.random() * 8);
 	usrobj.voicePan = -1 + Math.random() * 2;
 	usrobj.voicePitch = 0.75 + Math.random() * 0.5;
+	var o = globals.settings.lovePlayerSettings.envTime;
+	usrobj.envTime = o.min + Math.random() * (o.max - o.min);
+
+	var o = globals.settings.lovePlayerSettings.splatAtt;
+	usrobj.splatAtt = o.min + Math.random() * (o.max - o.min);
 
 	//TODO this would work better with 15 * 15 and indexed permutations (guaranteed difference)
 	usrobj.font = globals.fonts[Math.floor(Math.random() * globals.fonts.length)];

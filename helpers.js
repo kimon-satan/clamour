@@ -442,10 +442,10 @@ exports.parseOptions = function(args, cb)
 					}
 
 				}
-				else if(args[i][1].match(/\([^,],[^,]\)/)) //only two args
+				else if(args[i][1].match(/\([^,]*,[^,]*\)/)) //only two args
 				{
 					//repackage as an object
-					var str = args[i][1].match(/\((\d),(\d)\)/);
+					var str = args[i][1].match(/\((\d*),(\d*)\)/);
 					options[args[i][0]] = {min: parseFloat(str[1]), max: parseFloat(str[2])};
 				}
 				else

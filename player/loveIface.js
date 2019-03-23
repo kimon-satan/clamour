@@ -188,15 +188,16 @@ Interface = function(parent, callback, isDummy)
 
 		}
 
-		this.envTime = 8;
+		this.envTime = 20;
+		this.splatAttack = 2.0;
 
-		this.stateEnvelope = new Envelope(this.envTime, 60);
+		this.stateEnvelope = new LinStep(1/(60*this.envTime));
 		this.stateEnvelope.targetVal = 1.0;
 		this.stateIndex = this.parent.data.stateIndex;
 		this.maxState = this.parent.data.maxState;
 		this.changingState = true;
 
-		this.excitementEnv = new Envelope2(1.75, 25, 60);
+		this.excitementEnv = new Envelope2(this.splatAttack, 25, 60);
 		this.excitementEnv.targetVal = 1.0;
 		this.isExcitable = false;
 		this.showGrid = false;
@@ -352,6 +353,7 @@ Interface = function(parent, callback, isDummy)
 		this.changeState(this.parent.data.state); //changes state z
 		this.setEnvTime(this.parent.data.envTime);
 		this.setIsSplat(this.parent.data.isSplat); //might cause a loop !?
+		this.setSplatAttack(this.parent.data.splatAtt);
 		this.setMaxState(this.parent.data.maxState);
 		this.setIsMobile(this.parent.data.isMobile);
 		this.setIsDying(this.parent.data.isDying); //changes state z
@@ -744,7 +746,8 @@ Interface = function(parent, callback, isDummy)
 							splatPan: this.splatPan ,
 							splatRate: this.splatRate,
 							splatFreq: this.splatFreq,
-							state_z: this.stateEnvelope.z
+							state_z: this.stateEnvelope.z,
+							transformProb: this.parent.data.transformProb
 						};
 
 						Object.keys(this.parent.data).forEach(function(k, idx, array){
@@ -776,7 +779,7 @@ Interface = function(parent, callback, isDummy)
 
 			this.stateEnvelope.step();
 
-			if(this.stateEnvelope.z < 0.99)
+			if(this.stateEnvelope.z < this.stateEnvelope.targetVal)
 			{
 				if(!this.isDummy)this.graphics.updateState(this.stateEnvelope.z);
 			}
@@ -891,6 +894,12 @@ Interface = function(parent, callback, isDummy)
 		this.isExcitable = b;
 	}
 
+	this.setSplatAttack = function(f)
+	{
+		this.splatAttack = f;
+		this.excitementEnv.setAttDel(f,this.excitementEnv.decTime);
+	}
+
 	this.setIsMobile = function(b)
 	{
 
@@ -957,7 +966,7 @@ Interface = function(parent, callback, isDummy)
 	this.setEnvTime = function(et)
 	{
 		this.envTime = et;
-		this.stateEnvelope.setTime(et);
+		this.stateEnvelope.incr = 1/(60 * et);
 
 	}
 
