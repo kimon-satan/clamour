@@ -24,10 +24,12 @@ exports.response = function(socket)
 
 				if(options.chapter)
 				{
+					storyhelpers.clear(msg);
 					storyhelpers.goto(msg);
 				}
 				else
 				{
+					storyhelpers.clear(msg);
 					storyhelpers.startClip();
 				}
 
@@ -82,7 +84,7 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "story_clear")
 		{
-			storyhelpers.clear();
+			storyhelpers.clear(msg);
 		}
 		else if(msg.cmd == "story_update")
 		{
@@ -109,6 +111,7 @@ exports.response = function(socket)
 		}
 		else if (msg.cmd == "sgoto")
 		{
+			storyhelpers.clear();
 			storyhelpers.goto(msg);
 		}
 		else if(msg.cmd == "lplayers")
@@ -283,7 +286,7 @@ exports.response = function(socket)
 				if(options.interval != undefined)
 				{
 					var k = helpers.generateTempId(20);
-					
+
 					globals.procs[k] =
 					setInterval(function(pop, key)
 					{
@@ -519,9 +522,7 @@ exports.response = function(socket)
 		}
 		else if(msg.cmd == "vdef")
 		{
-			console.log(msg);
 			var options = helpers.parseOptions(msg.args);
-			console.log(options);
 			var k = Object.keys(options);
 			var resp = "";
 

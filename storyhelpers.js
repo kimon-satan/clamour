@@ -128,12 +128,6 @@ exports.startClip = function(room)
 		}
 	}
 
-	//TODO - only a new line if text has been typed.
-	if(room != undefined)
-	{
-		globals.players.to(room).emit('cmd', {cmd: 'chat_newline'});
-	}
-
 	globals.storyCurrText = [""];
 	globals.storyNumChars = 0;
 
@@ -142,7 +136,16 @@ exports.startClip = function(room)
 exports.clear = function(msg)
 {
 	var txts = globals.story[globals.storyChapter].clips[globals.storyClip].texts;
-	if(txts.length > 1 && globals.storyRooms.length > 1)
+
+	if(msg == undefined)
+	{
+		//this shouldn't happen now
+	}
+	else if (txts == undefined)
+	{
+		globals.players.to(msg.room).emit('cmd', {cmd: 'chat_clear'});
+	}
+	else if(txts.length > 1 && globals.storyRooms.length > 1)
 	{
 		//send the clear to room 0
 		globals.storyCurrText.push("");
@@ -181,8 +184,6 @@ exports.update = function(msg)
 			globals.players.to(globals.storyRooms[0]).emit('cmd', {cmd: 'chat_update', value: msg.value});
 
 			globals.storyCurrText[globals.storyCurrText.length - 1] = msg.value;
-
-
 
 			//count the characters of that line
 			var num_chars = globals.storyCurrText[globals.storyCurrText.length - 1].length;
@@ -287,6 +288,7 @@ exports.reset = function(msg)
 	globals.storyChapter = 0;
 	globals.storyClip = 0;
 	exports.startClip(msg.room);
+	exports.clear(msg);
 	globals.admin.emit('server_report', {id: msg.cli_id});
 }
 

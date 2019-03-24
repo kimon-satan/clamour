@@ -63,8 +63,10 @@ ChatManager = function(parent)
 
 	this.initCanvas = function()
 	{
+		this.clear();
 		this.canvas = $('#chatCanvas')[0];
 		this.context = this.canvas.getContext("2d");
+
 		this.draw();
 	}
 }
