@@ -444,3 +444,86 @@ fitText = function(text, dims, font, fontSize, context, align)
 	}
 
 }
+
+wrapText = function(text, dims, font, fontSize, context, align)
+{
+	//wraps text according to a width
+	//returns final text position
+
+	//dims = {x: y: w: h:}
+
+	context.font = fontSize + "pt " + font;
+	var words = text.split(' ');
+	//text wrapping
+	var line = words[0];
+	var lines = [];
+	var numWords = 1;
+
+	while(words.length > 1)
+	{
+		var testLine = line + ' ' + words[1];
+		var metrics = context.measureText(testLine);
+		if (metrics.width > dims.w * 0.95)
+		{
+			lines.push(line); //add whatever we had before
+			line = words[1];
+			numWords = 1;
+		}
+		else
+		{
+			line = testLine;
+			numWords++;
+		}
+		words.splice(0,1);
+		if(words.length == 1)
+		{
+			lines.push(line);
+			words.splice(0,1);
+		}
+	}
+
+	if(lines.length == 0) //there was only one word
+	{
+		lines.push(words[0]);
+	}
+
+
+	var vSpace = fontSize * 1.5;
+	var vTotal = vSpace * lines.length;
+
+	//calculate starting y
+	var vStart = dims.y + vSpace;
+
+	//iterate and draw text
+	var offset = 0;
+	if(align == undefined || align == "center")
+	{
+		context.textAlign = "center";
+		offset = dims.w/2;
+	}
+	else if(align == "left")
+	{
+		context.textAlign = "left";
+		offset = 0;
+	}
+	else if(align == "right")
+	{
+		context.textAlign = "right";
+		offset = dims.w;
+	}
+
+	dims.y = vStart;
+	var x = dims.x;
+
+	for(var i = 0; i < lines.length; i++)
+	{
+		context.fillText(lines[i], dims.x + offset, vStart + i * vSpace);
+		dims.y = vStart + i * vSpace;
+		x = dims.x + offset + context.measureText(lines[i]).width;
+	}
+
+	dims.x = x;
+	return dims;
+
+
+}

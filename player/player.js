@@ -16,6 +16,7 @@ Player = function(isDummy)
 	this.mode = "";
 	this.iface = undefined;
 	this.voteManager = new VoteManager(this);
+	this.chatManager = new ChatManager(this);
 
 	this.killMe = function()
 	{
@@ -152,14 +153,17 @@ Player = function(isDummy)
 			{
 				$('#chatContainer>div.largeText:last-child').remove();
 				$('#chatContainer').append( '<div class="largeText">' + msg.value +'</div>' );
+				this.chatManager.update(msg.value);
 			}
 			else if(msg.cmd == 'chat_newline')
 			{
 				$('#chatContainer').append( '<div class="largeText"> </div>' );
+				this.chatManager.newLine(msg.value);
 			}
 			else if(msg.cmd == 'chat_clear')
 			{
 				$('#chatContainer').empty();
+				this.chatManager.clear();
 			}
 			else if(msg.cmd == 'set_params')
 			{
@@ -354,7 +358,10 @@ Player = function(isDummy)
 			if(mode == "chat" || mode == "story")
 			{
 				$('#container').empty();
-				$('#container').append( '<div id="chatContainer"></div>' );
+				$('#container').append( '<canvas id="chatCanvas"></canvas>' );
+				$('#chatCanvas').attr('width', window.innerWidth);
+				$('#chatCanvas').attr('height', window.innerHeight);
+				this.chatManager.initCanvas();
 			}
 
 			if(mode == "vote")

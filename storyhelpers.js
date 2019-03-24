@@ -128,8 +128,11 @@ exports.startClip = function(room)
 		}
 	}
 
-	//NB. at some point we might need the option not to clear the screen
-	if(room != undefined)globals.players.to(room).emit('cmd', {cmd: 'chat_clear'});
+	//TODO - only a new line if text has been typed.
+	if(room != undefined)
+	{
+		globals.players.to(room).emit('cmd', {cmd: 'chat_newline'});
+	}
 
 	globals.storyCurrText = [""];
 	globals.storyNumChars = 0;
