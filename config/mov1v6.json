@@ -125,7 +125,7 @@
 			{
 				"isFade": "true",
 				"audio": {"path" : "chapter3/10_Ch3_A", "loop": "false", "in" : 0.0, "out" : 10.0, "amp" : 0.6, "solo": "false"},
-				"img": "chapter3/12-Doggerland-CGI-1.jpg",
+				"img": "chapter3/12-arial.jpg",
 				"texts":
 				[
 					"Separated from Mainland by vast swathes of water..."
@@ -134,7 +134,7 @@
 			{
 				"audio": {},
 				"audio1": {"path" : "chapter3/11_Ch3_B", "loop": "false", "in" : 0.0, "out" : 10.0, "amp" : 0.6, "solo": "false"},
-				"img": "chapter3/13-Doggerland-CGI-3-rev.jpg",
+				"img": "chapter3/13-fertile.jpg",
 				"texts":
 				[
 					"Sealand was once rich and fertile"
@@ -143,7 +143,7 @@
 			{
 				"audio": {},
 				"audio1": {},
-				"img": "chapter3/14-Doggerland-CGI-4.jpg",
+				"img": "chapter3/14-technology.jpg",
 				"texts":
 				[
 					"Technologically and culturally advanced"
@@ -152,7 +152,7 @@
 			{
 				"audio": {},
 				"audio1": {},
-				"img": "chapter3/15-Doggerland-CGI-5.jpg",
+				"img": "chapter3/15-democracy.jpg",
 				"texts":
 				[
 					"We built a just and equal society,",
@@ -162,7 +162,7 @@
 			{
 				"audio": {},
 				"audio1": {},
-				"img": "chapter3/16-Doggerland-CGI-2.jpg",
+				"img": "chapter3/16-sunset.jpg",
 				"texts":
 				[
 					"Which we believed could spread far and wide.",
@@ -216,7 +216,7 @@
 			{
 				"audio": {"path" : "chapter4/15_Boardroom", "loop": "false", "in" : 0.0, "out" : 0.5, "amp" : 0.7, "solo": "true"},
 				"audio1": {},
-				"img": "chapter4/22-boardroom.jpg",
+				"img": "chapter4/22-elders.jpg",
 				"texts":
 				[
 					"Our elders gathered together,",
@@ -269,7 +269,7 @@
 			},
 			{
 				"audio": {"path" : "chapter5/20_Ch6", "loop": "false", "in" : 0.0, "out" : 15.0, "amp" : 0.5, "solo": "false"},
-				"img": "chapter5/27-Shadowy-figures-1.jpg",
+				"img": "chapter5/27-protest_a.jpg",
 				"texts":
 				[
 					"As we progressed, mistrust developed between us,",
@@ -278,7 +278,7 @@
 			},
 			{
 				"audio": {},
-				"img": "chapter5/28-Pitchforks-orig.jpg",
+				"img": "chapter5/28-dissent_a.jpg",
 				"texts":
 				[
 					"Dissent spread far and wide,"
@@ -286,7 +286,7 @@
 			},
 			{
 				"audio": {},
-				"img": "chapter5/29-Medieval-weapons.jpg",
+				"img": "chapter5/29-conflict_a.jpg",
 				"texts":
 				[
 					"And open conflict ensued,"
@@ -294,7 +294,7 @@
 			},
 			{
 				"audio": {},
-				"img": "chapter5/30-militias4.jpg",
+				"img": "chapter5/30-sluice.jpg",
 				"texts":
 				[
 					"Rebels conspired to re-flood our newly created land."
@@ -302,7 +302,7 @@
 			},
 			{
 				"audio": {},
-				"img": "chapter5/31-Apocalypse-1.jpg",
+				"img": "chapter5/31-flooding.jpg",
 				"texts":
 				[
 					"But their sabotage had severe repercussions,",
@@ -311,7 +311,7 @@
 			},
 			{
 				"audio": {},
-				"img": "chapter5/32-Apocalypse-2.jpg",
+				"img": "chapter5/32-waves2.jpg",
 				"texts":
 				[
 					"Resulting in total destruction."
@@ -319,7 +319,7 @@
 			},
 			{
 				"audio": {},
-				"img": "chapter5/33-Apocalypse-3.jpg",
+				"img": "chapter5/33-drowned.jpg",
 				"texts":
 				[
 					"Soon all the lands were drowned."

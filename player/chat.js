@@ -14,10 +14,7 @@ ChatManager = function(parent)
 	{
 		this.currentChat.push("");
 
-		if(this.currentChat.length > 6)
-		{
-			this.currentChat.shift();
-		}
+
 	}
 
 	this.update = function(text)
@@ -55,6 +52,11 @@ ChatManager = function(parent)
 		);
 
 		this.counter++;
+
+		if(voff > window.innerHeight * 0.9)
+		{
+			this.currentChat.shift();
+		}
 
 		requestAnimationFrame(this.draw);
 

@@ -50,6 +50,8 @@ exports.load = function(cb)
 
 	//load the story object
 
+	console.log(globals.settings.storyPath);
+
 	fs.readFile(globals.settings.storyPath, 'utf8', function (err, data)
 	{
 		globals.story = JSON.parse(data);
