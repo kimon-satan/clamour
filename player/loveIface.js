@@ -588,11 +588,13 @@ Interface = function(parent, callback, isDummy)
 	this.render = function() {
 
 		if(this.graphics.isNoWebGL){
-			changeMode("broken")
+			this.parent.changeMode("broken")
 			return;
 		}
 
 		var old_acc = this.accumulator;
+
+
 
 		var n_et = (new Date().getTime() - this.startTime) * 0.001;
 		this.accumulator += (n_et - this.ellapsedTime);
@@ -603,18 +605,20 @@ Interface = function(parent, callback, isDummy)
 		{
 
 			this.panicCount += 1;
-			if(this.panicCount > 8)
+			if(this.panicCount > 20)
 			{
 
 
 				//tell the server that we can't render graphics
 				this.stopRendering();
-				changeMode("broken"); //FIXME should be a callback
+				this.parent.changeMode("broken"); //FIXME should be a callback
 				this.panicCount = 0;
 				return;
 			}
 
-		}else {
+		}
+		else
+		{
 			//console.log(this.accumulator);
 			this.panicCount = 0;
 

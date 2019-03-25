@@ -27,7 +27,7 @@ Player = function(isDummy)
 	{
 		if(Date.now() - this.lastCheckin > 8000)
 		{
-			changeMode("refresh");
+			this.changeMode("refresh");
 			this.lastCheckin = Date.now();
 		}
 	}.bind(this), 1000);
@@ -93,7 +93,7 @@ Player = function(isDummy)
 			this.iface.init();
 		}
 
-		changeMode(msg.mode);
+		this.changeMode(msg.mode);
 
 	}.bind(this));
 
@@ -108,7 +108,7 @@ Player = function(isDummy)
 		if(msg.cmd == "change_mode")
 		{
 			parseMsgParams(msg.value);
-			changeMode(msg.value.mode);
+			this.changeMode(msg.value.mode);
 		}
 		else if (this.isDummy)
 		{
@@ -309,7 +309,7 @@ Player = function(isDummy)
 
 	}.bind(this);
 
-	var changeMode = function(mode)
+	this.changeMode = function(mode)
 	{
 
 		if(this.mode == mode)return;
