@@ -69,7 +69,7 @@
 			},
 			{
 				"isFade": "true",
-				"audio": {"path" : "chapter2/4_Boat", "loop": "true", "in" : 0.5, "out" : 0.5, "amp" : 0.5, "solo": "true"},
+				"audio": {"path" : "chapter2/4_Boat", "loop": "true", "in" : 0.5, "out" : 0.5, "amp" : 1.0, "solo": "true"},
 				"img": "chapter2/6-boat1.jpg",
 				"texts":
 				[
@@ -78,7 +78,7 @@
 				]
 			},
 			{
-			"audio": {"path" : "chapter2/5_Diver_1", "loop": "true", "in" : 0.5, "out" : 0.5, "amp" : 0.5, "solo": "true"},
+			"audio": {"path" : "chapter2/5_Diver_1", "loop": "true", "in" : 0.5, "out" : 0.5, "amp" : 0.75, "solo": "true"},
 			"img": "chapter2/7-marine-archeology-1.jpg",
 				"texts":
 				[
@@ -87,7 +87,7 @@
 				]
 			},
 			{
-				"audio": {"path" : "chapter2/6_Trolley", "loop": "true", "in" : 0.5, "out" : 0.5, "amp" : 0.5, "solo": "true"},
+				"audio": {"path" : "chapter2/6_Trolley", "loop": "true", "in" : 0.5, "out" : 0.5, "amp" : 1.0, "solo": "true"},
 				"img": "chapter2/8-trolley-1.jpg",
 				"texts":[]
 			},
@@ -104,7 +104,7 @@
 			{
 				"img": "chapter2/10-skull-2.jpg",
 				"audio": {},
-				"audio1": {"path" : "chapter2/9_Skull", "loop": "false", "in" : 0.5, "out" : 15.0, "amp" : 0.7, "solo": "true"},
+				"audio1": {"path" : "chapter2/9_Skull", "loop": "false", "in" : 0.5, "out" : 15.0, "amp" : 0.9, "solo": "true"},
 				"texts":
 				[
 					"and not all of us have survived.",

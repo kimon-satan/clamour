@@ -20,8 +20,8 @@
 	},
 	"loveAudioSettings":
 	{
-		"splatAmp": 0.5,
-		"toneMul": 0.7,
+		"splatAmp": 1.0,
+		"toneMul": 0.8,
 		"transAmp": 0.75,
 		"crawlerMul": 0.5
 	},
@@ -32,7 +32,7 @@
 	},
 	"votesAudioSettings":
 	{
-		"voteAmp": 0.4,
+		"voteAmp": 0.25,
 		"concludeAmp": 0.7,
 		"bingAmp": 0.7
 	}
