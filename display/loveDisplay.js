@@ -116,9 +116,10 @@ var LoveDisplay = function(socket, canvas, _settings, xoff,yoff,scale)
 	{
 		this.splatManager.addSplat(msg.val);
 
-		var transform = (msg.val.state >= 4 && msg.val.state_z > 0.95) || this.splatManager.getEnergy(msg.val._id) >= 0.9;
+		var transform = (msg.val.state >= 4 && msg.val.state_z > 0.95) && this.splatManager.getEnergy(msg.val._id) >= 0.9;
+
 		//TODO manual threshold
-		if(transform || Math.random() < msg.val.transformProb)
+		if(transform && Math.random() < msg.val.transformProb)
 		{
 			var pos = new THREE.Vector2().copy(this.splatManager.playerInfo[msg.val._id].center);
 			let blob = this.blobManager.addBlob(pos, msg.val);
