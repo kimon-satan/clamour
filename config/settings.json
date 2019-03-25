@@ -14,8 +14,8 @@
 	},
 	"loveDisplaySettings":
 	{
-		"splats_min": 15,
-		"splats_mul": 25,
+		"splats_min": 10,
+		"splats_mul": 20,
 		"energyThresh": 0.3
 	},
 	"loveAudioSettings":
@@ -27,8 +27,8 @@
 	},
 	"lovePlayerSettings":
 	{
-		"envTime": {"min": 35, "max": 60},
-		"splatAtt": {"min": 4, "max": 14}
+		"envTime": {"min": 45, "max": 70},
+		"splatAtt": {"min": 2, "max": 6}
 	},
 	"votesAudioSettings":
 	{
