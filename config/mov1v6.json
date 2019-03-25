@@ -478,7 +478,7 @@
 	{"name": "monologue2", "clips":
 		[
 			{
-				"audio": {"path" : "monol/misty", "loop": "false", "in" : 0.0, "out" : 0.5, "amp" : 0.35, "solo": "true"},
+				"audio": {"path" : "monol/misty", "loop": "false", "in" : 0.0, "out" : 0.5, "amp" : 0.25, "solo": "true"},
 				"texts":
 				[
 					"Well ..."
