@@ -47,7 +47,7 @@ var TextDisplay = function(canvas,xoff,yoff,scale)
 		fitText("3. Open a browser (chrome, safari)", {x: innerWidth/4, y: innerHeight * 3/8, w: innerWidth/2, h: innerHeight/8}, "Arial", 30, ctx, "center");
 		fitText("4. Go to http://clamour.info", {x: innerWidth/4, y: innerHeight * 7/16, w: innerWidth/2, h: innerHeight/8}, "Arial", 30, ctx, "center");
 
-		fitText("Ask for me help if you need it", {x: innerWidth/4, y: innerHeight * 6/8, w: innerWidth/2, h: innerHeight/8}, "Arial", 25, ctx, "center");
+		fitText("Ask me for help if you need it", {x: innerWidth/4, y: innerHeight * 6/8, w: innerWidth/2, h: innerHeight/8}, "Arial", 25, ctx, "center");
 
 
 
